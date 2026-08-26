@@ -1,0 +1,906 @@
+{
+  "date": "2026-08-26",
+  "published": "2026年8月26日（星期三）下午12:39・每日全球熱門新聞",
+  "top3": [
+    {
+      "rank": 1,
+      "category": "war",
+      "title": "美伊緊張全面升級：華府祭出新一輪對伊制裁，北京警告將採取反制，荷姆茲海峽傳油輪遇襲",
+      "summary": "美國財政部長貝森特宣布對伊朗實施新一輪制裁措施以切斷其經濟命脈，中國外交部隨即警告，若制裁波及中國企業將採取「一切必要措施」反制；與此同時，荷姆茲海峽附近一艘油輪疑遭不明武器攻擊並失去動力，凸顯區域情勢持續緊繃。",
+      "url": "https://www.middleeasteye.net/news/china-warns-it-could-retaliate-over-new-us-sanctions-iran",
+      "source": "Middle East Eye",
+      "tier": "top3"
+    },
+    {
+      "rank": 2,
+      "category": "war",
+      "title": "俄烏戰事升溫：普丁下令徵收「防護不足」關鍵基礎設施，回應烏克蘭無人機猛烈攻勢",
+      "summary": "俄羅斯總統普丁簽署命令，允許政府接管被認定防護不足或修復過慢的關鍵基礎設施，以因應烏克蘭近期針對俄國能源設施、物流樞紐與煉油廠發動的密集無人機攻擊，這波攻勢已造成俄方嚴重經濟損失與燃料短缺。",
+      "url": "https://www.aljazeera.com/news/2026/8/24/russia-to-seize-poorly-protected-infrastructure-as-ukraine-barrage-persists",
+      "source": "Al Jazeera",
+      "tier": "top3"
+    },
+    {
+      "rank": 3,
+      "category": "finance",
+      "title": "美中貿易摩擦再起：美國擬對中國加徵7.5%「產能過剩」關稅，卡在習近平訪美前夕",
+      "summary": "據彭博社報導，美國正考慮依據301條款調查結果，對中國商品加徵7.5%關稅，將使川普政府任內對中關稅總額精準達到雙方先前協議的20%上限；此舉恰逢習近平預計9月24日訪問白宮前夕，恐再度升高兩國貿易緊張。",
+      "url": "https://www.investing.com/news/economy-news/us-plans-75-china-overcapacity-tariff-before-sept-24-xitrump-summit-4873938",
+      "source": "Investing.com",
+      "tier": "top3"
+    }
+  ],
+  "global": [
+    {
+      "rank": 1,
+      "category": "world",
+      "title": "美國對伊朗祭出「經濟大反攻」新制裁 伊朗誓言報復、中國批評",
+      "summary": "美國財長貝森特將新一輪對伊朗制裁形容為「經濟大西洋登陸日」，伊朗誓言反制，中國批評華府做法，何姆茲海峽情勢持續升溫。",
+      "url": "https://www.cnn.com/2026/08/25/world/live-news/iran-war-trump-sanctions",
+      "source": "CNN",
+      "tier": "lead"
+    },
+    {
+      "rank": 2,
+      "category": "world",
+      "title": "加薩以軍空襲炸毀救援倉庫 至少7人喪生 停火陷危機",
+      "summary": "以色列對加薩發動空襲，摧毀一座援助物資倉庫並擊中供水設施，造成至少七人死亡，加深外界對停火協議能否維持的疑慮。",
+      "url": "https://www.aljazeera.com/news/2026/8/25/seven-killed-in-gaza-as-israeli-strike-destroys-aid-supply-warehouse",
+      "source": "Al Jazeera",
+      "tier": "lead"
+    },
+    {
+      "rank": 3,
+      "category": "finance",
+      "title": "美加貿易戰升溫 加拿大宣布報復性關稅",
+      "summary": "加拿大對美國商品祭出新一輪報復性關稅，回應川普政府稅率措施，兩國貿易緊張情勢持續惡化。",
+      "url": "https://www.mprnews.org/story/2026/08/25/canada-strikes-back-at-us-with-retaliatory-tariffs-as-trade-war-escalates",
+      "source": "MPR News",
+      "tier": "lead"
+    },
+    {
+      "rank": 4,
+      "category": "world",
+      "title": "美國最高法院為川普限縮郵寄投票開綠燈",
+      "summary": "美國最高法院初步裁決有利川普政府對郵寄投票規則的行政命令，為2026年期中選舉投票方式增添變數。",
+      "url": "https://www.washingtonpost.com/politics/2026/08/24/supreme-court-eases-path-trumps-sweeping-limits-mail-in-balloting/",
+      "source": "The Washington Post",
+      "tier": "mid"
+    },
+    {
+      "rank": 5,
+      "category": "tech",
+      "title": "輝達財報將公布 市場屏息以待AI晶片需求指標",
+      "summary": "輝達即將公布第二季財報，市場高度關注其AI晶片需求展望，被視為全球科技股走勢的重要指標。",
+      "url": "https://www.kiplinger.com/investing/live/nvidia-earnings-live-updates-and-commentary-august-2026",
+      "source": "Kiplinger",
+      "tier": "mid"
+    },
+    {
+      "rank": 6,
+      "category": "finance",
+      "title": "Dick's運動用品財報未達預期 股價創多年最慘一日",
+      "summary": "美國運動用品零售商Dick's公布財報不如預期並下修全年財測，股價單日暴跌逾一成，創下多年來最差表現。",
+      "url": "https://www.forbes.com/sites/tylerroush/2026/08/25/dicks-sporting-goods-stock-sinks-16-toward-worst-day-in-3-years-heres-why/",
+      "source": "Forbes",
+      "tier": "mid"
+    },
+    {
+      "rank": 7,
+      "category": "finance",
+      "title": "美股走高 道瓊那斯達克同步上漲 市場靜待輝達財報",
+      "summary": "美國三大指數在油價與公債殖利率回落下走揚，科技股反彈，投資人聚焦即將公布的輝達財報。",
+      "url": "https://finance.yahoo.com/markets/live/stock-market-today-tuesday-august-25-dow-sp-500-nasdaq-080527092.html",
+      "source": "Yahoo Finance",
+      "tier": "mid"
+    },
+    {
+      "rank": 8,
+      "category": "finance",
+      "title": "黃金價格衝上三個月高點",
+      "summary": "受避險需求及地緣政治緊張情勢推升，黃金價格攀升至三個月來新高。",
+      "url": "https://finance.yahoo.com/personal-finance/investing/article/gold-prices-today-tuesday-august-25-2026-gold-hits-3-month-high-this-morning-120736963.html",
+      "source": "Yahoo Finance",
+      "tier": "mid"
+    },
+    {
+      "rank": 9,
+      "category": "tech",
+      "title": "科技業裁員潮延燒 蘋果、TikTok、LinkedIn、Netflix傳大砍職位",
+      "summary": "2026年8月科技業裁員名單再擴大，蘋果、TikTok、LinkedIn與Netflix等公司相繼宣布裁減人力。",
+      "url": "https://finance.yahoo.com/technology/articles/tech-layoffs-august-2026-apple-122400800.html",
+      "source": "Yahoo Finance",
+      "tier": "mid"
+    },
+    {
+      "rank": 10,
+      "category": "world",
+      "title": "庫許納推動加薩解除武裝計畫 與以色列總理會談",
+      "summary": "美國白宮顧問庫許納積極斡旋加薩戰後方案，與以色列總理內唐亞胡會談，力推哈瑪斯解除武裝的具體時程。",
+      "url": "https://www.nbcnews.com/world/gaza/kushner-netanyahu-hamas-talks-gaza-plan-peace-trump-rcna592871",
+      "source": "NBC News",
+      "tier": "mid"
+    },
+    {
+      "rank": 11,
+      "category": "world",
+      "title": "委內瑞拉後馬杜羅時代政治轉型 逾百名政治犯獲釋",
+      "summary": "委內瑞拉在馬杜羅下台後展開政治過渡談判，當局宣布釋放131名政治犯，美國持續施壓推動轉型進程。",
+      "url": "https://www.aljazeera.com/news/2026/8/15/venezuela-says-131-political-prisoners-freed-amid-post-maduro-talks",
+      "source": "Al Jazeera",
+      "tier": "list"
+    },
+    {
+      "rank": 12,
+      "category": "disaster",
+      "title": "美國奧勒岡州野火延燒 貝克郡發布疏散令",
+      "summary": "奧勒岡州貝克郡多處新野火迅速蔓延，當局發布強制疏散令，消防人員全力搶救。",
+      "url": "https://www.kptv.com/2026/08/24/oregon-wildfire-update-new-fires-burning-baker-county-trigger-evacuation-orders/",
+      "source": "KPTV",
+      "tier": "list"
+    },
+    {
+      "rank": 13,
+      "category": "disaster",
+      "title": "菲律賓西南季風豪雨持續 首都馬尼拉多處淹水",
+      "summary": "菲律賓「哈巴牙特」西南季風豪雨連日肆虐，馬尼拉都會區多處嚴重淹水，居民生活大受影響。",
+      "url": "https://www.philstar.com/headlines/2026/08/18/2550028/metro-inundated-monsoon-rains-persist",
+      "source": "Philstar.com",
+      "tier": "list"
+    },
+    {
+      "rank": 14,
+      "category": "world",
+      "title": "以色列前將領歐弗溫特籌組新右翼政黨 震撼政壇",
+      "summary": "前以色列國防軍將領歐弗溫特宣布成立新右翼政黨，主張擴大徵兵範圍並推動加薩居民遷出，震撼以色列政壇。",
+      "url": "https://www.timesofisrael.com/liveblog_entry/ofer-winter-launches-right-wing-people-of-israel-party-pledges-to-push-gaza-emigration-expand-idf-draft/",
+      "source": "The Times of Israel",
+      "tier": "list"
+    },
+    {
+      "rank": 15,
+      "category": "entertainment",
+      "title": "《蜘蛛人：全新的一天》票房亮眼 穩坐冠軍寶座",
+      "summary": "漫威新片《蜘蛛人：全新的一天》上映後票房表現強勁，持續稱霸北美票房榜。",
+      "url": "https://variety.com/2026/film/box-office/box-office-spider-man-second-weekend-the-odyssey-1236830599/",
+      "source": "Variety",
+      "tier": "list"
+    },
+    {
+      "rank": 16,
+      "category": "world",
+      "title": "北韓試射疑似飛彈 日本偵測到落海",
+      "summary": "日本防衛省表示偵測到北韓發射一枚疑似飛彈朝海面落下，區域安全緊張情勢再度升高。",
+      "url": "https://www.npr.org/2026/08/20/g-s1-139381/north-korea-suspected-missile",
+      "source": "NPR",
+      "tier": "list"
+    },
+    {
+      "rank": 17,
+      "category": "tech",
+      "title": "蘋果傳將於9月發表iPhone 18 Pro等新品",
+      "summary": "市場預期蘋果將在9月舉行發表會，推出iPhone 18 Pro及其他新硬體產品，",
+      "url": "https://www.macrumors.com/2026/08/24/iphone-18-pro-iphone-ultra-apple-event-when/",
+      "source": "MacRumors",
+      "tier": "list"
+    },
+    {
+      "rank": 18,
+      "category": "finance",
+      "title": "油價受美國對伊朗制裁消息影響震盪",
+      "summary": "國際油價因美國對伊朗實施新制裁的消息而出現震盪走勢，市場緊盯何姆茲海峽情勢發展。",
+      "url": "https://www.cnbc.com/2026/08/24/oil-price-today-wti-brent-us-sanctions-iran.html",
+      "source": "CNBC",
+      "tier": "list"
+    },
+    {
+      "rank": 19,
+      "category": "world",
+      "title": "聯合國：以色列侵犯黎巴嫩領空 加薩週末空襲致數十人死亡",
+      "summary": "聯合國指出以色列軍機侵犯黎巴嫩領空，加薩地區週末空襲行動也造成數十人死亡，引發國際社會關注。",
+      "url": "https://news.un.org/en/story/2026/08/1168067",
+      "source": "UN News",
+      "tier": "list"
+    },
+    {
+      "rank": 20,
+      "category": "tech",
+      "title": "SpaceX完成2026年第75次星鏈衛星發射任務",
+      "summary": "SpaceX於卡納維拉爾角成功發射第75批星鏈衛星，持續擴展其全球衛星網路規模。",
+      "url": "https://spaceflightnow.com/2026/08/20/live-coverage-spacex-to-launch-75th-starlink-mission-of-2026/",
+      "source": "Spaceflight Now",
+      "tier": "list"
+    },
+    {
+      "rank": 21,
+      "category": "disaster",
+      "title": "美國大西洋颶風季預測維持「低於正常」等級",
+      "summary": "科羅拉多州立大學與NOAA最新預測顯示，2026年大西洋颶風季活動將低於正常水準，惟仍籲民眾保持警戒。",
+      "url": "https://tropical.colostate.edu/Forecast/2026-08.pdf",
+      "source": "Colorado State University",
+      "tier": "list"
+    },
+    {
+      "rank": 22,
+      "category": "finance",
+      "title": "運動鞋零售業寒冬 Dick's、Foot Locker、Nike、Adidas集體承壓",
+      "summary": "隨著消費疲軟與促銷競爭加劇，Dick's與Foot Locker等大型運動用品零售商財報表現不佳，",
+      "url": "https://www.sportico.com/business/commerce/2026/sneaker-industry-hangover-dicks-nike-adidas-1234942838/",
+      "source": "Sportico",
+      "tier": "list"
+    },
+    {
+      "rank": 23,
+      "category": "disaster",
+      "title": "美國內華達州「鷹火」野火持續延燒 消防員回報進展",
+      "summary": "內華達州「鷹火」野火燃燒面積已逾2500英畝，消防人員表示滅火行動已見進展。",
+      "url": "https://abcnews.com/US/fast-growing-hawk-fire-explodes-2500-acres-spurs/story?id=135876227",
+      "source": "ABC News",
+      "tier": "list"
+    },
+    {
+      "rank": 24,
+      "category": "world",
+      "title": "伊朗軍方高層誓言「絕不屈服」 回應美國經濟施壓",
+      "summary": "伊朗軍事將領強硬表態，誓言德黑蘭不會在美國經濟制裁與施壓下屈服，加劇區域緊張情勢。",
+      "url": "https://www.cnn.com/2026/08/22/world/live-news/iran-war-trump",
+      "source": "CNN",
+      "tier": "list"
+    },
+    {
+      "rank": 25,
+      "category": "sports",
+      "title": "NFL球員重返大學美式足球賽場惹議 SEC教練齊聲反對",
+      "summary": "多名具NFL資歷的球員被爆出計畫重返大學美式足球賽場，此舉引發東南聯盟(SEC)教練與球隊強烈反彈，",
+      "url": "https://www.cbssports.com/college-football/news/college-football-staffers-react-nfl-players-returning/",
+      "source": "CBS Sports",
+      "tier": "list"
+    },
+    {
+      "rank": 26,
+      "category": "finance",
+      "title": "比特幣站上8.1萬美元 七日漲幅逼近25%",
+      "summary": "比特幣近期強勢反彈，價格一度突破8.1萬美元，七日累積漲幅接近25%，",
+      "url": "https://www.coindesk.com/markets/2026/08/25/bitcoin-extends-7-day-advance-to-roughly-25",
+      "source": "CoinDesk",
+      "tier": "list"
+    },
+    {
+      "rank": 27,
+      "category": "finance",
+      "title": "輝達財報前夕市場屏息 美股震盪整理",
+      "summary": "投資人聚焦輝達即將公布的第二季財報，作為檢驗AI投資熱潮能否延續的重要指標，",
+      "url": "https://www.cnbc.com/2026/08/24/stock-market-today-live-updates.html",
+      "source": "CNBC",
+      "tier": "list"
+    },
+    {
+      "rank": 28,
+      "category": "world",
+      "title": "美國發動「經濟棄兒行動」擴大對伊朗全球制裁",
+      "summary": "美國政府宣布代號「經濟棄兒行動」的新制裁措施，威脅將對持續與伊朗維持經濟往來的國家實施制裁，",
+      "url": "https://edition.cnn.com/2026/08/24/world/live-news/iran-war-trump",
+      "source": "CNN",
+      "tier": "list"
+    },
+    {
+      "rank": 29,
+      "category": "world",
+      "title": "以色列空襲加薩水廠與倉庫 造成多人死傷",
+      "summary": "以色列軍方對加薩一處淨水廠與倉庫發動空襲，至少7人罹難，事件持續拉長本輪衝突的死傷名單，",
+      "url": "https://www.aljazeera.com/news/2026/8/24/israeli-strike-on-gaza-shelter-extends-casualty-list",
+      "source": "Al Jazeera",
+      "tier": "list"
+    },
+    {
+      "rank": 30,
+      "category": "world",
+      "title": "庫許納訪問後加薩致命空襲 停火進展蒙上陰影",
+      "summary": "在美方特使庫許納訪問中東數日後，以色列在加薩發動的致命空襲讓外界對停火協議能否持續推進產生更多疑慮。",
+      "url": "https://www.pbs.org/newshour/amp/world/israels-deadly-gaza-strikes-cast-doubt-on-ceasefire-progress-days-after-kushner-visit",
+      "source": "PBS News",
+      "tier": "list"
+    },
+    {
+      "rank": 31,
+      "category": "world",
+      "title": "委內瑞拉「後馬杜羅時代」談判 釋放131名政治犯",
+      "summary": "委內瑞拉當局在後馬杜羅政治過渡談判中，宣布釋放131名政治犯，此舉被視為推動國內政治和解的重要進展。",
+      "url": "https://www.aljazeera.com/news/2026/8/15/venezuela-says-131-political-prisoners-freed-amid-post-maduro-talks",
+      "source": "Al Jazeera",
+      "tier": "list"
+    },
+    {
+      "rank": 32,
+      "category": "society",
+      "title": "美國移民局展開遣返 失去臨時保護身分的海地人首當其衝",
+      "summary": "美國移民及海關執法局（ICE）已開始將失去「臨時保護身分」（TPS）的海地籍移民遣返回國，",
+      "url": "https://www.washingtonpost.com/immigration/2026/08/20/ice-begins-deporting-haitians-who-lost-tps-back-homeland/",
+      "source": "The Washington Post",
+      "tier": "list"
+    },
+    {
+      "rank": 33,
+      "category": "finance",
+      "title": "最高法院判關稅違法後 川普貿易關稅仍捲土重來",
+      "summary": "儘管美國最高法院早前裁定川普援引緊急權力課徵的關稅違法，",
+      "url": "https://www.politifact.com/article/2026/aug/25/trump-trade-tariffs-supreme-court/",
+      "source": "PolitiFact",
+      "tier": "list"
+    },
+    {
+      "rank": 34,
+      "category": "world",
+      "title": "利比亞武裝團體威脅地中海移民救援船隻",
+      "summary": "人道組織指出，載運移民與難民的救援船隻在地中海海域持續遭到利比亞相關武裝團體的威脅與騷擾，",
+      "url": "https://www.euronews.com/my-europe/2026/08/24/migrants-and-rescue-ships-face-threats-and-harassment-at-sea-from-libyan-groups-ngo-says",
+      "source": "Euronews",
+      "tier": "list"
+    },
+    {
+      "rank": 35,
+      "category": "society",
+      "title": "突尼西亞移民船前往義大利途中翻覆 13人失蹤",
+      "summary": "一艘載有突尼西亞移民、欲橫渡地中海前往義大利的船隻發生翻覆意外，目前至少13人下落不明，",
+      "url": "https://www.aljazeera.com/news/2026/8/22/at-least-13-tunisians-missing-as-migrant-boat-headed-for-italy-capsizes",
+      "source": "Al Jazeera",
+      "tier": "list"
+    },
+    {
+      "rank": 36,
+      "category": "tech",
+      "title": "NASA南希·葛雷斯·羅曼太空望遠鏡準備發射升空",
+      "summary": "美國太空總署（NASA）的南希·葛雷斯·羅曼太空望遠鏡即將發射，",
+      "url": "https://www.space.com/news/live/nancy-grace-roman-telescope-live-updates-nasa-readies-roman-for-launch-august-24-2026",
+      "source": "Space.com",
+      "tier": "list"
+    },
+    {
+      "rank": 37,
+      "category": "tech",
+      "title": "OpenAI企業用戶市占率數據顯示正超車Anthropic",
+      "summary": "最新產業數據顯示，OpenAI在企業客戶市場的採用率正逐漸拉近甚至超越Anthropic，",
+      "url": "https://techcrunch.com/2026/08/20/openai-is-gaining-on-anthropic-with-business-users-new-data-indicates/",
+      "source": "TechCrunch",
+      "tier": "list"
+    },
+    {
+      "rank": 38,
+      "category": "tech",
+      "title": "以色列新創公司遭爆與OpenAI、Anthropic遭駭事件有關",
+      "summary": "報導指出一家以色列小型新創公司與近期針對OpenAI、",
+      "url": "https://www.cnbc.com/2026/08/09/israeli-startup-irregular-linked-to-ai-hacks-openai-anthropic-meta.html",
+      "source": "CNBC",
+      "tier": "list"
+    },
+    {
+      "rank": 39,
+      "category": "tech",
+      "title": "科技業裁員潮未歇 蘋果、TikTok、LinkedIn、網飛接連裁員",
+      "summary": "2026年8月科技業裁員動作持續擴大，蘋果、TikTok、LinkedIn與網飛等公司相繼宣布裁減職位，",
+      "url": "https://finance.yahoo.com/technology/articles/tech-layoffs-august-2026-apple-122400800.html",
+      "source": "Yahoo Finance",
+      "tier": "list"
+    },
+    {
+      "rank": 40,
+      "category": "disaster",
+      "title": "歐洲熱浪野火肆虐 多國拉高警戒",
+      "summary": "歐洲多國持續遭受極端熱浪侵襲，野火在西歐部分地區蔓延，能源系統與消防資源承受龐大壓力，",
+      "url": "https://www.cnn.com/2026/08/10/climate/europe-heatwave-wildfire-intl-hnk",
+      "source": "CNN",
+      "tier": "list"
+    },
+    {
+      "rank": 41,
+      "category": "finance",
+      "title": "中國房地產危機持續惡化 恆大破產陰影未散",
+      "summary": "分析指出中國房地產市場自恆大集團倒閉以來危機仍未平息，房價持續探底，對整體經濟復甦構成長期壓力。",
+      "url": "https://www.bloomberg.com/news/articles/2026-08-20/china-s-property-crisis-from-evergrande-collapse-to-spiraling-prices",
+      "source": "Bloomberg",
+      "tier": "list"
+    },
+    {
+      "rank": 42,
+      "category": "entertainment",
+      "title": "BTS、Katseye等K-pop明星寫下美國音樂獎歷史新頁",
+      "summary": "2026年美國音樂獎（AMAs）上，",
+      "url": "https://www.yahoo.com/entertainment/music/articles/k-pop-makes-history-bts-091418346.html",
+      "source": "Yahoo Entertainment",
+      "tier": "list"
+    },
+    {
+      "rank": 43,
+      "category": "entertainment",
+      "title": "BTS拒交《Arirang》角逐葛萊美 亞洲流行音樂獎項掀爭議",
+      "summary": "BTS宣布不將歌曲《Arirang》提交角逐葛萊美獎新設立的「亞洲流行音樂表演獎」，",
+      "url": "https://www.goldderby.com/music/2026/bts-arirang-grammy-awards-asian-pop-music-performance-explainer/",
+      "source": "GoldDerby",
+      "tier": "list"
+    },
+    {
+      "rank": 44,
+      "category": "sports",
+      "title": "2026年美國網球公開賽正式開打",
+      "summary": "一年一度的美國網球公開賽於紐約法拉盛草原展開賽事，各路好手齊聚爭奪男女單打冠軍頭銜，",
+      "url": "https://www.usopen.org/en_US/news/index.html",
+      "source": "US Open官方網站",
+      "tier": "list"
+    },
+    {
+      "rank": 45,
+      "category": "sports",
+      "title": "UFC Fight Night 282賽事登場",
+      "summary": "終極格鬥錦標賽（UFC）舉辦最新一場Fight Night賽事，多場對戰吸引全球格鬥迷關注，",
+      "url": "https://en.wikipedia.org/wiki/UFC_Fight_Night_282",
+      "source": "Wikipedia",
+      "tier": "list"
+    },
+    {
+      "rank": 46,
+      "category": "sports",
+      "title": "2026年WNBA賽季戰況白熱化",
+      "summary": "2026年WNBA賽季持續進行，各隊爭奪季後賽席位的戰況日趨激烈，聯盟關注度與商業影響力持續攀升。",
+      "url": "https://en.wikipedia.org/wiki/2026_WNBA_season",
+      "source": "Wikipedia",
+      "tier": "list"
+    },
+    {
+      "rank": 47,
+      "category": "society",
+      "title": "世界衛生組織發布最新跨國猴痘（mpox）疫情報告",
+      "summary": "世界衛生組織（WHO）發布最新一期跨國猴痘疫情報告，持續追蹤全球病例分布與防疫進展，",
+      "url": "https://www.who.int/publications/m/item/multi-country-outbreak-of-mpox--external-situation-report--68---31-july-2026",
+      "source": "WHO",
+      "tier": "list"
+    },
+    {
+      "rank": 48,
+      "category": "world",
+      "title": "俄羅斯飛彈於波蘭境內爆炸 北約盟軍升高戒備",
+      "summary": "一枚俄羅斯飛彈在波蘭境內發生爆炸，促使北約緊急升空戰機因應，",
+      "url": "https://www.aljazeera.com/news/2026/7/30/nato-jets-scramble-as-russian-missile-detonates-in-poland",
+      "source": "Al Jazeera",
+      "tier": "list"
+    },
+    {
+      "rank": 49,
+      "category": "finance",
+      "title": "輝達第二季財報成AI投資熱潮觀察焦點",
+      "summary": "市場高度關注輝達第二季財報表現，視其為判斷全球人工智慧投資熱潮是否延續的重要風向球，",
+      "url": "https://www.kiplinger.com/investing/live/nvidia-earnings-live-updates-and-commentary-august-2026",
+      "source": "Kiplinger",
+      "tier": "list"
+    },
+    {
+      "rank": 50,
+      "category": "world",
+      "title": "中國與北韓同盟關係持續升溫 引發區域安全關注",
+      "summary": "分析指出中國與北韓近期互動頻繁，雙方同盟關係持續升溫，此發展引起周邊國家對東北亞區域安全情勢的高度關注。",
+      "url": "https://www.aljazeera.com/news/2026/7/11/sealed-in-blood-where-does-the-china-north-korea-alliance-stand-today",
+      "source": "Al Jazeera",
+      "tier": "list"
+    }
+  ],
+  "twcn": [
+    {
+      "rank": 1,
+      "category": "society",
+      "title": "指南宮暗夜大火 凌霄寶殿全毀 蔣萬安允諾陪同重建",
+      "summary": "台北知名廟宇指南宮凌霄寶殿深夜發生大火，一、二樓幾乎全數燒毀，近兩小時才控制火勢；台北市長蔣萬安到場關切並承諾陪廟方走到重建完成。",
+      "url": "https://udn.com/news/story/7320/9711740",
+      "source": "聯合新聞網",
+      "tier": "lead"
+    },
+    {
+      "rank": 2,
+      "category": "entertainment",
+      "title": "陳幸妤趙建銘離婚爆料延燒 200萬義大利旅費成焦點",
+      "summary": "陳水扁之女陳幸妤與夫婿趙建銘婚變持續延燒，雙方隔空互槓，陳幸妤要求趙建銘先償還兩人赴義大利旅遊的200萬元費用，趙建銘則反擊列出多項爭議反駁。",
+      "url": "https://udn.com/news/story/124985/9712586",
+      "source": "聯合新聞網",
+      "tier": "lead"
+    },
+    {
+      "rank": 3,
+      "category": "society",
+      "title": "西南風炸雨釀災 高雄屏東多區25日停班停課",
+      "summary": "西南風及熱帶性低氣壓帶來致災豪雨，南台灣多處淹水，高雄那瑪夏等5區、屏東霧臺等8原鄉及沿海6村里25日宣布停班停課。",
+      "url": "https://www.nownews.com/news/6868743",
+      "source": "NOWnews今日新聞",
+      "tier": "lead"
+    },
+    {
+      "rank": 4,
+      "category": "society",
+      "title": "沙德爾颱風路徑北修 強度減弱為輕颱",
+      "summary": "沙德爾颱風最新路徑略往北修正，強度由中颱降為輕颱，預估周四、周五最接近台灣，全台仍需嚴防強風豪雨。",
+      "url": "https://udn.com/news/story/7266/9714279",
+      "source": "聯合新聞網",
+      "tier": "mid"
+    },
+    {
+      "rank": 5,
+      "category": "finance",
+      "title": "台股早盤重挫逾500點 失守月線",
+      "summary": "受美股晶片與記憶體類股重挫拖累，台股25日早盤電子股領跌、金融股撐盤，指數一度跌逾500點並跌破月線。",
+      "url": "https://www.taiwannews.com.tw/zh/news/6427425",
+      "source": "Taiwan News",
+      "tier": "mid"
+    },
+    {
+      "rank": 6,
+      "category": "finance",
+      "title": "台灣新首富誕生 85歲企業家超越陳泰銘、郭台銘",
+      "summary": "最新財富排行出爐，一名85歲企業家財富超車陳泰銘與郭台銘，登上台灣新任首富寶座，成為財經圈熱議話題。",
+      "url": "https://finance.ettoday.net/news/3225778",
+      "source": "ETtoday新聞雲",
+      "tier": "mid"
+    },
+    {
+      "rank": 7,
+      "category": "politics",
+      "title": "鄭文燦涉華亞科開發弊案 都發局官員出庭作證",
+      "summary": "前桃園市長鄭文燦涉入的華亞科土地開發弊案持續偵辦，都發局官員出庭作證，檢方持續追查自辦市地重劃相關疑點。",
+      "url": "https://udn.com/news/story/7321/9714167",
+      "source": "聯合新聞網",
+      "tier": "mid"
+    },
+    {
+      "rank": 8,
+      "category": "society",
+      "title": "基隆客運失控撞分隔島 10乘客受傷送醫",
+      "summary": "基隆一輛客運行駛間突然失控衝撞道路分隔島，車上10名乘客受傷緊急送醫，事故原因由警方調查中。",
+      "url": "https://udn.com/news/story/7328/9714165",
+      "source": "聯合新聞網",
+      "tier": "mid"
+    },
+    {
+      "rank": 9,
+      "category": "sports",
+      "title": "中職／樂天桃猿11：1痛宰中信兄弟 威克雙響砲建功",
+      "summary": "樂天桃猿在大巨蛋以11比1大勝中信兄弟，外援威克單場雙轟成為全場焦點，桃猿也逼出兄弟二刀流投手宋晟睿飆出153公里速球。",
+      "url": "https://sports.ettoday.net/news/3225695",
+      "source": "ETtoday運動雲",
+      "tier": "mid"
+    },
+    {
+      "rank": 10,
+      "category": "entertainment",
+      "title": "河北彩花遭爆「假面甜心」 私下嫌老粉太煩惹議",
+      "summary": "日本女星河北彩花被爆私下對粉絲與同行態度冷淡、言行前後不一，甚至因嫌片酬拍攝尺度問題讓台商投資受挫，形象爭議延燒。",
+      "url": "https://star.ettoday.net/news/3225764",
+      "source": "ETtoday星光雲",
+      "tier": "mid"
+    },
+    {
+      "rank": 11,
+      "category": "entertainment",
+      "title": "鄉村音樂天后桃莉芭頓辭世 享壽80歲 川普下令降半旗",
+      "summary": "美國傳奇鄉村音樂天后桃莉芭頓辭世，享壽80歲，美國總統川普下令全國降半旗致哀一週，全球歌迷同聲哀悼。",
+      "url": "https://udn.com/news/story/6813/9714241",
+      "source": "聯合新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 12,
+      "category": "tech",
+      "title": "蘋果發表新款Mac mini 搭載M6晶片 台灣29900元起",
+      "summary": "蘋果推出新一代Mac mini，首度搭載M6晶片，官方宣稱AI運算效能最高提升4倍，",
+      "url": "https://udn.com/news/story/7270/9714235",
+      "source": "聯合新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 13,
+      "category": "finance",
+      "title": "建商公會示警：房市陷60年最慘景氣 籲鬆綁第二戶房貸",
+      "summary": "建商公會指出目前房市景氣為60年來最差，呼籲政府檢討第二戶房貸管制等相關政策，以緩解交易急凍壓力。",
+      "url": "https://udn.com/news/story/7241/9714185",
+      "source": "聯合新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 14,
+      "category": "finance",
+      "title": "加拿大宣布對700多項美國商品加徵報復性關稅",
+      "summary": "加美貿易戰持續升溫，加拿大宣布將對逾700項美國商品課徵15%至50%不等的報復性關稅，",
+      "url": "https://udn.com/news/story/6811/9714169",
+      "source": "聯合新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 15,
+      "category": "finance",
+      "title": "豪雨重創農業損失逾9600萬 嘉南高屏畜牧業納入現金救助",
+      "summary": "近日豪雨造成全台農業損失累計超過9600萬元，農業部宣布將嘉南高屏地區受損畜牧業者納入現金救助範圍。",
+      "url": "https://udn.com/news/story/7326/9714170",
+      "source": "聯合新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 16,
+      "category": "tech",
+      "title": "余承東官宣華為全新三折疊手機，發布會定檔9月7日",
+      "summary": "華為終端BG董事長余承東宣布全新三折疊新機即將登場，",
+      "url": "https://www.sina.cn/news/detail/5335740784840150.html",
+      "source": "新浪新聞",
+      "tier": "list"
+    },
+    {
+      "rank": 17,
+      "category": "society",
+      "title": "道交法修訂草案擬將電動自行車限速提高至每小時20公里",
+      "summary": "中國道路交通安全法修訂草案提請審議，擬將電動自行車在非機動車道內的最高時速限制由15公里上調為20公里，",
+      "url": "https://news.sina.com.cn/o/2026-08-25/doc-inipnuia2382912.shtml",
+      "source": "新浪新聞",
+      "tier": "list"
+    },
+    {
+      "rank": 18,
+      "category": "tech",
+      "title": "一箭七星！長征六號丙遙一運載火箭發射成功",
+      "summary": "中國在酒泉衛星發射中心以長征六號丙遙一運載火箭成功將七顆衛星送入預定軌道，刷新「一箭多星」紀錄。",
+      "url": "https://www.chinanews.com.cn/gn/2026/08-25/10683847.shtml",
+      "source": "中國新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 19,
+      "category": "tech",
+      "title": "世界人形機器人運動會百米障礙賽決賽，智元靈犀X2奪冠",
+      "summary": "2026世界人形機器人運動會百米障礙賽難度升級，深圳智元賽隊「靈犀X2」以1分28秒32的成績奪得冠軍，",
+      "url": "https://news.bjd.com.cn/2026/08/24/11930566.shtml",
+      "source": "京報網",
+      "tier": "list"
+    },
+    {
+      "rank": 20,
+      "category": "society",
+      "title": "「網約車司機」變偷渡幫兇，雲南一偷渡團夥71人落網",
+      "summary": "雲南警方破獲一起以網約車司機為掩護的跨境偷渡案件，一舉抓獲涉案人員71人，偷渡團夥被連根拔起。",
+      "url": "https://news.qq.com/rain/a/20260825A06LPH00",
+      "source": "騰訊新聞",
+      "tier": "list"
+    },
+    {
+      "rank": 21,
+      "category": "society",
+      "title": "中國女子泰國遭綁架跳車自救，駐泰使館稱已妥善安置",
+      "summary": "一名中國公民在泰國遭4名男子綁架，途中跳車自救成功，",
+      "url": "https://www.news.cn/world/20260825/96be590f64554b29a5de5b6077143a92/c.html",
+      "source": "新華網",
+      "tier": "list"
+    },
+    {
+      "rank": 22,
+      "category": "finance",
+      "title": "追覓科技發布業務發展說明，聚焦四大主營業務方向",
+      "summary": "追覓科技發布公司戰略聚焦及業務發展說明，",
+      "url": "https://www.nbd.com.cn/articles/2026-08-25/4554797.html",
+      "source": "每經網",
+      "tier": "list"
+    },
+    {
+      "rank": 23,
+      "category": "entertainment",
+      "title": "劉亦菲攜愛犬登《時尚芭莎》九月刊封面，連續五年拿下金九封",
+      "summary": "劉亦菲最新登上《時尚芭莎》九月刊封面，並帶同愛犬入鏡，連續五年拿下五大女性時尚雜誌的「金九封面」。",
+      "url": "https://news.qq.com/rain/a/20260819A05GAD00",
+      "source": "騰訊新聞",
+      "tier": "list"
+    },
+    {
+      "rank": 24,
+      "category": "society",
+      "title": "好心施救反遭索賠，家屬揚言「抬遺體堵門」涉嫌尋釁滋事",
+      "summary": "湖南祁東一起扶助老人事件引發爭議，老人家屬因索賠未果揚言抬遺體堵店主家門，其行為被指涉嫌尋釁滋事，",
+      "url": "https://news.china.com/socialgd/10000169/20260824/49696196.html",
+      "source": "中華網",
+      "tier": "list"
+    },
+    {
+      "rank": 25,
+      "category": "society",
+      "title": "安徽女子稱遭診所負責人以調理乳腺結節為由多次摸胸猥褻，警方立案",
+      "summary": "安徽馬鞍山一女子指控某診所負責人假借調理乳腺結節之名對其進行二十多次不當觸摸，",
+      "url": "https://www.163.com/dy/article/L56BG5S1051494GR.html",
+      "source": "網易新聞",
+      "tier": "list"
+    },
+    {
+      "rank": 26,
+      "category": "society",
+      "title": "巴西38歲女子偽裝12歲女童行騙15年，詐取多個家庭收養",
+      "summary": "巴西一名38歲女子長期假扮12歲女童，甚至自殘200多針謊稱遭父親性虐待，",
+      "url": "https://www.sohu.com/a/1067008540_121448078",
+      "source": "搜狐網",
+      "tier": "list"
+    },
+    {
+      "rank": 27,
+      "category": "entertainment",
+      "title": "蔣奇明回覆沈騰互動引熱議，《歡迎來龍餐館》話題延燒",
+      "summary": "演員蔣奇明就外界對其與沈騰在電影《歡迎來龍餐館》中的角色互動及口音變化作出回應，",
+      "url": "https://www.sina.cn/news/detail/5335752474886820.html",
+      "source": "新浪新聞",
+      "tier": "list"
+    },
+    {
+      "rank": 28,
+      "category": "finance",
+      "title": "A股收評：三大指數分化，滬指收漲、深指創業板指收跌",
+      "summary": "中國A股8月25日收盤三大指數表現分化，滬指小幅收漲，深證成指與創業板指則收跌，",
+      "url": "https://www.chinanews.com.cn/cj/2026/08-25/10683843.shtml",
+      "source": "中國新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 29,
+      "category": "finance",
+      "title": "美日聯手干預匯市，日元貶值「泥潭」難解",
+      "summary": "美國與日本罕見聯手干預外匯市場以救援持續貶值的日元，但市場分析認為效果有限，日元恐仍難擺脫貶值壓力，",
+      "url": "https://www.chinanews.com.cn/cj/2026/08-04/10671904.shtml",
+      "source": "中國新聞網",
+      "tier": "list"
+    },
+    {
+      "rank": 30,
+      "category": "tech",
+      "title": "「可控核聚變還要等多久」引發全網科普熱議",
+      "summary": "隨著中國可控核聚變研究不斷取得「亿度千秒」等突破性進展，",
+      "url": "https://zhuanlan.zhihu.com/p/19556492689",
+      "source": "知乎",
+      "tier": "list"
+    }
+  ],
+  "market": [
+    {
+      "sentiment": "neutral",
+      "sentiment_label": "⚪ 中性偏觀望",
+      "market": "美股",
+      "industry": "半導體/AI",
+      "title": "輝達即將於8/26公布Q2財報，市場屏息以待AI晶片需求是否降溫",
+      "summary": "輝達下週三將公布第二財季財報，被視為檢驗AI晶片需求與大盤走勢的關鍵指標，投資人高度關注財測是否能延續AI熱潮。",
+      "reason": "財報結果尚未公布，市場對AI資本支出是否放緩存在分歧，屬於重大不確定性事件，短線波動風險升高。",
+      "tickers": [
+        "輝達NVIDIA(NVDA)",
+        "那斯達克指數"
+      ],
+      "url": "https://www.fool.com/investing/2026/08/21/prediction-nvidia-stock-will-go-parabolic-after-aug-26-here-are-2-3-trillion-reasons-why/"
+    },
+    {
+      "sentiment": "neutral",
+      "sentiment_label": "⚪ 中性偏觀望",
+      "market": "台股",
+      "industry": "半導體/AI",
+      "title": "輝達財報將牽動台積電及AI供應鏈訂單能見度",
+      "summary": "輝達財報前市場觀望其對台積電、CoWoS先進封裝及AI伺服器供應鏈訂單的最新展望。",
+      "reason": "台積電為輝達最主要晶圓代工夥伴，財報結果將直接影響台股AI供應鏈類股評價，結果公布前資金轉趨觀望。",
+      "tickers": [
+        "台積電(2330)",
+        "台灣加權指數"
+      ],
+      "url": "https://www.bloomberg.com/news/articles/2026-08-24/nvidia-and-warsh-will-test-a-stock-market-that-s-in-mid-rotation"
+    },
+    {
+      "sentiment": "bear",
+      "sentiment_label": "🔴 利空",
+      "market": "美股",
+      "industry": "半導體/AI",
+      "title": "輝達股價續跌，科技股財報前拉回",
+      "summary": "輝達股價在財報公布前連續下跌，帶動那斯達克科技股同步回檔。",
+      "reason": "財報前投資人獲利了結、降低部位風險，導致AI權值股領跌大盤，短線賣壓明顯。",
+      "tickers": [
+        "輝達NVIDIA(NVDA)",
+        "那斯達克指數"
+      ],
+      "url": "https://www.fool.com/coverage/stock-market-today/2026/08/24/stock-market-today-aug-24-nvidia-extends-losses-as-tech-stocks-retreat/"
+    },
+    {
+      "sentiment": "neutral",
+      "sentiment_label": "⚪ 中性偏觀望",
+      "market": "美股",
+      "industry": "金融/總體經濟",
+      "title": "新任Fed主席沃許（Kevin Warsh）將於傑克森洞年會首度演說",
+      "summary": "新任聯準會主席沃許將於8月28日傑克森洞經濟研討會發表就任後首場公開演說，市場關注其對降息路徑的立場。",
+      "reason": "新主席立場尚未明朗，市場對其是否偏鴿或偏鷹意見分歧，演說前資金傾向觀望，波動風險偏高。",
+      "tickers": [
+        "那斯達克指數",
+        "標普500指數",
+        "美元指數"
+      ],
+      "url": "https://www.bloomberg.com/news/articles/2026-08-22/kevin-warsh-to-make-first-jackson-hole-speech-as-fed-chair"
+    },
+    {
+      "sentiment": "bear",
+      "sentiment_label": "🔴 利空",
+      "market": "美股",
+      "industry": "貿易/製造業/能源",
+      "title": "美國對加拿大加徵50%關稅，貿易談判破裂",
+      "summary": "美加貿易談判破局後，美國宣布對價值200億美元的加拿大商品加徵50%關稅，加拿大隨即宣布報復性關稅反擊。",
+      "reason": "美加貿易戰全面升溫將推升相關產業成本並干擾供應鏈，增添市場對貿易保護主義擴散的疑慮。",
+      "tickers": [
+        "道瓊工業指數",
+        "標普500指數"
+      ],
+      "url": "https://www.aljazeera.com/news/2026/8/22/us-imposes-50-tariffs-on-20bn-worth-of-canadian-goods-after-talks-fail"
+    },
+    {
+      "sentiment": "neutral",
+      "sentiment_label": "⚪ 中性偏觀望",
+      "market": "美股",
+      "industry": "能源",
+      "title": "美國祭出新一輪伊朗制裁，油價應聲下跌",
+      "summary": "美國推出鎖定伊朗的新一輪全球制裁措施，國際油價在制裁公布前後同步走跌。",
+      "reason": "地緣政治制裁增添中東緊張情勢的不確定性，但油價短線反而走跌顯示市場對供給衝擊的疑慮尚未升溫，多空訊號交雜。",
+      "tickers": [
+        "WTI原油",
+        "布蘭特原油",
+        "標普500能源類股"
+      ],
+      "url": "https://www.cnbc.com/2026/08/24/oil-price-today-wti-brent-us-sanctions-iran.html"
+    },
+    {
+      "sentiment": "bear",
+      "sentiment_label": "🔴 利空",
+      "market": "美股",
+      "industry": "總體經濟/大盤",
+      "title": "那斯達克、標普500指數受伊朗制裁與美加關稅疑慮拖累走跌",
+      "summary": "美股主要指數在伊朗制裁疑慮與美加關稅升溫雙重壓力下同步走弱。",
+      "reason": "地緣政治與貿易政策雙重利空同時發酵，市場風險偏好明顯下滑，資金轉趨保守。",
+      "tickers": [
+        "那斯達克指數",
+        "標普500指數"
+      ],
+      "url": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-aug-24-2026"
+    },
+    {
+      "sentiment": "bull",
+      "sentiment_label": "🟢 利多",
+      "market": "美股",
+      "industry": "半導體/記憶體",
+      "title": "DRAM/HBM記憶體漲價潮不歇，SK海力士取消長約價格上限、三星Q3再喊漲2成",
+      "summary": "記憶體大廠SK海力士傳出取消長約合約的價格上限、三星則鎖定第三季DRAM再調漲最多20%，反映AI伺服器帶動的記憶體超級循環持續延燒。",
+      "reason": "記憶體供給緊俏推升合約價格，有利記憶體廠商毛利率與獲利展望，激勵相關類股評價上修。",
+      "tickers": [
+        "美光Micron(MU)",
+        "SK海力士",
+        "三星電子"
+      ],
+      "url": "https://finance.biggo.com/news/db5b7cb8-ada3-4745-b602-612b0bc70c50"
+    },
+    {
+      "sentiment": "bull",
+      "sentiment_label": "🟢 利多",
+      "market": "台股",
+      "industry": "半導體/記憶體",
+      "title": "記憶體漲價潮延燒台廠，南亞科、華邦電評價受矚目",
+      "summary": "受惠於國際記憶體大廠持續調漲DRAM及HBM合約價格，台灣記憶體供應鏈廠商同步跟漲，市場資金積極追價。",
+      "reason": "全球記憶體缺貨及漲價循環直接嘉惠台灣記憶體供應鏈廠商營收與獲利展望，激勵股價表現。",
+      "tickers": [
+        "南亞科(2408)",
+        "華邦電(2344)"
+      ],
+      "url": "https://finance.biggo.com/news/db5b7cb8-ada3-4745-b602-612b0bc70c50"
+    },
+    {
+      "sentiment": "bull",
+      "sentiment_label": "🟢 利多",
+      "market": "台股",
+      "industry": "半導體/大盤",
+      "title": "台積電領軍反彈，台股收復45000點大關收漲407點",
+      "summary": "台股8月25日開低走高，尾盤在台積電股價急拉帶動下大漲407點，重新站回45000點整數關卡。",
+      "reason": "權值股台積電尾盤買盤湧入，帶動大盤同步收復重要整數關卡，顯示短線資金信心回升，但仍須留意輝達財報公布後的後續反應。",
+      "tickers": [
+        "台積電(2330)",
+        "台灣加權指數"
+      ],
+      "url": "https://news.nextapple.com/finance/20260825/33046B5E15BB44FECA1F0EF756CD3EAB"
+    }
+  ],
+  "updates": [
+    "2026-08-26T16:20:35+08:00"
+  ],
+  "fingerprint": "ae7bca5163f1e7cfdb9634b76191269e8812a0d1"
+}

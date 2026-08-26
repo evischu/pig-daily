@@ -1,0 +1,16 @@
+# 產出檔：每次跑 build.py 都會重新產生，不進版控
+dist/
+
+# 原圖快取與裁切工作檔：體積大且可重新下載，不進版控
+images/cache/
+
+# 抓圖產出的 webp 成品：由 fetch_images.py 依 manifest 重新產生
+images/*.webp
+
+# 本機虛擬環境
+.venv/
+
+# macOS
+.DS_Store
+__pycache__/
+*.pyc
