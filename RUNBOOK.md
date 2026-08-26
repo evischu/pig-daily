@@ -80,9 +80,11 @@ pip install -r requirements.txt
 ## 4. 抓配圖
 
 ```bash
-cd /Users/evis/Desktop/Claude專用/pig-daily
 python3 tools/fetch_images.py data/<DATE>.json
 ```
+
+（在專案根目錄下執行 —— 本機是 `~/Desktop/Claude專用/pig-daily`，
+雲端則是 git clone 下來的工作目錄，指令本身不用改。）
 
 命中率大約七成五。抓不到很正常（付費牆、擋機器人、中國媒體多半沒有
 `og:image`），版面對無圖有對應處理，不會開天窗。已經抓過的圖會沿用快取。
