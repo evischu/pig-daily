@@ -7,16 +7,25 @@
 `https://claude.ai/code/artifact/8acb9762-5525-47ad-ba50-938b1b1d4d94`
 
 這份流程在兩種環境都會執行到：
-- **本機**（`~/Desktop/Claude專用/pig-daily`）—— 手動跑，或本機排程觸發。
-- **雲端**（CCR routine）—— 每次都是全新 `git clone`，跑完即銷毀，
-  所以第 0 步與第 8 步是雲端專屬、本機可略過。
+- **本機**（`~/Desktop/Claude專用/pig-daily`）—— 手動跑，或本機排程觸發，
+  有持久化磁碟，`data/`、`images/` 都會留著給下一次用。
+- **雲端**（CCR routine）—— 每次都是全新的空環境、沒有 git，程式碼靠
+  `curl` 從公開 repo 的 raw 檔案現抓，跑完整個環境就銷毀，什麼都不會留下。
+  第 0 步是雲端專屬、本機可略過；第 3 步的「續接更新紀錄」對雲端尤其重要
+  （見該步說明）。
 
 ---
 
 ## 0. 環境準備（僅雲端；本機已裝好可略過）
 
+程式碼與 `RUNBOOK.md` 本身應該已經由排程指令 curl 下來了。若還沒有：
+
 ```bash
-pip install -r requirements.txt
+mkdir -p pig-daily/tools && cd pig-daily
+for f in build.py requirements.txt tools/fetch_images.py tools/image_prompts.py RUNBOOK.md; do
+  curl -sL "https://raw.githubusercontent.com/evischu/pig-daily/main/$f" -o "$f"
+done
+pip install -q -r requirements.txt
 ```
 
 確認 `python3 -c "import PIL; print(PIL.__version__)"`能印出版本號再繼續，
@@ -77,6 +86,22 @@ pip install -r requirements.txt
 檔案裡如果已經有 `updates` 和 `fingerprint` 兩個欄位，**保留不要刪**，
 那是更新時間的紀錄。
 
+**續接更新紀錄（雲端環境必做，本機通常已經有現成的可略過）**
+
+雲端每次都是空環境，`data/<DATE>.json` 不會帶著先前的 `updates` 歷史。
+但頁面本身有留一手：每次組版都會在 HTML 最後嵌一段
+`<script type="application/json" id="pig-daily-meta">`，
+裡面是 `{"date", "updates", "fingerprint"}`。續接方式：
+
+1. 用 Artifact 工具 `action: "read"` 讀一次固定發布網址（上面第 6 行那個），
+   拿到目前線上版本存檔的本機路徑。
+2. 從那份存檔裡找到 `id="pig-daily-meta"` 那段 `<script>`，解析出的 JSON
+   若 `date` 等於 `<DATE>`，就把它的 `updates` 和 `fingerprint`
+   填進即將寫入的 `data/<DATE>.json`（在你動筆寫新聞內容之前先填好這兩欄，
+   `build.py` 的 `stamp()` 會自動接著算）。
+3. 若讀不到（今天第一次發布、或 `date` 對不上），略過即可，
+   `build.py` 會當作今天第一次更新處理，不是錯誤。
+
 ## 4. 抓配圖
 
 ```bash
@@ -116,10 +141,12 @@ python3 build.py <DATE>
 - `description`：一句話描述當天內容
 - `label`：`<DATE>` 加上當次時段，例如 `2026-08-27-morning`
 
-## 8. 存回 repo（僅雲端；本機略過）
+## 8. 存回 repo（只有在這個環境本來就有 git 遠端時才做；否則略過）
 
-雲端這份跑完就銷毀，`data/<DATE>.json`（含 `updates`／`fingerprint`）與
-`images/manifest.json` 不 push 回去就會憑空消失，下次又要從零開始重蒐集。
+雲端目前用的是 curl 抓檔案，沒有 git，這一步通常無法執行、也不需要——
+第 3 步的「續接更新紀錄」已經取代了原本靠 git push 保留狀態的用途。
+只有在偵測到 `.git/` 且已設定好可寫入的遠端時才做這步（`git remote -v`
+確認），不確定或沒有權限就直接跳到第 9 步，不要為了這步卡住整個流程。
 
 ```bash
 git add data/ images/manifest.json
@@ -128,8 +155,7 @@ git push
 ```
 
 `images/cache/`、`images/*.webp`、`dist/` 已在 `.gitignore`，不需要也不應該
-commit —— 那些每次都會重新產生。`images/manual/` 裡使用者放的 AI 圖如果本地
-已經 push 過，clone 下來就會自動接上；雲端本身不生圖。
+commit。
 
 ## 9. 回報
 

@@ -19,7 +19,7 @@ import os
 import re
 import subprocess
 import sys
-import urllib.request
+import tempfile
 from html import unescape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,10 +50,40 @@ def key_of(url):
     return hashlib.sha1(url.encode()).hexdigest()[:16]
 
 
+class FetchError(Exception):
+    pass
+
+
 def get(url, timeout=12, limit=600_000):
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read(limit), r.headers.get("Content-Type", ""), r.geturl()
+    """透過 curl 抓取，不用 urllib。
+
+    雲端排程跑在有出網代理政策的沙盒裡，代理設定走的是 HTTPS_PROXY 環境變數
+    加一張自訂 CA 憑證；curl 會自動讀這兩者，Python 的 urllib 不會，
+    直接用 urllib 在那個環境下每一筆都會連線失敗。改呼叫 curl 兩邊都能跑。
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        body_path = os.path.join(tmp, "body")
+        header_path = os.path.join(tmp, "headers")
+        cmd = ["curl", "-sL", "--max-time", str(timeout), "-A", UA]
+        for k, v in HEADERS.items():
+            if k != "User-Agent":
+                cmd += ["-H", f"{k}: {v}"]
+        cmd += ["-o", body_path, "-D", header_path,
+                "-w", "%{url_effective}", url]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 5)
+        if r.returncode != 0 or not os.path.exists(body_path):
+            raise FetchError(f"curl exit {r.returncode}: {r.stderr.strip()[:200]}")
+        final_url = r.stdout.strip() or url
+        ctype = ""
+        if os.path.exists(header_path):
+            headers = open(header_path, encoding="utf-8", errors="ignore").read()
+            # 有重導向的話會有好幾組標頭，Content-Type 取最後一組回應的
+            for line in headers.splitlines():
+                if line.lower().startswith("content-type:"):
+                    ctype = line.split(":", 1)[1].strip()
+        with open(body_path, "rb") as f:
+            data = f.read(limit)
+        return data, ctype, final_url
 
 
 META = re.compile(

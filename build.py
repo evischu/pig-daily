@@ -667,6 +667,7 @@ def build(date):
   </div>
 </footer>
 <script>{JS}</script>
+<script type="application/json" id="pig-daily-meta">{json.dumps({"date": date, "updates": data.get("updates", []), "fingerprint": data.get("fingerprint")}, ensure_ascii=False)}</script>
 """
     out = os.path.join(ROOT, "dist", f"{date}{'-lite' if LITE else ''}.html")
     open(out, "w", encoding="utf-8").write(html)
