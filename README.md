@@ -10,11 +10,19 @@
 
 每天 07:30 / 13:00 / 19:00 各跑一次，執行內容見 [RUNBOOK.md](RUNBOOK.md)。
 跑在 Anthropic 雲端的排程 routine 上（claude.ai/code/routines 管理），
-不依賴這台電腦是否開機、Claude Code 是否在跑。
+不依賴這台電腦是否開機、Claude Code 是否在跑：
 
-雲端 routine 每次都是全新 `git clone`，所以這個專案是一個 GitHub repo；
-routine 跑完會把當天的 `data/*.json` 與 `images/manifest.json` push 回去，
-下一次才接得上（見 RUNBOOK 第 8 步）。
+- `pig-daily-morning-cloud` —— 每天 07:30
+- `pig-daily-midday-evening-cloud` —— 每天 13:00、19:00
+
+雲端環境是全新的空機器，沒有持久化磁碟：程式碼靠 `curl` 從這個公開 repo
+的 raw 檔案現抓，「今天已經更新過幾次」這件事則靠讀回目前已發布的
+Artifact（頁尾嵌了一段 `<script id="pig-daily-meta">`）接續，不透過 git
+（見 RUNBOOK 的「續接更新紀錄」）。
+
+本機原本的兩個排程（`pig-daily-morning`、`pig-daily-midday-evening`）
+已停用，避免跟雲端排程同時發布互相打架；程式碼與 RUNBOOK 仍然共用同一份，
+本機手動跑或雲端排程跑，走的是同一條路徑。
 
 頁面右上角會顯示更新時間與距今多久；超過 20 小時沒更新會轉成紅色提示，
 一眼就知道排程是不是沒跑到。
