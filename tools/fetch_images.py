@@ -57,9 +57,12 @@ class FetchError(Exception):
 def get(url, timeout=12, limit=600_000):
     """透過 curl 抓取，不用 urllib。
 
-    雲端排程跑在有出網代理政策的沙盒裡，代理設定走的是 HTTPS_PROXY 環境變數
-    加一張自訂 CA 憑證；curl 會自動讀這兩者，Python 的 urllib 不會，
-    直接用 urllib 在那個環境下每一筆都會連線失敗。改呼叫 curl 兩邊都能跑。
+    本機環境下純粹是慣用法選擇，curl 比較好除錯。
+
+    雲端排程的沙盒對新聞網域的出網請求，會被出網代理直接擋在 CONNECT 層級
+    （回 403，`__agentproxy/status` 可查到白名單不含任意第三方網域）——這是
+    網路層的網域白名單限制，換 curl 或 urllib 結果一樣，不是這支程式能繞過的。
+    雲端環境的這步預期就是整批失敗，照 RUNBOOK 的錯誤處理繼續走純文字版面即可。
     """
     with tempfile.TemporaryDirectory() as tmp:
         body_path = os.path.join(tmp, "body")
