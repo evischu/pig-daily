@@ -94,10 +94,12 @@ input,textarea{font:inherit;color:inherit}
 
 /* ---------- auth ---------- */
 #authScreen{
-  position:absolute; inset:0; z-index:60; background:var(--paper);
-  display:flex; flex-direction:column; justify-content:space-between;
-  padding:0 24px; padding-block:40px 28px;
+  /* below the scrim (50) and sheets (51) so guidance opened from here stays tappable */
+  position:absolute; inset:0; z-index:45; background:var(--paper);
+  display:flex; flex-direction:column; gap:26px; overflow-y:auto;
+  padding:0 24px; padding-block:36px 26px;
 }
+.auth-foot{margin-top:auto}
 .brand{display:flex;align-items:center;gap:10px}
 .mark{
   width:34px;height:34px;border-radius:10px;background:var(--accent);
@@ -125,6 +127,26 @@ input,textarea{font:inherit;color:inherit}
 .btn-ghost{color:var(--ink-2);height:44px;font-weight:500;font-size:14px}
 .gmark{width:18px;height:18px;flex:none}
 .auth-foot{display:flex;flex-direction:column;gap:6px}
+.conn-status{
+  display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
+  background:var(--surface-2);border:1px solid var(--line-soft);border-radius:11px;padding:9px 12px;margin-bottom:4px;
+}
+.conn-status .spin{
+  width:12px;height:12px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);
+  animation:spin .7s linear infinite;flex:none;
+}
+.conn-status .ok,.conn-status .bad{width:7px;height:7px;border-radius:50%;flex:none}
+.conn-status .ok{background:var(--accent)} .conn-status .bad{background:var(--warn)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps{counter-reset:s;list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.steps li{display:flex;gap:11px;align-items:flex-start;font-size:14px;line-height:1.5}
+.steps li::before{
+  counter-increment:s;content:counter(s);flex:none;width:21px;height:21px;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:11.5px;font-weight:700;
+  display:grid;place-items:center;margin-top:1px;
+}
+.steps b{font-weight:600}
+.steps code{font-family:var(--font-num);font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:5px;border:1px solid var(--line-soft)}
 .fineprint{font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.5}
 
 /* ---------- topbar ---------- */
@@ -400,12 +422,13 @@ input,textarea{font:inherit;color:inherit}
     </div>
 
     <div class="auth-foot">
+      <div id="authStatus" class="conn-status"><i class="spin"></i>正在偵測連線方式⋯</div>
       <button class="btn btn-google" id="btnGoogle">
         <svg class="gmark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.8-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 17.2 2 20.5 2 24s.8 6.8 2.3 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.2 30 2 24 2 15.4 2 7.9 6.9 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/></svg>
-        使用 Google 帳號連線
+        <span id="btnGoogleLabel">連線我的 Google 行事曆</span>
       </button>
       <button class="btn btn-ghost" id="btnDemo">先看示範資料 →</button>
-      <p class="fineprint">僅要求行事曆與待辦的讀寫權限。<br>事件資料只在你的 iPhone 與 Google 之間往返，不經過我們的伺服器。</p>
+      <p class="fineprint">用你在 claude.ai 已授權的 Google 身分讀取，不需要另外申請金鑰。<br>權限可隨時在 claude.ai 設定 → 連接器撤銷。</p>
     </div>
   </section>
 
@@ -584,7 +607,8 @@ const LS = {
 
 /* ---------- state ---------- */
 const state = {
-  mode:"demo",            // "demo" | "live"
+  mode:"demo",            // "demo" | "mcp" | "oauth"
+  backend:"demo",
   clientId: new URLSearchParams(location.search).get("client_id") || LS.get("clientId",""),
   token:null,
   account:{ mail:"demo@gmail.com", initial:"D" },
@@ -677,7 +701,12 @@ function eventsOn(date){
     .filter(e => vis.has(e.cal) && sameDay(e.start, date))
     .sort((a,b)=> a.start-b.start || a.end-b.end);
 }
-function calOf(id){ return state.cals.find(c=>c.id===id) || state.cals[2]; }
+function calOf(id){ return state.cals.find(c=>c.id===id) || state.cals[0]; }
+/** Map a guessed context ("work"/"family"/"personal") onto a real calendar. */
+function resolveCal(guess){
+  const hit = state.cals.find(c=>c.ctx===guess && c.on) || state.cals.find(c=>c.on) || state.cals[0];
+  return hit ? hit.id : null;
+}
 function isMasked(e){ const c = calOf(e.cal); return !!(c && c.privacy); }
 function titleOf(e){ return isMasked(e) ? "忙碌" : e.title; }
 
@@ -1010,13 +1039,23 @@ function renderSearch(){
 function renderSettings(){
   $("#acctMail").textContent = state.account.mail;
   $("#acctInitial").textContent = state.account.initial;
-  $("#acctStatus").textContent = state.mode==="live"
-    ? "已連線・增量同步中"
-    : "示範模式・未連線真實帳號";
+  const backendCopy = {
+    mcp:   {s:"已連線・透過 claude.ai 的 Google Calendar 連接器",
+            n:"這個頁面用你在 claude.ai 授權的 Google 身分讀寫行事曆，程式碼看不到你的權杖。要撤銷：claude.ai → 設定 → 連接器 → Google Calendar。"},
+    oauth: {s:"已連線・自架版 OAuth",
+            n:"以 Google Identity Services 直接授權。事件資料只在這台裝置與 Google 之間往返，不經過任何中介伺服器。"},
+    demo:  {s:"示範模式・未連線真實帳號",
+            n:"目前顯示的是依今天日期生成的示範行程。要接上你真正的行事曆，按右上角的<b>切換</b>，再按連線——最快的路是在 claude.ai 設定裡加上 <b>Google Calendar</b> 連接器。"}
+  }[state.backend] || {s:"未連線", n:""};
 
-  $("#connNote").innerHTML = state.mode==="live"
-    ? "已透過 OAuth 連線。事件資料只在本機與 Google 之間往返，未經任何第三方伺服器。"
-    : "目前在<b>示範模式</b>。Claude Artifact 的沙盒會擋掉 <code>accounts.google.com</code> 與 <code>googleapis.com</code>，所以無法在這裡真的登入。把同一個檔案放到你自己的網址（例如 GitHub Pages），並在網址後面加上 <code>?client_id=…</code>，這個按鈕就會走真正的 Google 授權。";
+  $("#acctStatus").textContent = backendCopy.s;
+  $("#connNote").innerHTML = backendCopy.n;
+
+  const badCals = state.cals.filter(c=>c.error);
+  if(badCals.length){
+    $("#connNote").innerHTML += "<br><br><b>有 "+badCals.length+" 本日曆讀不到</b>（"+
+      badCals.map(c=>c.name+"："+c.error).join("、")+"）。其餘照常顯示。";
+  }
 
   const cl = $("#calList"); cl.innerHTML="";
   state.cals.forEach(c=>{
@@ -1111,6 +1150,9 @@ function openEvent(e){
     b.appendChild(r);
   });
 
+  if(e.unsynced){
+    b.appendChild(el("div","warnbox","<div><b>尚未寫入 Google</b><br>這則行程目前只存在這台裝置上（"+e.unsynced+"）。連線修好後重新加入一次即可。</div>"));
+  }
   if(isMasked(e)){
     b.appendChild(el("div","warnbox","<div><b>隱私模式</b><br>這本共享日曆設定為只顯示忙碌時段。其他人（以及這個畫面）看不到標題、地點與參與者。</div>"));
   }
@@ -1124,7 +1166,14 @@ function openEvent(e){
     const wrap = el("div","rsvp");
     [["yes","參加"],["maybe","可能"],["no","不克前往"]].forEach(([k,n])=>{
       const btn = el("button","",n);
-      btn.onclick = ()=>{ e.rsvp = k; hideSheet(); renderAll(); toast("已回覆：" + n); };
+      btn.onclick = async ()=>{
+        const before = e.rsvp;
+        e.rsvp = k; hideSheet(); renderAll();
+        if(state.backend === "demo"){ toast("已回覆：" + n); return; }
+        const r = await pushRsvp(e, k);
+        if(r.ok) toast("已回覆：" + n);
+        else { e.rsvp = before; renderAll(); toast("回覆沒送出（"+r.code+"）"); }
+      };
       wrap.appendChild(btn);
     });
     b.appendChild(el("p","",'<span style="font-size:12.5px;color:var(--ink-3)">尚未回覆這則邀請</span>'));
@@ -1133,32 +1182,109 @@ function openEvent(e){
   showSheet("sheetEvent");
 }
 
-/* ---------- consent (real flow shape, demo rendering) ---------- */
-function openConsent(){
-  const b = $("#consentBody"); b.innerHTML="";
-  b.appendChild(el("h3","st","Dayline 想要存取你的 Google 帳戶"));
-  b.appendChild(el("p","",'<span style="font-size:13px;color:var(--ink-2)">這是實際上架版本會向你要求的權限範圍，逐項都對應一個功能。</span>'));
-  const scopes = [
-    ["calendar.events","建立、修改行程","一句話新增、改期、回覆邀請"],
-    ["calendar.readonly","讀取日曆清單與行程","日／週視圖、顏色、共享狀態"],
-    ["tasks.readonly","讀取 Google Tasks","把待辦畫在同一條時間軸上"]
-  ];
-  scopes.forEach(([s,n,why])=>{
-    const r = el("div","kv");
-    r.appendChild(el("div","k","權限"));
-    r.appendChild(el("div","v","<b style='font-weight:600'>"+n+"</b><div style='font-size:12px;color:var(--ink-3);margin-top:2px'>"+why+"</div><div class='num' style='font-size:10.5px;color:var(--ink-3);margin-top:4px'>"+s+"</div>"));
-    b.appendChild(r);
-  });
-  b.appendChild(el("div","warnbox","<div><b>不會做的事</b><br>不讀 Gmail、不讀雲端硬碟、不把你的行程存到我們的伺服器。授權可隨時在 Google 帳戶設定撤銷。</div>"));
+/* ---------- connection guidance: one branch per error code ---------- */
+const CONNECT_COPY = {
+  server_not_connected: {
+    t:"還沒把 Google 行事曆接上 claude.ai",
+    p:"Claude 有官方的 Google Calendar 連接器。接上之後，這個 App 就會用你自己的 Google 授權讀寫行事曆——不用申請任何 API 金鑰。",
+    steps:[
+      "在另一個分頁打開 <b>claude.ai</b>，進 <b>設定 → 連接器</b>",
+      "找到 <b>Google Calendar</b>，按<b>連接</b>",
+      "用你平常在用的 Google 帳號登入並允許",
+      "回到這一頁，按下面的<b>重新檢查</b>"
+    ],
+    retry:true
+  },
+  needs_reauth: {
+    t:"Google 授權過期了",
+    p:"連接器還在，但憑證失效——通常是密碼變更或授權被撤銷。",
+    steps:["到 <b>claude.ai → 設定 → 連接器</b>","找到 <b>Google Calendar</b>，按<b>重新連接</b>","回來按重新檢查"],
+    retry:true
+  },
+  not_in_manifest: {
+    t:"你在這個頁面關掉了 Google 行事曆",
+    p:"連接器本身是好的，但這個頁面被拒絕使用它——可能是詢問時選了不允許。",
+    steps:["重新整理這一頁","出現「允許這個 Artifact 使用 Google Calendar」時選<b>允許</b>"],
+    retry:true
+  },
+  blocked_by_policy: {
+    t:"組織政策擋下了這個連接器",
+    p:"你的 Claude 組織管理員停用了 Google Calendar 連接器，這不是頁面能解決的。",
+    steps:["請管理員在組織設定中開放 Google Calendar 連接器"],
+    retry:false
+  },
+  approval_required: {
+    t:"這個呼叫需要逐次核准",
+    p:"組織政策要求每次呼叫都要人工核准，而 Artifact 目前還不支援逐次核准流程。",
+    steps:["請管理員把 Google Calendar 改為免逐次核准"],
+    retry:false
+  },
+  server_unavailable: { t:"Google 那邊暫時沒有回應", p:"連接器連得上，但上游服務逾時或回報錯誤。這通常是暫時的。", steps:["等幾秒，按重新檢查再試一次"], retry:true },
+  rate_limited:        { t:"呼叫太頻繁", p:"稍等一下再試。", steps:["等 30 秒，按重新檢查"], retry:true },
+  tool_error:          { t:"連接器回報了錯誤", p:"Google Calendar 連接器收到請求但回報失敗。下面是它回覆的原文。", steps:[], retry:true },
+  no_mcp: {
+    t:"這個畫面沒有連接器可用",
+    p:"連接器只在 claude.ai 的 Artifact 檢視裡才有。如果你是把這個檔案自己架在別的網址上，就要改走 Google OAuth。",
+    steps:[
+      "<b>最簡單</b>：回到 claude.ai 開啟這個 Artifact，再按一次連線",
+      "<b>自架</b>：在 Google Cloud 建 OAuth 用戶端，網址後面加 <code>?client_id=…</code>（做法見 repo 的 README）"
+    ],
+    retry:true
+  },
+  oauth_denied: { t:"Google 授權被取消", p:"授權視窗關閉或被拒絕了。", steps:["再按一次連線，並在 Google 畫面選擇允許"], retry:true },
+  oauth_api:    { t:"授權成功，但讀取行事曆失敗", p:"權杖拿到了，Calendar API 卻回報錯誤——通常是 API 沒啟用，或 scope 不足。", steps:["在 Google Cloud Console 確認已啟用 Google Calendar API"], retry:true }
+};
 
-  const go = el("button","btn btn-primary","允許並繼續");
-  go.style.marginTop="16px";
-  go.onclick = ()=>{ hideSheet(); enterApp("demo"); toast("已連線（示範資料）"); };
-  b.appendChild(go);
-  const cancel = el("button","btn btn-ghost","取消");
-  cancel.onclick = hideSheet;
-  b.appendChild(cancel);
+function openConnect(code, detail){
+  const c = CONNECT_COPY[code] || {
+    t:"連不上 Google 行事曆",
+    p:"發生了未預期的狀況（代碼 "+code+"）。你可以先用示範資料看完整個 App。",
+    steps:[], retry:true
+  };
+  const b = $("#consentBody"); b.innerHTML="";
+  b.appendChild(el("h3","st", c.t));
+  b.appendChild(el("p","",'<span style="font-size:13.5px;color:var(--ink-2);line-height:1.6">'+c.p+'</span>'));
+
+  if(c.steps.length){
+    const ol = el("ol","steps");
+    c.steps.forEach(s=> ol.appendChild(el("li","", "<div>"+s+"</div>")));
+    b.appendChild(ol);
+  }
+  if(detail){
+    b.appendChild(el("div","note","<span class='num' style='font-size:11.5px'>"+String(detail).slice(0,300)+"</span>"));
+  }
+  b.appendChild(el("p","",'<span class="num" style="font-size:10.5px;color:var(--ink-3)">'+code+'</span>'));
+
+  if(c.retry){
+    const again = el("button","btn btn-primary","重新檢查");
+    again.style.marginTop="14px";
+    again.onclick = ()=>{ hideSheet(); setTimeout(connectCalendar, 260); };
+    b.appendChild(again);
+  }
+  const demo = el("button","btn btn-ghost","先用示範資料看完整功能 →");
+  demo.onclick = ()=>{ hideSheet(); setTimeout(()=>enterApp("demo"), 260); };
+  b.appendChild(demo);
   showSheet("sheetConsent");
+}
+
+/* ---------- auth screen status line ---------- */
+function setAuthBusy(on, msg){
+  const s = $("#authStatus");
+  if(!s) return;
+  if(on){ s.innerHTML = '<i class="spin"></i>' + (msg||"連線中⋯"); }
+  $("#btnGoogle").disabled = !!on;
+}
+async function refreshAuthStatus(){
+  const s = $("#authStatus");
+  const probe = await probeConnector();
+  if(probe.ok){
+    s.innerHTML = '<i class="ok"></i>已偵測到 Google 行事曆連接器，可以直接連線';
+    $("#btnGoogleLabel").textContent = "讀取我的 Google 行事曆";
+  } else if(probe.code === "no_mcp"){
+    s.innerHTML = '<i class="bad"></i>這個畫面沒有連接器可用——按下去看兩種解法';
+  } else {
+    s.innerHTML = '<i class="bad"></i>尚未連接 Google 行事曆——按下去看怎麼接（約 30 秒）';
+  }
 }
 
 /* ============================================================
@@ -1278,9 +1404,10 @@ function renderQuickAdd(){
   tags.appendChild(mk("時長", p.durLabel || "1 小時", !p.durLabel));
   if(p.loc) tags.appendChild(mk("地點", p.loc));
   if(p.people) tags.appendChild(mk("對象", p.people));
-  tags.appendChild(mk("日曆", calOf(p.cal).name));
+  const calId = resolveCal(p.cal);
+  tags.appendChild(mk("日曆", calOf(calId).name));
 
-  const c = calOf(p.cal);
+  const c = calOf(calId);
   const d = p.date || at(0,0,0);
   const start = new Date(d); if(p.time) start.setHours(p.time.h, p.time.m, 0, 0); else start.setHours(9,0,0,0);
   const end = new Date(start.getTime() + p.dur*60000);
@@ -1294,28 +1421,246 @@ function renderQuickAdd(){
   if(p.loc) tx.appendChild(el("div","", "<span style='font-size:12.5px;color:var(--ink-3)'>"+p.loc+"</span>"));
   prev.appendChild(tx);
   $("#qaCalName").textContent = c.name;
-  prev._draft = {p, start, end, cal:p.cal};
+  prev._draft = {p, start, end, cal:calId};
 }
 
-function saveQuickAdd(){
+async function saveQuickAdd(){
   const prev = $("#qaPreview");
   if(prev.hidden || !prev._draft){ toast("先打一句話，例如「明天下午三點開會」"); return; }
   const {p, start, end, cal} = prev._draft;
-  state.events.push({
-    id:"e"+Math.random().toString(36).slice(2,9),
+  const ev = {
+    id:"e"+Math.random().toString(36).slice(2,9), gid:null,
     cal, title:p.title, start, end, loc:p.loc||"", guests:p.people?[p.people]:[],
     rsvp:null, meet:false, allDay:false
-  });
+  };
+  state.events.push(ev);
   hideSheet();
   $("#qaInput").value=""; renderQuickAdd();
   renderAll();
-  toast("已加入「"+calOf(cal).name+"」日曆");
+
+  if(state.backend === "demo"){ toast("已加入「"+calOf(cal).name+"」日曆"); return; }
+  toast("正在寫入 Google⋯");
+  const r = await pushEvent(ev);
+  if(r.ok){ toast("已寫入 Google 行事曆"); }
+  else {
+    ev.unsynced = r.code;
+    renderAll();
+    toast("寫入失敗（"+r.code+"），先留在這台裝置上");
+  }
 }
 
 /* ============================================================
-   LIVE MODE — real Google OAuth + Calendar API
-   (works when this file is served from a registered origin)
+   CONNECTION — three backends, tried in this order
+
+   1) CONNECTOR : the viewer's "Google Calendar" connector on claude.ai,
+                  reached through the page's `mcp` capability. Runs on the
+                  viewer's own Google authorisation — no API key, no
+                  hosting, nothing for the user to register. Preferred.
+   2) OAUTH     : self-hosted copy with ?client_id=… (GIS token client).
+   3) DEMO      : generated data, so the UI is never a dead end.
+
+   The connector's tool argument names are not published to this page
+   (describeTool answers only for Claude's own servers), so reads probe a
+   short list of plausible shapes and remember the one that works.
+   Probing is confined to list_events, which is read-only; writes are
+   attempted once with a single shape and never retried.
    ============================================================ */
+const GCAL = "Google Calendar";
+const SHAPE_KEY = "evShape";
+
+let mcpPromise = null;
+function useMcp(){
+  if(!mcpPromise){
+    mcpPromise = (window.claude && typeof window.claude.use === "function")
+      ? window.claude.use("mcp").catch(()=>null)
+      : Promise.resolve(null);
+  }
+  return mcpPromise;
+}
+const errCode = e => (e && e.code) ? e.code : "upstream_error";
+
+async function mcpCall(tool, input, opts){
+  const mcp = await useMcp();
+  if(!mcp) throw {code:"no_mcp", message:"這個環境沒有連接器能力"};
+  const r = await mcp.callTool(GCAL, tool, input, opts);
+  return (r && typeof r === "object" && "payload" in r) ? r.payload : r;
+}
+
+/** Is the connector reachable? Listing never asks the viewer for consent. */
+async function probeConnector(){
+  const mcp = await useMcp();
+  if(!mcp) return {ok:false, code:"no_mcp"};
+  try{
+    const res = await mcp.listTools(GCAL);
+    const s = (res && res.servers || []).find(x => x.server === GCAL);
+    if(!s) return {ok:false, code:"server_not_connected"};
+    if(s.authStatus === "needs_reauth") return {ok:false, code:"needs_reauth"};
+    if(!s.tools || !s.tools.length) return {ok:false, code:"server_not_connected"};
+    return {ok:true};
+  }catch(e){ return {ok:false, code:errCode(e)}; }
+}
+
+/* ---------- shape-tolerant readers ---------- */
+function asArray(payload){
+  if(Array.isArray(payload)) return payload;
+  if(!payload || typeof payload !== "object") return [];
+  for(const k of ["events","items","calendars","results","data","value","entries"]){
+    if(Array.isArray(payload[k])) return payload[k];
+  }
+  for(const k in payload){ if(Array.isArray(payload[k])) return payload[k]; }
+  return [];
+}
+function pick(o, keys){
+  if(!o) return null;
+  for(const k of keys){ if(o[k] !== undefined && o[k] !== null && o[k] !== "") return o[k]; }
+  return null;
+}
+function parseWhen(v){
+  if(!v) return null;
+  if(typeof v === "object"){
+    return parseWhen(pick(v, ["dateTime","date_time","datetime","date","value","time"]));
+  }
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+function isDateOnly(v){
+  if(!v) return false;
+  if(typeof v === "object") return !!(v.date && !v.dateTime && !v.date_time);
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(v));
+}
+function dayISO(offset){
+  const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+offset); return d;
+}
+function guessCtx(name, i){
+  if(/work|工作|公司|office|業務/i.test(name)) return "work";
+  if(/family|家庭|家人|親子|kids|小孩/i.test(name)) return "family";
+  return i === 0 ? "personal" : "personal";
+}
+
+function eventShapes(calId, from, to){
+  const f = from.toISOString(), t = to.toISOString();
+  const fd = f.slice(0,10), td = t.slice(0,10);
+  const withCal = o => calId ? Object.assign({calendar_id:calId}, o) : Object.assign({}, o);
+  return [
+    withCal({time_min:f, time_max:t, max_results:250}),
+    calId ? {calendarId:calId, timeMin:f, timeMax:t, maxResults:250} : {timeMin:f, timeMax:t},
+    withCal({start_time:f, end_time:t}),
+    withCal({start_date:fd, end_date:td}),
+    withCal({from:f, to:t}),
+    {time_min:f, time_max:t},
+    {}
+  ];
+}
+/** list_events is read-only, so trying another argument shape is safe. */
+async function listEventsAdaptive(calId, from, to){
+  const shapes = eventShapes(calId, from, to);
+  const remembered = LS.get(SHAPE_KEY, null);
+  const order = (remembered !== null && shapes[remembered])
+    ? [remembered].concat(shapes.map((_,i)=>i).filter(i=>i!==remembered))
+    : shapes.map((_,i)=>i);
+  let lastErr = null;
+  for(const i of order){
+    try{
+      const payload = await mcpCall("list_events", shapes[i], {cache:{staleTime:60000}});
+      LS.set(SHAPE_KEY, i);
+      return payload;
+    }catch(e){
+      const c = errCode(e);
+      if(c !== "tool_error" && c !== "bad_request") throw e;   // not an argument problem
+      lastErr = e;
+    }
+  }
+  throw lastErr || {code:"tool_error", message:"list_events 不接受任何已知的參數組合"};
+}
+
+function normEvent(raw, calId){
+  if(!raw || typeof raw !== "object") return null;
+  const sRaw = pick(raw, ["start","start_time","startTime","begin","when"]);
+  const eRaw = pick(raw, ["end","end_time","endTime","finish"]);
+  const start = parseWhen(sRaw);
+  if(!start) return null;
+  const end = parseWhen(eRaw) || new Date(start.getTime() + 3600000);
+  const att = Array.isArray(raw.attendees) ? raw.attendees : [];
+  const me = att.find(a => a && (a.self === true || a.is_self === true));
+  const rs = me ? String(pick(me, ["responseStatus","response_status","status"]) || "") : "";
+  const gid = pick(raw, ["id","event_id","eventId","iCalUID"]);
+  return {
+    id: String(gid || "g"+Math.random().toString(36).slice(2,9)),
+    gid: gid ? String(gid) : null,
+    cal: calId,
+    title: pick(raw, ["summary","title","name","subject"]) || "(沒有標題)",
+    start, end,
+    allDay: isDateOnly(sRaw),
+    loc: pick(raw, ["location","place","where"]) || "",
+    guests: att.filter(a => a && !a.self)
+               .map(a => pick(a, ["displayName","display_name","name","email"]))
+               .filter(Boolean).slice(0,6),
+    rsvp: /needs.?action|pending/i.test(rs) ? "needsAction" : null,
+    meet: !!pick(raw, ["hangoutLink","hangout_link","meeting_url","meetingUrl","conferenceUrl"])
+  };
+}
+
+async function pullFromConnector(){
+  let rawCals = [];
+  try{ rawCals = asArray(await mcpCall("list_calendars", {}, {cache:{staleTime:300000}})); }
+  catch(e){ rawCals = []; }                       // some connectors expose only the primary calendar
+
+  const src = rawCals.length ? rawCals.slice(0,8) : [{id:null, summary:"我的行事曆", primary:true}];
+  state.cals = src.map((c,i)=>{
+    const gid = pick(c, ["id","calendar_id","calendarId"]);
+    const name = pick(c, ["summary","summaryOverride","name","title"]) || ("行事曆 "+(i+1));
+    return {
+      id: "c"+i, gid: gid ? String(gid) : null, name,
+      ctx: guessCtx(name, i),
+      color: ["personal","work","family","task","work","family","personal","task"][i%8],
+      sub: c.primary ? "主要行事曆" : (pick(c, ["accessRole","access_role","description"]) || "共用"),
+      on: c.selected !== false, privacy:false
+    };
+  });
+
+  const from = dayISO(-30), to = dayISO(30);
+  const all = [];
+  let lastErr = null;
+  for(const c of state.cals){
+    try{
+      asArray(await listEventsAdaptive(c.gid, from, to)).forEach(raw=>{
+        const ev = normEvent(raw, c.id);
+        if(ev) all.push(ev);
+      });
+    }catch(e){ c.error = errCode(e); lastErr = e; }
+  }
+  if(!all.length && lastErr) throw lastErr;
+  state.events = all;
+  state.account = {mail:"Google 行事曆", initial:"G"};
+}
+
+/* ---------- writes: one attempt, one shape, never auto-retried ---------- */
+async function pushEvent(draft){
+  if(state.backend !== "mcp") return {ok:false, code:"local"};
+  const cal = state.cals.find(c => c.id === draft.cal);
+  const input = {
+    calendar_id: (cal && cal.gid) || "primary",
+    summary: draft.title,
+    start_time: draft.start.toISOString(),
+    end_time: draft.end.toISOString()
+  };
+  if(draft.loc) input.location = draft.loc;
+  try{ await mcpCall("create_event", input); return {ok:true}; }
+  catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+}
+async function pushRsvp(ev, answer){
+  if(state.backend !== "mcp" || !ev.gid) return {ok:false, code:"local"};
+  const cal = state.cals.find(c => c.id === ev.cal);
+  try{
+    await mcpCall("respond_to_event", {
+      calendar_id: (cal && cal.gid) || "primary",
+      event_id: ev.gid,
+      response: answer            // "yes" | "maybe" | "no"
+    });
+    return {ok:true};
+  }catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+}
+
 function loadScript(src){
   return new Promise((res,rej)=>{
     const s=document.createElement("script");
@@ -1324,8 +1669,29 @@ function loadScript(src){
     setTimeout(()=>rej(new Error("timeout")), 6000);
   });
 }
-async function connectGoogle(){
-  if(!state.clientId){ openConsent(); return; }   // no client id → show the consent preview
+/** Entry point for the "connect" button: connector → OAuth → guidance. */
+async function connectCalendar(){
+  setAuthBusy(true, "正在連線 Google 行事曆⋯");
+  const probe = await probeConnector();
+
+  if(probe.ok){
+    try{
+      await pullFromConnector();
+      setAuthBusy(false);
+      enterApp("mcp");
+      toast("已讀取你的 Google 行事曆");
+    }catch(e){
+      setAuthBusy(false);
+      openConnect(errCode(e), e && e.message);
+    }
+    return;
+  }
+  if(probe.code === "no_mcp" && state.clientId){ setAuthBusy(false); return connectOAuth(); }
+  setAuthBusy(false);
+  openConnect(probe.code);
+}
+
+async function connectOAuth(){
   try{
     if(!window.google || !google.accounts){
       await loadScript("https://accounts.google.com/gsi/client");
@@ -1334,16 +1700,18 @@ async function connectGoogle(){
       client_id: state.clientId,
       scope: SCOPES.join(" "),
       callback: async (resp)=>{
-        if(resp.error){ toast("授權失敗："+resp.error); return; }
+        if(resp.error){ openConnect("oauth_denied", resp.error); return; }
         state.token = resp.access_token;
-        await pullFromGoogle();
-        enterApp("live");
-        toast("已連線 Google 行事曆");
+        try{
+          await pullFromGoogle();
+          enterApp("oauth");
+          toast("已連線 Google 行事曆");
+        }catch(e){ openConnect("oauth_api", e && e.message); }
       }
     });
     client.requestAccessToken();
   }catch(err){
-    openConsent();   // sandboxed → fall back to the designed consent preview
+    openConnect("no_mcp");   // sandboxed: Google's own script cannot load here
   }
 }
 async function gapi(path, params){
@@ -1415,9 +1783,13 @@ function renderAll(){
   if(state.view==="viewSettings") renderSettings();
 }
 function enterApp(mode){
-  state.mode = mode;
+  state.mode = mode; state.backend = mode;
+  if(mode === "demo"){
+    state.cals = baseCals();
+    state.events = demoEvents();
+    state.account = {mail:"demo@gmail.com", initial:"D"};
+  }
   if(!state.cals.length) state.cals = baseCals();
-  if(!state.events.length) state.events = demoEvents();
   $("#authScreen").hidden = true;
   $("#topbar").hidden = false; $("#scroll").hidden = false; $("#tabbar").hidden = false;
   renderCtx(); renderAll(); switchView("viewToday");
@@ -1433,9 +1805,9 @@ function applyTheme(){
 }
 
 /* ---------- wiring ---------- */
-$("#btnGoogle").onclick = connectGoogle;
+$("#btnGoogle").onclick = connectCalendar;
 $("#btnDemo").onclick  = ()=> enterApp("demo");
-$("#btnReauth").onclick = ()=>{ $("#authScreen").hidden=false; };
+$("#btnReauth").onclick = ()=>{ $("#authScreen").hidden=false; refreshAuthStatus(); };
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
 $("#btnToday").onclick = ()=>{ switchView("viewToday"); renderAll(); toast("回到今天"); };
 $("#btnTheme").onclick = ()=>{
@@ -1464,6 +1836,7 @@ $("#searchInput").addEventListener("input", renderSearch);
 
 applyTheme();
 renderHeader();
+refreshAuthStatus();
 
 // keep the now-line honest
 setInterval(()=>{ if(!$("#scroll").hidden && state.view==="viewToday"){ renderBrief(); renderTimeline(); } }, 60000);
