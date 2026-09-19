@@ -1,4 +1,7 @@
 <title>Dayline 行事曆</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="config.js"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dayline">
@@ -96,10 +99,68 @@ input,textarea{font:inherit;color:inherit}
 #authScreen{
   /* below the scrim (50) and sheets (51) so guidance opened from here stays tappable */
   position:absolute; inset:0; z-index:45; background:var(--paper);
-  display:flex; flex-direction:column; gap:26px; overflow-y:auto;
-  padding:0 24px; padding-block:36px 26px;
+  display:flex; flex-direction:column; overflow-y:auto;
+  padding:0 24px; padding-block:30px 26px;
 }
-.auth-foot{margin-top:auto}
+.ob-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none}
+.ob-dots{display:flex;gap:6px}
+.ob-dots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .2s ease,width .2s ease}
+.ob-dots i.on{background:var(--accent);width:18px;border-radius:3px}
+.ob-stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding-block:28px;min-height:0}
+.ob-step{display:flex;flex-direction:column;gap:16px}
+.ob-step h1{
+  font-size:clamp(28px,8vw,36px);line-height:1.18;font-weight:600;letter-spacing:-.025em;margin:0;
+  text-wrap:balance;
+}
+.ob-step p.lead{margin:0;color:var(--ink-2);font-size:16px;line-height:1.65;max-width:26ch}
+.ob-art{
+  border-radius:18px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--shadow);
+  padding:15px;display:flex;flex-direction:column;gap:9px;
+}
+.ob-art .r{display:flex;align-items:center;gap:10px}
+.ob-art .r .bar{height:26px;border-radius:7px;flex:1}
+.ob-art .r .tm{font-family:var(--font-num);font-size:11px;color:var(--ink-3);width:38px;flex:none}
+.ob-art .r .tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;flex:none}
+.ob-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:15px}
+.ob-list li{display:flex;gap:13px;align-items:flex-start}
+.ob-list .ico{
+  width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);
+}
+.ob-list b{display:block;font-size:15.5px;font-weight:600;margin-bottom:2px}
+.ob-list span{display:block;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.ob-actions{flex:none;display:flex;flex-direction:column;gap:9px;padding-top:8px}
+.btn{height:56px;font-size:16.5px;border-radius:16px}
+.btn-ghost{height:46px;font-size:14.5px}
+.share-demo{
+  display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:13px 15px;font-size:14.5px;box-shadow:var(--shadow);
+}
+.share-demo .sq{
+  width:32px;height:32px;border-radius:9px;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;flex:none;
+}
+/* in-app coach: add to home screen */
+#installCoach{
+  position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:44;
+  max-width:436px;margin:0 auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--shadow-lift);padding:14px 15px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+#installCoach .tx{flex:1;min-width:0}
+#installCoach b{display:block;font-size:14.5px;font-weight:600;margin-bottom:3px}
+#installCoach span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+#installCoach .x{color:var(--ink-3);font-size:20px;line-height:1;padding:2px 4px;flex:none}
+.inline-ico{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;
+  background:var(--accent-soft);color:var(--accent);vertical-align:-5px;margin:0 2px}
+/* weather strip */
+.wx{
+  display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);
+  padding:10px 2px 0;margin-top:12px;border-top:1px solid var(--line-soft);
+}
+.wx .t{font-family:var(--font-num);font-size:15px;font-weight:600;color:var(--ink)}
+.wx .sep{color:var(--ink-3)}
+.wx .sun{margin-left:auto;font-family:var(--font-num);font-size:11.5px;color:var(--ink-3);text-align:right}
 .brand{display:flex;align-items:center;gap:10px}
 .mark{
   width:34px;height:34px;border-radius:10px;background:var(--accent);
@@ -421,31 +482,68 @@ input,textarea{font:inherit;color:inherit}
 
   <!-- ============ AUTH ============ -->
   <section id="authScreen">
-    <div class="brand"><div class="mark"></div><b>Dayline</b></div>
-
-    <div class="auth-hero">
-      <h1>你的 Google 行事曆，<br>該有的手機樣子。</h1>
-      <p>資料留在 Google，Dayline 只負責看得懂、加得快、提醒得準。</p>
-      <ul class="auth-points">
-        <li><i class="dot" style="background:var(--c-work)"></i><div><b>一眼看完今天</b>行程、待辦、衝突、待回覆，同一張卡。</div></li>
-        <li><i class="dot" style="background:var(--c-family)"></i><div><b>工作與家庭分開</b>一鍵切換情境，共享日曆可只顯示忙碌。</div></li>
-        <li><i class="dot" style="background:var(--c-personal)"></i><div><b>提醒會算路程</b>該出門的時候才響，不是開始前十分鐘。</div></li>
-      </ul>
+    <div class="ob-top">
+      <div class="brand"><div class="mark"></div><b>Dayline</b></div>
+      <div class="ob-dots" id="obDots" aria-hidden="true"></div>
     </div>
 
-    <div class="auth-foot">
-      <div id="authStatus" class="conn-status"><i class="spin"></i>正在偵測連線方式⋯</div>
-      <button class="btn btn-google" id="btnGoogle">
-        <svg class="gmark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.8-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 17.2 2 20.5 2 24s.8 6.8 2.3 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.2 30 2 24 2 15.4 2 7.9 6.9 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/></svg>
-        <span id="btnGoogleLabel">連線我的 Google 行事曆</span>
-      </button>
-      <button class="btn btn-ics" id="btnIcs">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-        匯入行事曆檔案（免登入）
-      </button>
-      <button class="btn btn-ghost" id="btnDemo">先看示範資料 →</button>
-      <p class="fineprint">用你在 claude.ai 已授權的 Google 身分讀取，不需要另外申請金鑰。<br>權限可隨時在 claude.ai 設定 → 連接器撤銷。</p>
+    <div class="ob-stage">
+      <!-- 1 ─ what it does -->
+      <div class="ob-step" data-step="welcome">
+        <div class="ob-art" aria-hidden="true">
+          <div class="r"><span class="tm">09:30</span><span class="bar" style="background:var(--c-work-bg)"></span></div>
+          <div class="r"><span class="tm">11:00</span><span class="bar" style="background:var(--c-work-bg)"></span><span class="tag" style="background:var(--warn);color:#fff">待回覆</span></div>
+          <div class="r"><span class="tm">15:00</span><span class="bar" style="background:var(--c-personal-bg)"></span><span class="tag" style="background:var(--now);color:#fff">撞期</span></div>
+          <div class="r"><span class="tm">18:00</span><span class="bar" style="background:var(--c-family-bg)"></span></div>
+        </div>
+        <h1>你的行程，<br>打開就看完</h1>
+        <p class="lead">今天有幾件事、哪兩件撞在一起、幾點該出門——不用再一格一格找。</p>
+      </div>
+
+      <!-- 2 ─ the one connection step -->
+      <div class="ob-step" data-step="connect" hidden>
+        <h1 id="connTitle">連上你的行事曆</h1>
+        <p class="lead" id="connLead">按一下，選你的 Google 帳號，就好了。你的行程留在 Google，我們不會保存。</p>
+        <ul class="ob-list">
+          <li>
+            <i class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></i>
+            <div><b>只看行事曆</b><span>不會看你的信、照片或檔案。</span></div>
+          </li>
+          <li>
+            <i class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></i>
+            <div><b>隨時可以關掉</b><span>在 Google 帳號設定裡一鍵收回，不用問我們。</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 3 ─ optional extras -->
+      <div class="ob-step" data-step="extras" hidden>
+        <h1>順便看天氣<br>和該出門的時間？</h1>
+        <p class="lead">知道你在哪一區，就能告訴你今天的天氣、日出日落，還有出門要留多久。</p>
+        <ul class="ob-list">
+          <li>
+            <i class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/></svg></i>
+            <div><b>位置只在手機裡用</b><span>不會傳給我們，也不會存起來。</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 4 ─ make it a real app -->
+      <div class="ob-step" data-step="install" hidden>
+        <h1>放到主畫面，<br>就變成 App</h1>
+        <p class="lead">這樣以後直接從桌面點開，沒有網址列，跟一般 App 一樣。</p>
+        <div class="share-demo">
+          <span class="sq"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></span>
+          <span>1. 按螢幕下方的<b>分享</b>按鈕</span>
+        </div>
+        <div class="share-demo">
+          <span class="sq"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+          <span>2. 往下捲，選<b>加入主畫面</b></span>
+        </div>
+      </div>
     </div>
+
+    <div class="ob-actions" id="obActions"></div>
   </section>
 
   <!-- ============ TOPBAR ============ -->
@@ -479,6 +577,7 @@ input,textarea{font:inherit;color:inherit}
         </div>
         <div class="brief-stats" id="briefStats"></div>
         <div class="brief-next" id="briefNext"></div>
+        <div class="wx" id="wxStrip" hidden></div>
       </div>
 
       <div class="sec-head"><h2>今天</h2><i class="rule"></i><span class="side" id="dayRange"></span></div>
@@ -563,6 +662,17 @@ input,textarea{font:inherit;color:inherit}
       <span>設定</span>
     </button>
   </nav>
+
+  <div id="installCoach" hidden>
+    <span class="sq" style="width:32px;height:32px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+    </span>
+    <div class="tx">
+      <b>把 Dayline 放到主畫面</b>
+      <span>按下方的分享按鈕 → 往下捲 → <b style="display:inline">加入主畫面</b></span>
+    </div>
+    <button class="x" id="coachClose" aria-label="關閉">×</button>
+  </div>
 
   <div id="toast" role="status" aria-live="polite"></div>
 </div>
@@ -649,11 +759,18 @@ const LS = {
   set(k,v){ try{ localStorage.setItem("dayline:"+k, JSON.stringify(v)); }catch(e){} }
 };
 
+/* ---------- config (config.js is the one file an operator edits) ---------- */
+const CFG = Object.assign({googleClientId:"", weather:true}, window.DAYLINE_CONFIG || {});
+
 /* ---------- state ---------- */
 const state = {
-  mode:"demo",            // "demo" | "mcp" | "oauth"
+  mode:"demo",            // "demo" | "mcp" | "oauth" | "ics"
   backend:"demo",
-  clientId: new URLSearchParams(location.search).get("client_id") || LS.get("clientId",""),
+  entered:false,
+  pendingMode:null,
+  coords:null,
+  weather:null,
+  clientId: new URLSearchParams(location.search).get("client_id") || CFG.googleClientId || LS.get("clientId",""),
   token:null,
   account:{ mail:"demo@gmail.com", initial:"D" },
   ctx: LS.get("ctx","all"),
@@ -1328,31 +1445,178 @@ function openConnect(code, detail){
   b.appendChild(ics);
 
   const demo = el("button","btn btn-ghost","先用示範資料看完整功能 →");
-  demo.onclick = ()=>{ hideSheet(); setTimeout(()=>enterApp("demo"), 260); };
+  demo.onclick = ()=>{ hideSheet(); setTimeout(()=>finishConnect("demo"), 260); };
   b.appendChild(demo);
   showSheet("sheetConsent");
 }
 
-/* ---------- auth screen status line ---------- */
-function setAuthBusy(on, msg){
-  const s = $("#authStatus");
-  if(!s) return;
-  if(on){ s.innerHTML = '<i class="spin"></i>' + (msg||"連線中⋯"); }
-  $("#btnGoogle").disabled = !!on;
+/* ============================================================
+   ONBOARDING — four short screens, one action each.
+   Written for someone whose first smartphone this is: no jargon,
+   one big button, and never a screen you cannot get out of.
+   ============================================================ */
+const GOOGLE_SVG = '<svg class="gmark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.8-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 17.2 2 20.5 2 24s.8 6.8 2.3 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.2 30 2 24 2 15.4 2 7.9 6.9 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/></svg>';
+
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+                           window.navigator.standalone === true;
+
+let obSteps = ["welcome","connect","extras"];
+let obIndex = 0;
+let connectorReady = false;          // filled in by a silent probe at start
+
+function obBuildSteps(){
+  obSteps = ["welcome","connect","extras"];
+  if(isIOS() && !isStandalone()) obSteps.push("install");
 }
-async function refreshAuthStatus(){
-  const s = $("#authStatus");
-  const probe = await probeConnector();
-  if(probe.ok && probe.auth === "connected"){
-    s.innerHTML = '<i class="ok"></i>已連上 Google 行事曆連接器，可以直接讀取';
-    $("#btnGoogleLabel").textContent = "讀取我的 Google 行事曆";
-  } else if(probe.ok){
-    s.innerHTML = '<i class="bad"></i>按下去會請你授權；還沒接上的話會告訴你怎麼接';
-  } else if(probe.code === "no_mcp"){
-    s.innerHTML = '<i class="bad"></i>這個畫面沒有連接器可用——按下去看兩種解法';
-  } else {
-    s.innerHTML = '<i class="bad"></i>尚未連接 Google 行事曆——按下去看怎麼接（約 30 秒）';
+function obRender(){
+  const step = obSteps[obIndex];
+  document.querySelectorAll(".ob-step").forEach(n => { n.hidden = (n.dataset.step !== step); });
+
+  const dots = $("#obDots"); dots.innerHTML = "";
+  obSteps.forEach((_,i)=>{ const d = el("i", i === obIndex ? "on" : ""); dots.appendChild(d); });
+
+  const acts = $("#obActions"); acts.innerHTML = "";
+  const add = (cls, html, fn, id) => {
+    const b = el("button", "btn " + cls, html);
+    if(id) b.id = id;
+    b.onclick = fn;
+    acts.appendChild(b);
+    return b;
+  };
+
+  if(step === "welcome"){
+    add("btn-primary", "開始", ()=> obGo(obIndex+1));
   }
+
+  if(step === "connect"){
+    if(state.clientId){
+      $("#connTitle").textContent = "連上你的行事曆";
+      $("#connLead").textContent = "按一下，選你的 Google 帳號，就好了。你的行程留在 Google，我們不會保存。";
+      add("btn-google", GOOGLE_SVG + "<span>用 Google 帳號登入</span>", connectOAuth, "obPrimary");
+    } else if(connectorReady){
+      $("#connTitle").textContent = "連上你的行事曆";
+      $("#connLead").textContent = "按一下就會讀進你的 Google 行事曆。行程留在 Google，我們不會保存。";
+      add("btn-google", GOOGLE_SVG + "<span>讀取我的 Google 行事曆</span>", connectCalendar, "obPrimary");
+    } else {
+      $("#connTitle").textContent = "把行事曆帶進來";
+      $("#connLead").textContent = "這個版本還沒開放一鍵登入。你可以匯入一份行事曆檔案，照樣能用真正的行程。";
+      add("btn-google", "<span>匯入我的行事曆檔案</span>", ()=> showSheet("sheetIcs"), "obPrimary");
+    }
+    add("btn-ghost", "先看看，晚點再連", ()=> finishConnect("demo"));
+  }
+
+  if(step === "extras"){
+    add("btn-primary", "好，顯示天氣", async ()=>{
+      await askWeather();
+      obGo(obIndex+1);
+    });
+    add("btn-ghost", "以後再說", ()=>{ LS.set("wx", false); obGo(obIndex+1); });
+  }
+
+  if(step === "install"){
+    add("btn-primary", "知道了，開始使用", ()=> obGo(obIndex+1));
+  }
+}
+function obGo(i){
+  if(i >= obSteps.length){ enterApp(state.pendingMode || "demo"); return; }
+  obIndex = Math.max(0, i);
+  obRender();
+  $("#authScreen").scrollTop = 0;
+}
+function obStart(atConnect){
+  obBuildSteps();
+  obIndex = atConnect ? obSteps.indexOf("connect") : 0;
+  $("#authScreen").hidden = false;
+  obRender();
+}
+/** A connection succeeded (or was skipped): carry on with onboarding. */
+function finishConnect(mode){
+  state.pendingMode = mode;
+  if(state.entered){ enterApp(mode); return; }
+  obGo(obIndex + 1);
+}
+function setAuthBusy(on, msg){
+  const b = $("#obPrimary");
+  if(!b) return;
+  b.disabled = !!on;
+  if(on) b.innerHTML = '<i class="spin" style="border-color:var(--line);border-top-color:var(--accent)"></i><span>' + (msg || "連線中⋯") + '</span>';
+  else obRender();
+}
+
+/* ============================================================
+   WEATHER — Open-Meteo: free, no account, no API key.
+   Position is read on the device and sent to nobody else.
+   ============================================================ */
+const WX = {
+  0:"晴朗", 1:"大致晴朗", 2:"局部多雲", 3:"陰天",
+  45:"有霧", 48:"有霧", 51:"毛毛雨", 53:"毛毛雨", 55:"毛毛雨",
+  61:"小雨", 63:"下雨", 65:"大雨", 66:"凍雨", 67:"凍雨",
+  71:"小雪", 73:"下雪", 75:"大雪", 77:"雪粒",
+  80:"陣雨", 81:"陣雨", 82:"強陣雨", 85:"陣雪", 86:"陣雪",
+  95:"雷雨", 96:"雷雨冰雹", 99:"雷雨冰雹"
+};
+function getPosition(){
+  return new Promise((res, rej)=>{
+    if(!navigator.geolocation) return rej(new Error("no geolocation"));
+    navigator.geolocation.getCurrentPosition(res, rej, {timeout:8000, maximumAge:1800000});
+  });
+}
+async function askWeather(){
+  try{
+    const pos = await getPosition();
+    LS.set("wx", true);
+    state.coords = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+    LS.set("coords", state.coords);
+    await loadWeather();
+  }catch(e){
+    LS.set("wx", false);      // declined or unavailable — never block, never nag
+  }
+}
+async function loadWeather(){
+  if(!CFG.weather || LS.get("wx", null) !== true) return;
+  const c = state.coords || LS.get("coords", null);
+  if(!c) return;
+  try{
+    const u = new URL("https://api.open-meteo.com/v1/forecast");
+    u.searchParams.set("latitude", c.lat.toFixed(3));
+    u.searchParams.set("longitude", c.lon.toFixed(3));
+    u.searchParams.set("current", "temperature_2m,weather_code");
+    u.searchParams.set("daily", "sunrise,sunset,temperature_2m_max,temperature_2m_min");
+    u.searchParams.set("timezone", "auto");
+    u.searchParams.set("forecast_days", "1");
+    const r = await fetch(u);
+    if(!r.ok) throw new Error("weather " + r.status);
+    state.weather = await r.json();
+    renderWeather();
+  }catch(e){ /* weather is a bonus: stay silent, show nothing */ }
+}
+function renderWeather(){
+  const strip = $("#wxStrip");
+  const w = state.weather;
+  if(!strip) return;
+  if(!w || !w.current){ strip.hidden = true; return; }
+  const t = Math.round(w.current.temperature_2m);
+  const desc = WX[w.current.weather_code] || "";
+  const d = w.daily || {};
+  const hi = d.temperature_2m_max && Math.round(d.temperature_2m_max[0]);
+  const lo = d.temperature_2m_min && Math.round(d.temperature_2m_min[0]);
+  const sr = d.sunrise && d.sunrise[0] ? d.sunrise[0].slice(11,16) : null;
+  const ss = d.sunset  && d.sunset[0]  ? d.sunset[0].slice(11,16)  : null;
+  strip.hidden = false;
+  strip.innerHTML =
+    '<span class="t">' + t + '°</span>' +
+    '<span>' + desc + '</span>' +
+    (hi != null ? '<span class="sep">·</span><span class="num">' + hi + '° / ' + lo + '°</span>' : '') +
+    (sr ? '<span class="sun">日出 ' + sr + '<br>日落 ' + ss + '</span>' : '');
+}
+
+/* ---------- add to home screen coach ---------- */
+function maybeCoach(){
+  const c = $("#installCoach");
+  if(!c) return;
+  c.hidden = !(isIOS() && !isStandalone() && LS.get("coachDone", false) !== true && state.entered);
 }
 
 /* ============================================================
@@ -1774,7 +2038,7 @@ async function connectCalendar(){
     try{
       await pullWithOneRetry();
       setAuthBusy(false);
-      enterApp("mcp");
+      finishConnect("mcp");
       toast("已讀取你的 Google 行事曆");
     }catch(e){
       setAuthBusy(false);
@@ -1800,7 +2064,7 @@ async function connectOAuth(){
         state.token = resp.access_token;
         try{
           await pullFromGoogle();
-          enterApp("oauth");
+          finishConnect("oauth");
           toast("已連線 Google 行事曆");
         }catch(e){ openConnect("oauth_api", e && e.message); }
       }
@@ -1966,7 +2230,7 @@ function importIcs(text){
   state.events = events;
   state.account = {mail:"匯入的 .ics 檔案", initial:"I"};
   hideSheet();
-  setTimeout(()=>{ enterApp("ics"); toast("已匯入 "+events.length+" 筆行程"); }, 240);
+  setTimeout(()=>{ toast("已匯入 "+events.length+" 筆行程"); finishConnect("ics"); }, 240);
 }
 
 /* ============================================================
@@ -2002,9 +2266,12 @@ function enterApp(mode){
     state.account = {mail:"demo@gmail.com", initial:"D"};
   }
   if(!state.cals.length) state.cals = baseCals();
+  state.entered = true;
   $("#authScreen").hidden = true;
   $("#topbar").hidden = false; $("#scroll").hidden = false; $("#tabbar").hidden = false;
   renderCtx(); renderAll(); switchView("viewToday");
+  maybeCoach();
+  loadWeather();
   // scroll so that "now" sits comfortably in view
   setTimeout(()=>{ const nl=document.querySelector(".nowline"); if(nl) $("#scroll").scrollTop = Math.max(0, nl.offsetTop - 180); }, 60);
 }
@@ -2017,10 +2284,8 @@ function applyTheme(){
 }
 
 /* ---------- wiring ---------- */
-$("#btnGoogle").onclick = connectCalendar;
-$("#btnDemo").onclick  = ()=> enterApp("demo");
-$("#btnIcs").onclick   = ()=> showSheet("sheetIcs");
 $("#icsGo").onclick    = ()=> importIcs($("#icsPaste").value);
+$("#coachClose").onclick = ()=>{ LS.set("coachDone", true); $("#installCoach").hidden = true; };
 $("#icsFile").addEventListener("change", e=>{
   const f = e.target.files && e.target.files[0];
   if(!f) return;
@@ -2029,7 +2294,7 @@ $("#icsFile").addEventListener("change", e=>{
   r.onerror = ()=> toast("讀不到這個檔案，改用貼上的方式試試");
   r.readAsText(f);
 });
-$("#btnReauth").onclick = ()=>{ $("#authScreen").hidden=false; refreshAuthStatus(); };
+$("#btnReauth").onclick = ()=> obStart(true);
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
 $("#btnToday").onclick = ()=>{ switchView("viewToday"); renderAll(); toast("回到今天"); };
 $("#btnTheme").onclick = ()=>{
@@ -2056,9 +2321,23 @@ $("#searchInput").addEventListener("input", renderSearch);
   });
 })();
 
+/* ---------- boot ---------- */
 applyTheme();
 renderHeader();
-refreshAuthStatus();
+obStart(false);
+
+// Silent probe: never prompts. Only decides which button the connect step shows.
+probeConnector().then(p=>{
+  connectorReady = !!(p.ok && p.auth === "connected");
+  if(!$("#authScreen").hidden && obSteps[obIndex] === "connect") obRender();
+});
+
+// Installable app shell. Harmless where service workers are unavailable.
+if("serviceWorker" in navigator && location.protocol === "https:"){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
 
 // keep the now-line honest
 setInterval(()=>{ if(!$("#scroll").hidden && state.view==="viewToday"){ renderBrief(); renderTimeline(); } }, 60000);
