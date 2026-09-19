@@ -1189,10 +1189,22 @@ const CONNECT_COPY = {
     p:"Claude 有官方的 Google Calendar 連接器。接上之後，這個 App 就會用你自己的 Google 授權讀寫行事曆——不用申請任何 API 金鑰。",
     steps:[
       "在另一個分頁打開 <b>claude.ai</b>，進 <b>設定 → 連接器</b>",
-      "找到 <b>Google Calendar</b>，按<b>連接</b>",
+      "按 <b>Browse connectors</b>（瀏覽連接器），找官方的 <b>Google Calendar</b>，按 <b>Connect</b>",
       "用你平常在用的 Google 帳號登入並允許",
       "回到這一頁，按下面的<b>重新檢查</b>"
     ],
+    warn:"不要按任何「<b>Add custom</b>／新增自訂連接器」。那是要你自己架 MCP 伺服器用的，官方連接器不需要填任何網址。",
+    retry:true
+  },
+  upstream_error: {
+    t:"這個頁面還沒拿到連接器授權",
+    p:"授權還沒確認給這個頁面。最常見的是下面兩種情況，修法不一樣。",
+    steps:[
+      "跳出 <b>This artifact uses connectors</b> 視窗時 → 直接按 <b>Continue</b>",
+      "那個視窗裡如果寫著 <b>No matching connector found</b>，代表你的帳號還沒安裝連接器 → 到 <b>claude.ai → 設定 → 連接器 → Browse connectors</b>，找 <b>Google Calendar</b> 按 <b>Connect</b>",
+      "接好之後回到這一頁，按下面的<b>重新檢查</b>"
+    ],
+    warn:"那個視窗右邊的「<b>Add custom</b>」<b>不要按</b>。它會叫你填 MCP 伺服器網址，跟官方 Google Calendar 無關。",
     retry:true
   },
   needs_reauth: {
@@ -1250,6 +1262,9 @@ function openConnect(code, detail){
     c.steps.forEach(s=> ol.appendChild(el("li","", "<div>"+s+"</div>")));
     b.appendChild(ol);
   }
+  if(c.warn){
+    b.appendChild(el("div","warnbox","<div><b>小心這個按鈕</b><br>"+c.warn+"</div>"));
+  }
   if(detail){
     b.appendChild(el("div","note","<span class='num' style='font-size:11.5px'>"+String(detail).slice(0,300)+"</span>"));
   }
@@ -1277,9 +1292,11 @@ function setAuthBusy(on, msg){
 async function refreshAuthStatus(){
   const s = $("#authStatus");
   const probe = await probeConnector();
-  if(probe.ok){
-    s.innerHTML = '<i class="ok"></i>已偵測到 Google 行事曆連接器，可以直接連線';
+  if(probe.ok && probe.auth === "connected"){
+    s.innerHTML = '<i class="ok"></i>已連上 Google 行事曆連接器，可以直接讀取';
     $("#btnGoogleLabel").textContent = "讀取我的 Google 行事曆";
+  } else if(probe.ok){
+    s.innerHTML = '<i class="bad"></i>按下去會請你授權；還沒接上的話會告訴你怎麼接';
   } else if(probe.code === "no_mcp"){
     s.innerHTML = '<i class="bad"></i>這個畫面沒有連接器可用——按下去看兩種解法';
   } else {
@@ -1496,7 +1513,10 @@ async function probeConnector(){
     if(!s) return {ok:false, code:"server_not_connected"};
     if(s.authStatus === "needs_reauth") return {ok:false, code:"needs_reauth"};
     if(!s.tools || !s.tools.length) return {ok:false, code:"server_not_connected"};
-    return {ok:true};
+    // authStatus "unknown" only means the viewer has not been asked about this
+    // page yet — the tool names come from our own manifest, so it is NOT evidence
+    // that the connector is installed. Only a real call can tell the difference.
+    return {ok:true, auth:s.authStatus};
   }catch(e){ return {ok:false, code:errCode(e)}; }
 }
 
@@ -1563,7 +1583,10 @@ async function listEventsAdaptive(calId, from, to){
     try{
       const payload = await mcpCall("list_events", shapes[i], {cache:{staleTime:60000}});
       LS.set(SHAPE_KEY, i);
-      return payload;
+      // Did the winning shape actually carry a calendar id? If not, the answer
+      // covers every calendar at once and must not be fetched again per calendar.
+      const scoped = "calendar_id" in shapes[i] || "calendarId" in shapes[i];
+      return {payload, scoped};
     }catch(e){
       const c = errCode(e);
       if(c !== "tool_error" && c !== "bad_request") throw e;   // not an argument problem
@@ -1620,14 +1643,24 @@ async function pullFromConnector(){
 
   const from = dayISO(-30), to = dayISO(30);
   const all = [];
+  const seen = new Set();
   let lastErr = null;
   for(const c of state.cals){
-    try{
-      asArray(await listEventsAdaptive(c.gid, from, to)).forEach(raw=>{
-        const ev = normEvent(raw, c.id);
-        if(ev) all.push(ev);
-      });
-    }catch(e){ c.error = errCode(e); lastErr = e; }
+    let res;
+    try{ res = await listEventsAdaptive(c.gid, from, to); }
+    catch(e){ c.error = errCode(e); lastErr = e; continue; }
+
+    asArray(res.payload).forEach(raw=>{
+      const ev = normEvent(raw, c.id);
+      if(!ev) return;
+      // A connector that ignores the calendar argument returns the same events
+      // for every calendar — key on identity so nothing is drawn twice.
+      const key = ev.gid || (ev.title + "@" + ev.start.getTime());
+      if(seen.has(key)) return;
+      seen.add(key);
+      all.push(ev);
+    });
+    if(!res.scoped) break;   // one answer already covered every calendar
   }
   if(!all.length && lastErr) throw lastErr;
   state.events = all;
@@ -1669,6 +1702,18 @@ function loadScript(src){
     setTimeout(()=>rej(new Error("timeout")), 6000);
   });
 }
+/** One retry, reads only — covers the consent prompt that had not settled yet. */
+async function pullWithOneRetry(){
+  try{ return await pullFromConnector(); }
+  catch(e){
+    if(!e || e.retryable !== true) throw e;
+    const wait = Math.min(Math.max(e.retryAfterMs || 1800, 800), 8000);
+    setAuthBusy(true, "等待授權確認⋯");
+    await new Promise(r => setTimeout(r, wait));
+    return await pullFromConnector();
+  }
+}
+
 /** Entry point for the "connect" button: connector → OAuth → guidance. */
 async function connectCalendar(){
   setAuthBusy(true, "正在連線 Google 行事曆⋯");
@@ -1676,7 +1721,7 @@ async function connectCalendar(){
 
   if(probe.ok){
     try{
-      await pullFromConnector();
+      await pullWithOneRetry();
       setAuthBusy(false);
       enterApp("mcp");
       toast("已讀取你的 Google 行事曆");
