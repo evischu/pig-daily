@@ -125,6 +125,18 @@ input,textarea{font:inherit;color:inherit}
 .btn-primary{background:var(--accent);color:var(--accent-ink)}
 .btn-google{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
 .btn-ghost{color:var(--ink-2);height:44px;font-weight:500;font-size:14px}
+.btn-ics{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);height:46px;font-size:14.5px}
+.drop{
+  border:1.5px dashed var(--line);border-radius:14px;padding:18px 14px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px;background:var(--surface-2);
+}
+.drop input[type=file]{font-size:12.5px;max-width:100%}
+.drop .t{font-size:13.5px;font-weight:600}
+.drop .s{font-size:12px;color:var(--ink-3)}
+.ics-paste{
+  width:100%;margin-top:12px;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;
+  padding:11px;font-family:var(--font-num);font-size:11.5px;min-height:84px;resize:vertical;outline:none;
+}
 .gmark{width:18px;height:18px;flex:none}
 .auth-foot{display:flex;flex-direction:column;gap:6px}
 .conn-status{
@@ -427,6 +439,10 @@ input,textarea{font:inherit;color:inherit}
         <svg class="gmark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.8-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 17.2 2 20.5 2 24s.8 6.8 2.3 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.2 30 2 24 2 15.4 2 7.9 6.9 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/></svg>
         <span id="btnGoogleLabel">連線我的 Google 行事曆</span>
       </button>
+      <button class="btn btn-ics" id="btnIcs">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        匯入行事曆檔案（免登入）
+      </button>
       <button class="btn btn-ghost" id="btnDemo">先看示範資料 →</button>
       <p class="fineprint">用你在 claude.ai 已授權的 Google 身分讀取，不需要另外申請金鑰。<br>權限可隨時在 claude.ai 設定 → 連接器撤銷。</p>
     </div>
@@ -576,6 +592,34 @@ input,textarea{font:inherit;color:inherit}
 <div class="sheet" id="sheetConsent" hidden role="dialog" aria-modal="true" aria-label="Google 授權">
   <div class="grab"></div>
   <div class="sheet-body" id="consentBody"></div>
+</div>
+
+<div class="sheet" id="sheetIcs" hidden role="dialog" aria-modal="true" aria-label="匯入行事曆檔案">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">匯入行事曆檔案</h3>
+    <p style="margin:4px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.6">
+      不用登入、不用連接器。Google 行事曆給每本日曆一個私人 iCal 網址，把那份檔案餵進來，
+      這個 App 就會用你真正的行程運作。
+    </p>
+
+    <ol class="steps">
+      <li><div>在<b>電腦版</b> Google 行事曆，左側把滑鼠移到日曆名稱 → <b>⋮ → 設定和共用</b></div></li>
+      <li><div>捲到最下面，複製<b>「日曆的私人網址 (iCal 格式)」</b>——結尾是 <code>basic.ics</code></div></li>
+      <li><div>把那個網址貼進瀏覽器打開，全選內容複製，貼到下面的框；或把下載到的 <code>.ics</code> 檔案選進來</div></li>
+    </ol>
+
+    <div class="drop">
+      <span class="t">選擇 .ics 檔案</span>
+      <input id="icsFile" type="file" accept=".ics,text/calendar" aria-label="選擇 ics 檔案">
+      <span class="s">檔案只在這台裝置上解析，不會被上傳</span>
+    </div>
+
+    <textarea class="ics-paste" id="icsPaste" placeholder="⋯或把 .ics 內容直接貼在這裡（BEGIN:VCALENDAR 開頭）" aria-label="貼上 ics 內容"></textarea>
+
+    <button class="btn btn-primary" id="icsGo" style="margin-top:14px">匯入</button>
+    <div class="warnbox" style="margin-top:12px"><div><b>這是唯讀快照</b><br>匯入的行程不會同步，之後改了要重新匯入一次；新增的行程也不會寫回 Google。要雙向同步，還是得走連接器或自架授權。</div></div>
+  </div>
 </div>
 
 <script>
@@ -1044,6 +1088,8 @@ function renderSettings(){
             n:"這個頁面用你在 claude.ai 授權的 Google 身分讀寫行事曆，程式碼看不到你的權杖。要撤銷：claude.ai → 設定 → 連接器 → Google Calendar。"},
     oauth: {s:"已連線・自架版 OAuth",
             n:"以 Google Identity Services 直接授權。事件資料只在這台裝置與 Google 之間往返，不經過任何中介伺服器。"},
+    ics:   {s:"已匯入 .ics 快照・唯讀",
+            n:"目前顯示的是你匯入的行事曆檔案，全部在這台裝置上解析。這是快照：Google 那邊之後的改動不會自動同步，要更新就重新匯入一次。"},
     demo:  {s:"示範模式・未連線真實帳號",
             n:"目前顯示的是依今天日期生成的示範行程。要接上你真正的行事曆，按右上角的<b>切換</b>，再按連線——最快的路是在 claude.ai 設定裡加上 <b>Google Calendar</b> 連接器。"}
   }[state.backend] || {s:"未連線", n:""};
@@ -1276,6 +1322,11 @@ function openConnect(code, detail){
     again.onclick = ()=>{ hideSheet(); setTimeout(connectCalendar, 260); };
     b.appendChild(again);
   }
+  const ics = el("button","btn btn-ics","改用匯入 .ics 檔案（免登入，用你真正的行程）");
+  ics.style.marginTop = "8px";
+  ics.onclick = ()=>{ hideSheet(); setTimeout(()=>showSheet("sheetIcs"), 280); };
+  b.appendChild(ics);
+
   const demo = el("button","btn btn-ghost","先用示範資料看完整功能 →");
   demo.onclick = ()=>{ hideSheet(); setTimeout(()=>enterApp("demo"), 260); };
   b.appendChild(demo);
@@ -1803,6 +1854,122 @@ async function pullFromGoogle(){
 }
 
 /* ============================================================
+   ICS IMPORT — a read-only snapshot, no login of any kind.
+   Everything here runs on the device; nothing is uploaded.
+   ============================================================ */
+function unfoldICS(text){
+  return text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/\n[ \t]/g,"");
+}
+function unescapeICS(s){
+  return String(s).replace(/\\n/gi,"\n").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\");
+}
+function parseICSDate(val){
+  const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/.exec(String(val).trim());
+  if(!m) return null;
+  const Y=+m[1], M=+m[2]-1, D=+m[3];
+  if(!m[4]) return {d:new Date(Y,M,D,0,0,0,0), allDay:true};
+  const h=+m[4], mi=+m[5], s=+m[6];
+  // A TZID we cannot resolve is read as local time — good enough for a snapshot.
+  return {d: m[7] ? new Date(Date.UTC(Y,M,D,h,mi,s)) : new Date(Y,M,D,h,mi,s), allDay:false};
+}
+function parseICS(text){
+  const out = []; let cur = null;
+  unfoldICS(text).split("\n").forEach(raw=>{
+    const line = raw.trim();
+    if(!line) return;
+    if(line === "BEGIN:VEVENT"){ cur = {}; return; }
+    if(line === "END:VEVENT"){ if(cur) out.push(cur); cur = null; return; }
+    if(!cur) return;
+    const i = line.indexOf(":");
+    if(i < 0) return;
+    const key = line.slice(0,i).split(";")[0].toUpperCase();
+    if(!(key in cur)) cur[key] = line.slice(i+1);
+  });
+  return out;
+}
+/** Modest RRULE expansion — enough that a real calendar isn't mostly empty. */
+function expandRule(start, rrule, from, to){
+  const p = {};
+  String(rrule).split(";").forEach(kv=>{ const a = kv.split("="); if(a[0]) p[a[0].toUpperCase()] = a[1]; });
+  if(!p.FREQ) return [start];
+  const DAY = {SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+  const interval = Math.max(1, parseInt(p.INTERVAL||"1",10) || 1);
+  const count = p.COUNT ? parseInt(p.COUNT,10) : null;
+  const untilD = p.UNTIL ? (parseICSDate(p.UNTIL)||{}).d : null;
+  const limit = (untilD && untilD < to) ? untilD : to;
+  const byday = p.BYDAY ? p.BYDAY.split(",").map(x=>x.slice(-2)).filter(x=>x in DAY) : null;
+  const out = [];
+  let cursor = new Date(start), n = 0, guard = 0;
+
+  while(cursor <= limit && guard++ < 600){
+    if(count && n >= count) break;
+    if(p.FREQ === "WEEKLY" && byday && byday.length){
+      const weekStart = new Date(cursor);
+      weekStart.setDate(cursor.getDate() - cursor.getDay());
+      byday.forEach(d=>{
+        if(count && n >= count) return;
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + DAY[d]);
+        day.setHours(start.getHours(), start.getMinutes(), 0, 0);
+        if(day >= start && day <= limit){ out.push(new Date(day)); n++; }
+      });
+      cursor.setDate(cursor.getDate() + 7*interval);
+    } else {
+      out.push(new Date(cursor)); n++;
+      if(p.FREQ === "DAILY")        cursor.setDate(cursor.getDate() + interval);
+      else if(p.FREQ === "WEEKLY")  cursor.setDate(cursor.getDate() + 7*interval);
+      else if(p.FREQ === "MONTHLY") cursor.setMonth(cursor.getMonth() + interval);
+      else if(p.FREQ === "YEARLY")  cursor.setFullYear(cursor.getFullYear() + interval);
+      else break;
+    }
+  }
+  return out.filter(d => d >= from && d <= to);
+}
+function icsToEvents(text, calId){
+  const from = dayISO(-30), to = dayISO(45);
+  const events = [];
+  parseICS(text).forEach(e=>{
+    const ds = e.DTSTART && parseICSDate(e.DTSTART);
+    if(!ds) return;
+    const de = e.DTEND ? parseICSDate(e.DTEND) : null;
+    const dur = de ? Math.max(60000, de.d - ds.d) : (ds.allDay ? 86400000 : 3600000);
+    const title = unescapeICS(e.SUMMARY || "(沒有標題)");
+    const uid = e.UID || ("i"+Math.random().toString(36).slice(2,9));
+    const desc = e.DESCRIPTION || "";
+    const starts = e.RRULE ? expandRule(ds.d, e.RRULE, from, to) : [ds.d];
+    starts.forEach((s,i)=>{
+      if(s < from || s > to) return;
+      events.push({
+        id: uid + "#" + i, gid:null, cal:calId, title,
+        start: new Date(s), end: new Date(s.getTime() + dur),
+        allDay: ds.allDay,
+        loc: e.LOCATION ? unescapeICS(e.LOCATION) : "",
+        guests: [], rsvp: null,
+        meet: /meet\.google|zoom\.us|teams\.microsoft/i.test(desc + " " + (e.LOCATION||""))
+      });
+    });
+  });
+  return events.sort((a,b)=> a.start - b.start);
+}
+function importIcs(text){
+  if(!/BEGIN:VCALENDAR/i.test(text || "")){
+    toast("這看起來不是 .ics 內容（要以 BEGIN:VCALENDAR 開頭）");
+    return;
+  }
+  const events = icsToEvents(text, "ics");
+  if(!events.length){
+    toast("讀完了，但前後兩個月內沒有任何行程");
+    return;
+  }
+  state.cals = [{id:"ics", gid:null, name:"匯入的行事曆", ctx:"personal", color:"personal",
+                 sub:"唯讀快照・"+events.length+" 筆", on:true, privacy:false}];
+  state.events = events;
+  state.account = {mail:"匯入的 .ics 檔案", initial:"I"};
+  hideSheet();
+  setTimeout(()=>{ enterApp("ics"); toast("已匯入 "+events.length+" 筆行程"); }, 240);
+}
+
+/* ============================================================
    APP SHELL
    ============================================================ */
 function toast(msg){
@@ -1852,6 +2019,16 @@ function applyTheme(){
 /* ---------- wiring ---------- */
 $("#btnGoogle").onclick = connectCalendar;
 $("#btnDemo").onclick  = ()=> enterApp("demo");
+$("#btnIcs").onclick   = ()=> showSheet("sheetIcs");
+$("#icsGo").onclick    = ()=> importIcs($("#icsPaste").value);
+$("#icsFile").addEventListener("change", e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload  = ()=> importIcs(String(r.result));
+  r.onerror = ()=> toast("讀不到這個檔案，改用貼上的方式試試");
+  r.readAsText(f);
+});
 $("#btnReauth").onclick = ()=>{ $("#authScreen").hidden=false; refreshAuthStatus(); };
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
 $("#btnToday").onclick = ()=>{ switchView("viewToday"); renderAll(); toast("回到今天"); };
