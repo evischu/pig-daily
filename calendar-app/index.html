@@ -348,6 +348,8 @@ input,textarea{font:inherit;color:inherit}
 .ev.task{background:transparent;border:1px dashed var(--c-task);color:var(--c-task)} .ev.task::before{display:none}
 .ev .tt{color:var(--ink)}
 .ev.masked .tt{color:var(--ink-3);font-weight:500}
+.ev.done{opacity:.55}
+.ev.done .tt{text-decoration:line-through}
 .ev .badge{
   position:absolute;right:7px;top:7px;font-size:9.5px;font-weight:700;padding:2px 5px;border-radius:5px;
   background:var(--warn);color:#fff;letter-spacing:.02em;
@@ -420,6 +422,37 @@ input,textarea{font:inherit;color:inherit}
 }
 .searchbar input{flex:1;border:0;background:none;outline:none;font-size:15px}
 .searchbar input::placeholder{color:var(--ink-3)}
+.findtime-entry{
+  display:flex;align-items:center;gap:11px;width:100%;margin-top:10px;
+  background:var(--surface);border:1px solid var(--line-soft);border-radius:13px;padding:11px 13px;
+  box-shadow:var(--shadow);text-align:left;color:var(--ink);
+}
+.findtime-entry .sq{
+  width:32px;height:32px;border-radius:9px;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;flex:none;
+}
+.findtime-entry .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.findtime-entry .tx b{font-size:14px;font-weight:600}
+.findtime-entry .tx span{font-size:11.5px;color:var(--ink-3)}
+.findtime-entry svg:last-child{color:var(--ink-3);flex:none}
+
+.ft-cal-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft)}
+.ft-cal-row:first-child{border-top:0}
+.ft-cal-row input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.ft-cal-row label{flex:1;font-size:14px}
+.ft-row{display:flex;gap:8px;margin-top:12px}
+.ft-row select{
+  flex:1;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;
+  padding:10px 8px;font-size:13.5px;color:var(--ink);
+}
+.ft-slots{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.ft-slot{
+  display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:12px;padding:11px 13px;
+}
+.ft-slot .tx{flex:1;font-size:13.5px;font-weight:600}
+.ft-slot .tx span{display:block;font-weight:400;font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.ft-slot button{font-size:12px;padding:6px 11px;border-radius:9px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
 .res{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .res-item{
   background:var(--surface);border:1px solid var(--line-soft);border-radius:13px;padding:11px 13px;
@@ -514,11 +547,29 @@ input,textarea{font:inherit;color:inherit}
 }
 .ptag .pk{opacity:.65;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
 .ptag.miss{background:var(--surface-2);color:var(--ink-3)}
+.qa-preview-wrap{margin-top:14px;display:flex;gap:8px;align-items:stretch}
 .qa-preview{
-  margin-top:14px;border:1px solid var(--line-soft);border-radius:14px;padding:12px 13px;background:var(--surface-2);
+  flex:1;min-width:0;border:1px solid var(--line-soft);border-radius:14px;padding:12px 13px;background:var(--surface-2);
   display:flex;gap:11px;align-items:flex-start;
 }
 .qa-preview .sw{width:3px;align-self:stretch;border-radius:2px;flex:none;min-height:34px}
+.tpl-save{
+  flex:none;width:44px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line-soft);
+  color:var(--ink-2);display:grid;place-items:center;
+}
+.tpl-save:active{background:var(--accent-soft);color:var(--accent)}
+.tpl-name-row{display:flex;gap:8px;margin-top:10px}
+.tpl-name-row input{
+  flex:1;min-width:0;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;
+  padding:10px 12px;font-size:14px;outline:none;
+}
+.tpl-name-row .btn{width:auto;height:auto;padding:0 16px;font-size:13px;border-radius:11px}
+.qa-tpl-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.qa-tpl-row button{
+  font-size:12px;padding:6px 10px 6px 8px;border-radius:9px;background:var(--accent-soft);color:var(--accent);
+  border:1px solid transparent;display:flex;align-items:center;gap:5px;
+}
+.qa-tpl-row button .x{color:var(--ink-3);font-size:13px;line-height:1;padding-left:2px}
 .qa-ex{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .qa-ex button{font-size:12px;padding:6px 10px;border-radius:9px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-soft)}
 
@@ -656,7 +707,13 @@ input,textarea{font:inherit;color:inherit}
         <div class="wx" id="wxStrip" hidden></div>
       </div>
 
-      <div class="sec-head"><h2 id="dayLabel">今天</h2><i class="rule"></i><span class="side" id="dayRange"></span></div>
+      <div class="sec-head">
+        <h2 id="dayLabel">今天</h2><i class="rule"></i>
+        <button class="icon-btn" id="btnShiftDay" aria-label="批次調整今天的行程" style="margin-right:2px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13M7 12h13M7 17h13"/><path d="M3 7h.01M3 12h.01M3 17h.01"/></svg>
+        </button>
+        <span class="side" id="dayRange"></span>
+      </div>
       <div id="allDayWrap"></div>
       <div class="timeline" id="timeline"></div>
     </section>
@@ -703,6 +760,11 @@ input,textarea{font:inherit;color:inherit}
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="color:var(--ink-3)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
         <input id="searchInput" type="search" placeholder="找事件、地點或人名⋯" autocomplete="off" aria-label="搜尋行程">
       </div>
+      <button class="findtime-entry" id="btnFindTime">
+        <span class="sq"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+        <span class="tx"><b>找共同空檔</b><span>勾選幾本日曆，自動算出大家都有空的時段</span></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
       <div class="fuzzy-note">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v5m0 3h.01"/><circle cx="12" cy="12" r="9"/></svg>
         容許錯字：打「牙醫回真」也找得到「牙醫回診」。
@@ -730,7 +792,13 @@ input,textarea{font:inherit;color:inherit}
       <div class="card" id="calList"></div>
 
       <div class="sec-head"><h2>提醒規則</h2><i class="rule"></i></div>
-      <div class="card" id="ruleList"></div>
+      <div class="card">
+        <div class="row">
+          <div class="tx"><b>手機通知</b><span id="notifyDesc">開著 App 時才會跳通知，完全關閉或鎖太久不會</span></div>
+          <button class="toggle" id="notifyToggle" aria-pressed="false" aria-label="手機通知"></button>
+        </div>
+      </div>
+      <div class="card" id="ruleList" style="margin-top:10px"></div>
 
       <div class="sec-head"><h2>外觀</h2><i class="rule"></i></div>
       <div class="card">
@@ -804,7 +872,17 @@ input,textarea{font:inherit;color:inherit}
     <p style="margin:4px 0 14px;color:var(--ink-3);font-size:13px">照你講話的方式打，欄位自己會填。</p>
     <textarea class="qa-input" id="qaInput" rows="2" placeholder="明天下午三點 跟小林在青田七六 開會一小時"></textarea>
     <div class="qa-parse" id="qaParse"></div>
-    <div class="qa-preview" id="qaPreview" hidden></div>
+    <div class="qa-preview-wrap" id="qaPreviewWrap" hidden>
+      <div class="qa-preview" id="qaPreview"></div>
+      <button class="tpl-save" id="qaSaveTpl" title="存成範本" aria-label="存成範本">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+      </button>
+    </div>
+    <div class="tpl-name-row" id="tplNameRow" hidden>
+      <input id="tplNameInput" type="text" placeholder="幫這個範本取個名字，例如「勘景」" maxlength="12">
+      <button class="btn btn-primary" id="tplNameGo">存範本</button>
+    </div>
+    <div id="qaTplRow"></div>
     <div class="qa-ex" id="qaEx"></div>
     <button class="btn btn-primary" id="qaSave" style="margin-top:16px">加入行事曆</button>
     <p class="fineprint" style="margin-top:10px">將寫入 Google 行事曆的「<span id="qaCalName">個人</span>」日曆。</p>
@@ -843,6 +921,59 @@ input,textarea{font:inherit;color:inherit}
 
     <button class="btn btn-ics" id="keyIcs" style="margin-top:16px">先用匯入檔案的方式</button>
     <button class="btn btn-ghost" id="keyDemo">先看看示範資料</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheetShiftDay" hidden role="dialog" aria-modal="true" aria-label="批次調整今天的行程">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">批次調整這一天</h3>
+    <p style="margin:4px 0 0;color:var(--ink-2);font-size:13px" id="shiftDayDesc">把<span id="shiftDayLabel">今天</span>所有行程一起往前或往後挪，整天延誤時很方便。</p>
+    <div class="ft-row">
+      <select id="shiftAmt" aria-label="調整量">
+        <option value="15">15 分鐘</option>
+        <option value="30">30 分鐘</option>
+        <option value="60" selected>1 小時</option>
+        <option value="120">2 小時</option>
+        <option value="1440">1 天</option>
+      </select>
+      <select id="shiftDir" aria-label="方向">
+        <option value="1">往後延</option>
+        <option value="-1">往前提</option>
+      </select>
+    </div>
+    <div id="shiftDayList" style="margin-top:14px"></div>
+    <button class="btn btn-primary" id="shiftDayGo" style="margin-top:14px">套用</button>
+    <p class="fineprint" style="margin-top:10px">全天事件與待辦事項不受影響。</p>
+  </div>
+</div>
+
+<div class="sheet" id="sheetFindTime" hidden role="dialog" aria-modal="true" aria-label="找共同空檔">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">找共同空檔</h3>
+    <p style="margin:4px 0 0;color:var(--ink-2);font-size:13px">勾選要交集的日曆，我們會算出你在這些日曆上都沒事的時段。</p>
+
+    <div class="sec-head" style="margin-top:16px"><h2>要交集的日曆</h2><i class="rule"></i></div>
+    <div id="ftCals"></div>
+
+    <div class="ft-row">
+      <select id="ftDur" aria-label="時長">
+        <option value="30">30 分鐘</option>
+        <option value="60" selected>1 小時</option>
+        <option value="90">1.5 小時</option>
+        <option value="120">2 小時</option>
+      </select>
+      <select id="ftRange" aria-label="範圍">
+        <option value="3">未來 3 天</option>
+        <option value="7" selected>未來 7 天</option>
+        <option value="14">未來 14 天</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" id="ftGo" style="margin-top:14px">找空檔</button>
+    <div class="ft-slots" id="ftSlots"></div>
+    <button class="btn btn-ics" id="ftCopyAll" hidden style="margin-top:10px">複製全部時段文字</button>
   </div>
 </div>
 
@@ -899,7 +1030,7 @@ input,textarea{font:inherit;color:inherit}
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
   "https://www.googleapis.com/auth/calendar.readonly",
-  "https://www.googleapis.com/auth/tasks.readonly"
+  "https://www.googleapis.com/auth/tasks"   // read/write — ticking a task off needs write access
 ];
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem("dayline:"+k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
@@ -1201,7 +1332,7 @@ function renderTimeline(){
       const c = calOf(e.cal);
       const top = ((mins(e.start)/60) - lo) * HH;
       const dur = Math.max(24, ((e.end-e.start)/3600000) * HH - 3);
-      const node = el("button","ev "+c.color+(isMasked(e)?" masked":"")+(dur<40?" short":""));
+      const node = el("button","ev "+c.color+(isMasked(e)?" masked":"")+(dur<40?" short":"")+(e.done?" done":""));
       node.style.top = top+"px";
       node.style.height = dur+"px";
       node.style.left = "calc("+(e._col*(100/n))+"% + 2px)";
@@ -1498,6 +1629,26 @@ function renderSettings(){
     };
   }
 
+  const notifyT = $("#notifyToggle");
+  if(notifyT){
+    const supported = "Notification" in window;
+    const perm = supported ? Notification.permission : "unsupported";
+    notifyT.setAttribute("aria-pressed", String(perm==="granted" && LS.get("notifyOn",false)===true));
+    const desc = $("#notifyDesc");
+    if(!supported) desc.textContent = "這個瀏覽器不支援通知";
+    else if(perm==="denied") desc.textContent = "已被封鎖，要開啟請到手機的 Safari 設定裡允許通知";
+    else desc.textContent = "開著 App 時才會跳通知，完全關閉或鎖太久不會";
+    notifyT.onclick = async ()=>{
+      if(!supported){ toast("這個瀏覽器不支援通知"); return; }
+      if(LS.get("notifyOn",false) === true){ LS.set("notifyOn", false); renderSettings(); return; }
+      if(Notification.permission === "denied"){ toast("通知已被封鎖，去手機設定裡開啟"); return; }
+      const p = await Notification.requestPermission();
+      if(p === "granted"){ LS.set("notifyOn", true); toast("通知已開啟"); checkNotifications(); }
+      else toast("沒有允許，通知先關著");
+      renderSettings();
+    };
+  }
+
   const rules = [
     {k:"leave", b:"該出門了", s:"依地點與即時路況回推車程，提前叫你"},
     {k:"meet",  b:"線上會議", s:"開始前 5 分鐘，通知直接帶加入按鈕"},
@@ -1541,6 +1692,203 @@ $("#scrim").onclick = hideSheet;
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") hideSheet(); });
 
 /* ---------- share sheet: Google's own per-calendar ACL ---------- */
+/* ============================================================
+   NOTIFICATIONS — best effort, foreground/background tab only.
+   No server exists to push these to a locked phone; that would need one.
+   This checks on a timer while the page is alive and fires through the
+   service worker (the only path Notification actually works through in
+   an installed iOS PWA — the plain `new Notification()` constructor is
+   silently unavailable there).
+   ============================================================ */
+async function fireNotification(title, body, tag){
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+  try{
+    if("serviceWorker" in navigator){
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification(title, {body, tag, icon:"icon-192.png", badge:"icon-192.png"});
+    } else {
+      new Notification(title, {body, tag});
+    }
+  }catch(e){ /* never block anything on a notification failing to show */ }
+}
+function loadNotified(){ return new Set(LS.get("notifiedIds", [])); }
+function saveNotified(set){ LS.set("notifiedIds", Array.from(set).slice(-200)); }
+function checkNotifications(){
+  if(!state.entered || !LS.get("notifyOn",false) || typeof Notification==="undefined" || Notification.permission!=="granted") return;
+  const now = new Date();
+  const notified = loadNotified();
+  let changed = false;
+  state.events
+    .filter(e => !e.allDay && !e.task && !isMasked(e) && e.start > now && e.start - now < 2*3600000)
+    .forEach(e=>{
+      if(state.rules.leave && e.loc && e.loc!=="家"){
+        const leaveAt = new Date(e.start.getTime() - 18*60000);
+        const key = "leave_"+e.id;
+        if(!notified.has(key) && now >= leaveAt){
+          fireNotification("該出門了", e.title+"・"+hm(e.start)+" 開始・"+e.loc, key);
+          notified.add(key); changed = true;
+        }
+      }
+      if(state.rules.meet && e.meet){
+        const at = new Date(e.start.getTime() - 5*60000);
+        const key = "meet_"+e.id;
+        if(!notified.has(key) && now >= at){
+          fireNotification("線上會議即將開始", e.title+"・"+hm(e.start), key);
+          notified.add(key); changed = true;
+        }
+      }
+    });
+  if(changed) saveNotified(notified);
+}
+
+/* ---------- batch reschedule: shift one day's timed events together ---------- */
+function shiftableEvents(){
+  return eventsOn(state.viewDate).filter(e => !e.allDay && !e.task);
+}
+function openShiftDay(){
+  const evs = shiftableEvents();
+  $("#shiftDayLabel").textContent = isViewingToday() ? "今天" : ((state.viewDate.getMonth()+1)+"/"+state.viewDate.getDate());
+  const list = $("#shiftDayList"); list.innerHTML = "";
+  if(!evs.length){
+    list.appendChild(el("p","",'<span style="color:var(--ink-3);font-size:13px">這天沒有可以調整的行程。</span>'));
+    $("#shiftDayGo").disabled = true;
+    showSheet("sheetShiftDay");
+    return;
+  }
+  $("#shiftDayGo").disabled = false;
+  evs.forEach(e=>{
+    const row = el("div","mini");
+    row.appendChild(el("span","tm num", hm(e.start)));
+    const sw = el("i","sw"); sw.style.background="var(--c-"+calOf(e.cal).color+")"; row.appendChild(sw);
+    row.appendChild(el("span","nm", titleOf(e)));
+    list.appendChild(row);
+  });
+  showSheet("sheetShiftDay");
+}
+async function runShiftDay(){
+  const evs = shiftableEvents();
+  if(!evs.length) return;
+  const mins = parseInt($("#shiftAmt").value,10) * parseInt($("#shiftDir").value,10);
+  const go = $("#shiftDayGo"); go.disabled = true; go.textContent = "調整中⋯";
+
+  let failed = 0;
+  for(const e of evs){
+    const newStart = new Date(e.start.getTime() + mins*60000);
+    const newEnd = new Date(e.end.getTime() + mins*60000);
+    if(state.backend === "oauth" && e.gid){
+      const r = await pushEventTime(e, newStart, newEnd);
+      if(!r.ok){ failed++; continue; }
+    }
+    e.start = newStart; e.end = newEnd;
+  }
+  go.disabled = false; go.textContent = "套用";
+  hideSheet();
+  renderAll();
+  toast(failed ? "完成，但有 "+failed+" 則寫入失敗" : "已調整 "+evs.length+" 則行程");
+}
+
+/* ---------- find-time: freebusy intersection across your own calendars ---------- */
+const WORK_START_H = 9, WORK_END_H = 20;   // the window slots are searched within
+function openFindTime(){
+  const box = $("#ftCals"); box.innerHTML = "";
+  const real = state.cals.filter(c => c.gid && !c.isTaskList);
+  if(!real.length){
+    box.appendChild(el("p","",'<span style="color:var(--ink-3);font-size:13px">示範模式沒有真正的日曆可以交集，連上 Google 之後再試。</span>'));
+  }
+  real.forEach((c,i)=>{
+    const row = el("div","ft-cal-row");
+    const cb = document.createElement("input"); cb.type="checkbox"; cb.id="ftc_"+i;
+    cb.checked = c.on; cb.dataset.calId = c.id;
+    const lb = document.createElement("label"); lb.htmlFor = cb.id; lb.textContent = c.name;
+    row.appendChild(cb); row.appendChild(lb);
+    box.appendChild(row);
+  });
+  $("#ftSlots").innerHTML = "";
+  $("#ftCopyAll").hidden = true;
+  showSheet("sheetFindTime");
+}
+function mergeBusy(ranges){
+  const sorted = ranges.slice().sort((a,b)=>a.start-b.start);
+  const out = [];
+  sorted.forEach(r=>{
+    const last = out[out.length-1];
+    if(last && r.start <= last.end) last.end = new Date(Math.max(last.end, r.end));
+    else out.push({start:new Date(r.start), end:new Date(r.end)});
+  });
+  return out;
+}
+/** Free slots = the working-hours window each day, minus every busy range,
+    minus anything shorter than the requested duration. */
+function freeSlotsFromBusy(busy, from, to, durMin){
+  const merged = mergeBusy(busy);
+  const slots = [];
+  for(let d = new Date(from); d < to; d.setDate(d.getDate()+1)){
+    if(slots.length >= 8) break;
+    const dayStart = new Date(d); dayStart.setHours(WORK_START_H,0,0,0);
+    const dayEnd = new Date(d); dayEnd.setHours(WORK_END_H,0,0,0);
+    if(dayEnd <= new Date()) continue;
+    let cursor = dayStart < new Date() ? new Date() : dayStart;
+    // round up to the next half hour so suggestions look natural
+    cursor = new Date(Math.ceil(cursor.getTime()/1800000)*1800000);
+    const todaysBusy = merged.filter(b => b.start < dayEnd && b.end > dayStart);
+    for(const b of todaysBusy){
+      if(b.start - cursor >= durMin*60000) slots.push({start:new Date(cursor), end:new Date(cursor.getTime()+durMin*60000)});
+      if(b.end > cursor) cursor = new Date(b.end);
+    }
+    if(dayEnd - cursor >= durMin*60000) slots.push({start:new Date(cursor), end:new Date(cursor.getTime()+durMin*60000)});
+  }
+  return slots.slice(0,5);
+}
+async function runFindTime(){
+  const ids = Array.from(document.querySelectorAll('#ftCals input:checked')).map(cb=>cb.dataset.calId);
+  const gids = ids.map(id => (state.cals.find(c=>c.id===id)||{}).gid).filter(Boolean);
+  if(!gids.length){ toast("先勾選至少一本日曆"); return; }
+
+  const dur = parseInt($("#ftDur").value,10);
+  const days = parseInt($("#ftRange").value,10);
+  const from = new Date(); const to = new Date(); to.setDate(to.getDate()+days);
+
+  const go = $("#ftGo"); go.disabled = true; go.textContent = "算空檔中⋯";
+  $("#ftSlots").innerHTML = "";
+  try{
+    const r = await gapi("freeBusy", {}, {method:"POST", body:{
+      timeMin: from.toISOString(), timeMax: to.toISOString(),
+      items: gids.map(id=>({id}))
+    }});
+    const busy = [];
+    Object.values(r.calendars || {}).forEach(cal=> (cal.busy||[]).forEach(b=> busy.push({start:new Date(b.start), end:new Date(b.end)})));
+    const slots = freeSlotsFromBusy(busy, from, to, dur);
+    renderFindTimeSlots(slots);
+  }catch(e){ toast("查詢失敗："+e.message); }
+  go.disabled = false; go.textContent = "找空檔";
+}
+function renderFindTimeSlots(slots){
+  const box = $("#ftSlots"); box.innerHTML = "";
+  if(!slots.length){
+    box.appendChild(el("p","",'<span style="color:var(--ink-3);font-size:13px">這個範圍內找不到夠長的共同空檔，試試拉長天數或縮短時長。</span>'));
+    $("#ftCopyAll").hidden = true;
+    return;
+  }
+  const label = s => (s.start.getMonth()+1)+"/"+s.start.getDate()+" "+WD[s.start.getDay()]+"　"+hm(s.start)+"–"+hm(s.end);
+  slots.forEach(s=>{
+    const row = el("div","ft-slot");
+    row.appendChild(el("span","tx", label(s)));
+    const cp = el("button","","複製");
+    cp.onclick = async ()=>{
+      try{ await navigator.clipboard.writeText(label(s)); toast("已複製"); }
+      catch(e){ toast("複製失敗，長按文字手動複製"); }
+    };
+    row.appendChild(cp);
+    box.appendChild(row);
+  });
+  $("#ftCopyAll").hidden = false;
+  $("#ftCopyAll").onclick = async ()=>{
+    const text = "我這幾個時段都可以：\n" + slots.map(s=>"・"+label(s)).join("\n");
+    try{ await navigator.clipboard.writeText(text); toast("已複製，可以直接貼到 LINE"); }
+    catch(e){ toast("複製失敗，長按文字手動複製"); }
+  };
+}
+
 async function openShareSheet(cal){
   const b = $("#shareBody");
   b.innerHTML = "";
@@ -1609,6 +1957,25 @@ function openEvent(e){
   tag.appendChild(sw); tag.appendChild(document.createTextNode(c.name + (c.privacy? "・隱私模式" : "")));
   b.appendChild(tag);
   b.appendChild(el("h3","st", titleOf(e)));
+
+  if(e.task){
+    const dueLabel = (e.start.getMonth()+1)+"/"+e.start.getDate()+" "+WD[e.start.getDay()];
+    b.appendChild((()=>{ const r=el("div","kv"); r.appendChild(el("div","k","到期日")); r.appendChild(el("div","v",dueLabel)); return r; })());
+    if(e.notes){ const r=el("div","kv"); r.appendChild(el("div","k","備註")); r.appendChild(el("div","v",e.notes)); b.appendChild(r); }
+
+    const doneBtn = el("button","btn "+(e.done?"btn-ics":"btn-primary"), e.done ? "已完成・點一下復原" : "標記完成");
+    doneBtn.style.marginTop = "16px";
+    doneBtn.onclick = async ()=>{
+      const before = e.done;
+      e.done = !e.done; hideSheet(); renderAll();
+      const r = await pushTaskDone(e, e.done);
+      if(!r.ok){ e.done = before; renderAll(); toast("沒送出（"+r.code+"），已還原"); }
+      else toast(e.done ? "已完成" : "已取消完成");
+    };
+    b.appendChild(doneBtn);
+    showSheet("sheetEvent");
+    return;
+  }
 
   const when = e.allDay ? "整天"
     : (e.start.getMonth()+1)+"/"+e.start.getDate()+" "+WD[e.start.getDay()]+"　"+hm(e.start)+" – "+hm(e.end)+
@@ -1993,11 +2360,44 @@ function parseText(txt){
   return out;
 }
 
+/* ---------- saved templates — local presets, never synced to Google ---------- */
+function loadTemplates(){ return LS.get("templates", []); }
+function saveTemplates(list){ LS.set("templates", list); }
+function durWords(min){
+  if(min===30) return "半小時";
+  if(min%60===0){ const h=min/60; return (h===1?"一":h===2?"兩":String(h))+"小時"; }
+  return (min/60).toFixed(1)+"小時";
+}
+function renderQaTemplates(){
+  const row = $("#qaTplRow"); row.className = "qa-tpl-row"; row.innerHTML="";
+  loadTemplates().forEach(tpl=>{
+    const b = el("button","",tpl.name);
+    const x = el("span","x","×");
+    x.onclick = ev=>{
+      ev.stopPropagation();
+      saveTemplates(loadTemplates().filter(t=>t.id!==tpl.id));
+      renderQaTemplates();
+    };
+    b.appendChild(x);
+    b.onclick = ()=> applyTemplate(tpl);
+    row.appendChild(b);
+  });
+}
+function applyTemplate(tpl){
+  let text = "明天 " + tpl.title;
+  if(tpl.loc) text += " 在" + tpl.loc;
+  text += " " + durWords(tpl.durMin);
+  $("#qaInput").value = text;
+  renderQuickAdd();
+  $("#qaInput").focus();
+}
+
 function renderQuickAdd(){
   const txt = $("#qaInput").value;
   const tags = $("#qaParse"); tags.innerHTML="";
   const prev = $("#qaPreview");
-  if(!txt.trim()){ prev.hidden=true; $("#qaSave").disabled=false; return; }
+  const wrap = $("#qaPreviewWrap");
+  if(!txt.trim()){ wrap.hidden=true; prev._draft=null; $("#qaSave").disabled=false; return; }
   const p = parseText(txt);
 
   const mk = (k,v,miss) => {
@@ -2019,7 +2419,7 @@ function renderQuickAdd(){
   const start = new Date(d); if(p.time) start.setHours(p.time.h, p.time.m, 0, 0); else start.setHours(9,0,0,0);
   const end = new Date(start.getTime() + p.dur*60000);
 
-  prev.hidden=false; prev.innerHTML="";
+  wrap.hidden=false; prev.innerHTML="";
   const sw = el("i","sw"); sw.style.background="var(--c-"+c.color+")"; prev.appendChild(sw);
   const tx = el("div",""); tx.style.flex="1";
   tx.appendChild(el("div","", "<b style='font-size:15px'>"+p.title+"</b>"));
@@ -2033,7 +2433,7 @@ function renderQuickAdd(){
 
 async function saveQuickAdd(){
   const prev = $("#qaPreview");
-  if(prev.hidden || !prev._draft){ toast("先打一句話，例如「明天下午三點開會」"); return; }
+  if($("#qaPreviewWrap").hidden || !prev._draft){ toast("先打一句話，例如「明天下午三點開會」"); return; }
   const {p, start, end, cal} = prev._draft;
   const ev = {
     id:"e"+Math.random().toString(36).slice(2,9), gid:null,
@@ -2260,6 +2660,24 @@ async function pullFromConnector(){
 }
 
 /* ---------- writes: one attempt, one shape, never auto-retried ---------- */
+/** Batch reschedule: move one already-real event to a new start/end.
+    demo/ics/mcp are not wired for this yet — only the direct-login (oauth)
+    backend can PATCH the real event, matching what the day-shift sheet
+    currently offers (it hides itself on other backends). */
+async function pushEventTime(ev, newStart, newEnd){
+  if(state.backend !== "oauth" || !ev.gid) return {ok:false, code:"local"};
+  const cal = state.cals.find(c => c.id === ev.cal);
+  const calId = (cal && cal.gid) || "primary";
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  try{
+    await gapi("calendars/"+encodeURIComponent(calId)+"/events/"+encodeURIComponent(ev.gid), {}, {
+      method:"PATCH",
+      body:{ start:{dateTime:newStart.toISOString(), timeZone:tz}, end:{dateTime:newEnd.toISOString(), timeZone:tz} }
+    });
+    return {ok:true};
+  }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
+}
+
 async function pushEvent(draft){
   if(state.backend === "mcp"){
     const cal = state.cals.find(c => c.id === draft.cal);
@@ -2605,6 +3023,66 @@ async function pullFromGoogle(){
     }catch(err){ c.error = "讀不到"; return []; }
   }));
   state.events = pulls.flat();
+
+  await pullGoogleTasks(timeMin, timeMax);
+}
+
+/* ---------- Google Tasks: shown on the same timeline as events ---------- */
+async function gtasks(path, params, opts){
+  const url = new URL("https://www.googleapis.com/tasks/v1/"+path);
+  Object.entries(params||{}).forEach(([k,v])=>url.searchParams.set(k,v));
+  const method = (opts && opts.method) || "GET";
+  const headers = {Authorization:"Bearer "+state.token};
+  let body;
+  if(opts && opts.body !== undefined){ headers["Content-Type"]="application/json"; body=JSON.stringify(opts.body); }
+  const r = await fetch(url, {method, headers, body});
+  if(!r.ok){ const err=new Error("Tasks API "+r.status); err.status=r.status; throw err; }
+  return r.status===204 ? null : r.json();
+}
+/** Only tasks with a due date get placed on the timeline — exactly how
+    Google Calendar's own "Tasks" layer behaves; undated to-dos have nowhere
+    on a day grid to go. Placed at a fixed 09:00 marker slot since Tasks has
+    no time-of-day of its own. */
+async function pullGoogleTasks(timeMin, timeMax){
+  let lists;
+  try{ lists = await gtasks("users/@me/lists", {maxResults:20}); }
+  catch(e){ return; }   // Tasks API not enabled / no access — events still work fine without it
+
+  const items = (lists.items || []).slice(0,6);
+  const taskCals = items.map((l,i)=>({
+    id: "gt_"+l.id, gid: l.id, name: l.title || "待辦事項",
+    ctx: "personal", color: "task", sub: "Google Tasks",
+    on: true, privacy: false, primary: false, accessRole: "writer", isTaskList: true
+  }));
+
+  const pulls = await Promise.all(items.map(async l=>{
+    try{
+      const r = await gtasks("lists/"+encodeURIComponent(l.id)+"/tasks", {
+        showCompleted:"true", showHidden:"true", maxResults:"100"
+      });
+      return (r.items || []).filter(t => t.due).map(t=>{
+        const due = new Date(t.due);                    // date-only; time-of-day is not meaningful
+        const start = new Date(due.getFullYear(), due.getMonth(), due.getDate(), 9, 0);
+        return {
+          id: "gt_"+t.id, gid: t.id, cal: "gt_"+l.id, taskListId: l.id,
+          title: t.title || "(沒有標題)", start, end: new Date(start.getTime()+30*60000),
+          allDay:false, loc:"", guests:[], rsvp:null, meet:false, task:true,
+          done: t.status === "completed", notes: t.notes || ""
+        };
+      });
+    }catch(e){ return []; }
+  }));
+
+  state.cals = state.cals.concat(taskCals);
+  state.events = state.events.concat(pulls.flat());
+}
+async function pushTaskDone(t, done){
+  if(state.backend !== "oauth") return {ok:false, code:"local"};
+  try{
+    await gtasks("lists/"+encodeURIComponent(t.taskListId)+"/tasks/"+encodeURIComponent(t.gid),
+      {}, {method:"PATCH", body:{status: done ? "completed" : "needsAction"}});
+    return {ok:true};
+  }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
 }
 
 /* ============================================================
@@ -2790,6 +3268,10 @@ function applyTheme(){
 
 /* ---------- wiring ---------- */
 $("#icsGo").onclick    = ()=> importIcs($("#icsPaste").value);
+$("#btnFindTime").onclick = openFindTime;
+$("#ftGo").onclick = runFindTime;
+$("#btnShiftDay").onclick = openShiftDay;
+$("#shiftDayGo").onclick = runShiftDay;
 $("#coachClose").onclick = ()=>{ LS.set("coachDone", true); $("#installCoach").hidden = true; };
 
 /* one-time setup sheet */
@@ -2815,7 +3297,10 @@ $("#icsFile").addEventListener("change", e=>{
   r.readAsText(f);
 });
 $("#btnReauth").onclick = ()=>{ clearOAuthSession(); obStart(); };
-$("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
+$("#btnAdd").onclick = ()=>{
+  showSheet("sheetAdd"); renderQaTemplates(); $("#tplNameRow").hidden = true;
+  setTimeout(()=>$("#qaInput").focus(), 300);
+};
 $("#btnToday").onclick = ()=>{ goToday(); toast("回到今天"); };
 $("#btnPrevDay").onclick = ()=> shiftViewDate(-1);
 $("#btnNextDay").onclick = ()=> shiftViewDate(1);
@@ -2851,6 +3336,23 @@ document.querySelectorAll("#themeSeg button").forEach(b=> b.onclick = ()=>{
 });
 $("#qaInput").addEventListener("input", renderQuickAdd);
 $("#qaSave").onclick = saveQuickAdd;
+$("#qaSaveTpl").onclick = ()=>{
+  if(!$("#qaPreview")._draft){ toast("先打完一句話，有預覽了才能存範本"); return; }
+  $("#tplNameRow").hidden = false;
+  $("#tplNameInput").value = ""; $("#tplNameInput").focus();
+};
+$("#tplNameGo").onclick = ()=>{
+  const draft = $("#qaPreview")._draft;
+  const name = $("#tplNameInput").value.trim();
+  if(!name){ toast("先取個範本名稱"); return; }
+  if(!draft){ toast("預覽不見了，重新打一次"); $("#tplNameRow").hidden=true; return; }
+  const list = loadTemplates();
+  list.push({id:"tpl"+Date.now(), name, title:draft.p.title, loc:draft.p.loc||"", durMin:draft.p.dur});
+  saveTemplates(list);
+  $("#tplNameRow").hidden = true;
+  renderQaTemplates();
+  toast("已存成範本「"+name+"」");
+};
 $("#searchInput").addEventListener("input", renderSearch);
 
 (function seedExamples(){
@@ -2891,6 +3393,9 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
 }
 
 // keep the now-line honest
-setInterval(()=>{ if(!$("#scroll").hidden && state.view==="viewToday"){ renderBrief(); renderTimeline(); } }, 60000);
+setInterval(()=>{
+  if(!$("#scroll").hidden && state.view==="viewToday"){ renderBrief(); renderTimeline(); }
+  checkNotifications();
+}, 60000);
 })();
 </script>
