@@ -386,6 +386,7 @@ input,textarea{font:inherit;color:inherit}
 .mo-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:100%;padding:0 2px}
 .mo-dots i{width:5px;height:5px;border-radius:50%;flex:none}
 .mo-more{font-size:8.5px;color:var(--ink-3);font-family:var(--font-num)}
+.mo-chips,.mo-chip-more{display:none}   /* desktop only — see the ≥860px block */
 
 /* ---------- week view ---------- */
 .wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
@@ -563,7 +564,21 @@ input,textarea{font:inherit;color:inherit}
   }
   .sheet.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1) }
   .wk-grid{ grid-template-columns:repeat(7,1fr) }
-  .mo-cell{ aspect-ratio:auto; min-height:64px }
+
+  /* Month cells have real room on desktop: show event titles, not just dots. */
+  .mo-cell{
+    aspect-ratio:auto; min-height:104px; align-items:stretch; justify-content:flex-start;
+    padding:8px; gap:4px;
+  }
+  .mo-cell .dd{ align-self:flex-end }
+  .mo-dots,.mo-more{ display:none }
+  .mo-chips{ display:flex; flex-direction:column; gap:3px; width:100%; min-height:0; overflow:hidden }
+  .mo-chip{
+    font-size:11px; line-height:1.35; padding:2px 6px; border-radius:6px; text-align:left;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; flex:none;
+    font-family:var(--font-ui);
+  }
+  .mo-chip-more{ display:block; font-size:10.5px; color:var(--ink-3); padding:0 6px; text-align:left }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -1302,12 +1317,29 @@ function renderMonth(){
 
     const evs = eventsOn(d);
     if(evs.length){
+      // Compact dot row — the phone-width cell (CSS keeps this, hides the chips below).
       const dots = el("div","mo-dots");
       evs.slice(0,4).forEach(e=>{
         const dot = el("i",""); dot.style.background = "var(--c-"+calOf(e.cal).color+")"; dots.appendChild(dot);
       });
       cell.appendChild(dots);
       if(evs.length>4) cell.appendChild(el("span","mo-more","+"+(evs.length-4)));
+
+      // Titled chips — the desktop-width cell has room for a line of text per
+      // event, same idea as Google Calendar's own month view (CSS hides this
+      // on phone, where a cell is only ~50px square).
+      const chips = el("div","mo-chips");
+      evs.slice(0,3).forEach(e=>{
+        const c = calOf(e.cal);
+        const chip = el("button","mo-chip");
+        chip.style.background = "var(--c-"+c.color+"-bg)";
+        chip.style.color = "var(--c-"+c.color+")";
+        chip.textContent = (e.allDay ? "" : hm(e.start)+" ") + titleOf(e);
+        chip.onclick = ev=>{ ev.stopPropagation(); openEvent(e); };
+        chips.appendChild(chip);
+      });
+      cell.appendChild(chips);
+      if(evs.length>3) cell.appendChild(el("span","mo-chip-more","還有 "+(evs.length-3)+" 件"));
     }
     cell.onclick = ()=>{ state.viewDate = new Date(d); switchView("viewToday"); };
     grid.appendChild(cell);
