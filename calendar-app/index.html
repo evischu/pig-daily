@@ -364,6 +364,24 @@ input,textarea{font:inherit;color:inherit}
 .wk-nav #wkRange{font-family:var(--font-num);font-size:13px;color:var(--ink-2);font-weight:500}
 .wk-nav .chip{padding:5px 11px;font-size:12px}
 
+/* ---------- month view ---------- */
+.mo-wd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-top:10px;margin-bottom:6px}
+.mo-wd span{font-size:11px;color:var(--ink-3);font-weight:500}
+.mo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mo-cell{
+  aspect-ratio:1;border-radius:11px;background:var(--surface);border:1px solid var(--line-soft);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;padding-top:6px;
+  cursor:pointer;min-width:0;
+}
+.mo-cell.out{background:transparent;border-color:transparent}
+.mo-cell.out .dd{color:var(--ink-3);opacity:.55}
+.mo-cell.is-today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.mo-cell .dd{font-size:12.5px;font-weight:600;font-family:var(--font-num)}
+.mo-cell.is-today .dd{color:var(--accent)}
+.mo-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:100%;padding:0 2px}
+.mo-dots i{width:5px;height:5px;border-radius:50%;flex:none}
+.mo-more{font-size:8.5px;color:var(--ink-3);font-family:var(--font-num)}
+
 /* ---------- week view ---------- */
 .wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .wk-col{
@@ -443,7 +461,7 @@ input,textarea{font:inherit;color:inherit}
   background:color-mix(in srgb, var(--paper) 90%, transparent);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-top:1px solid var(--line-soft);
-  display:grid;grid-template-columns:repeat(5,1fr);align-items:center;
+  display:grid;grid-template-columns:repeat(6,1fr);align-items:center;
   padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));
 }
 .tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-3);padding:4px 0}
@@ -506,6 +524,42 @@ input,textarea{font:inherit;color:inherit}
   max-width:calc(100% - 40px);text-align:center;
 }
 #toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- desktop / wide-window layout ----------
+   Phone width (below) stays the primary design; this block only changes
+   how the SAME markup is arranged once there's room for it — a left icon
+   rail instead of a bottom bar, sheets as centered dialogs instead of
+   bottom sheets, the whole app read as one window on the page rather than
+   a stretched phone strip. No DOM or JS differs between the two. */
+@media (min-width: 860px){
+  body{ display:flex; justify-content:center; align-items:flex-start; padding-block:36px; background:var(--surface-2); }
+  #app{
+    max-width:1040px; width:100%; height:min(860px, calc(100vh - 72px));
+    border-inline:0; border-radius:20px; overflow:hidden; box-shadow:var(--shadow-lift);
+    display:grid; grid-template-columns:96px 1fr; grid-template-rows:auto 1fr;
+  }
+  .topbar{ grid-column:2; grid-row:1; padding-top:16px; }
+  #scroll{ grid-column:2; grid-row:2; padding-bottom:20px; }
+  #tabbar{
+    position:static; grid-column:1; grid-row:1/3;
+    max-width:none; width:96px; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:10px;
+    padding:22px 0; border-top:0; border-right:1px solid var(--line-soft);
+    background:var(--surface); backdrop-filter:none;
+  }
+  .tab{ width:76px; padding:11px 0; border-radius:12px }
+  .tab[aria-selected="true"]{ background:var(--surface-2) }
+  .fab{ order:-1; margin-bottom:8px }
+  #installCoach{ display:none }   /* "add to home screen" is a phone-only idea */
+  .sheet{
+    left:50%; right:auto; bottom:auto; top:50%; max-width:440px; width:88%; max-height:80%;
+    border-radius:20px; transform:translate(-50%,-46%) scale(.97); opacity:0; pointer-events:none;
+    transition:transform .22s cubic-bezier(.32,.72,0,1), opacity .18s ease;
+  }
+  .sheet.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1) }
+  .wk-grid{ grid-template-columns:repeat(7,1fr) }
+  .mo-cell{ aspect-ratio:auto; min-height:64px }
+}
 
 @media (prefers-reduced-motion: reduce){
   *{transition-duration:.01ms !important;animation-duration:.01ms !important}
@@ -602,6 +656,24 @@ input,textarea{font:inherit;color:inherit}
       <div class="wk-list" id="wkList"></div>
     </section>
 
+    <!-- MONTH -->
+    <section id="viewMonth" class="pad" hidden>
+      <div class="wk-nav">
+        <button class="icon-btn" id="btnPrevMonth" aria-label="上個月">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5 8 12l6.5 7"/></svg>
+        </button>
+        <span id="moRange">9 月 2026</span>
+        <button class="icon-btn" id="btnNextMonth" aria-label="下個月">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 5 6.5 7-6.5 7"/></svg>
+        </button>
+        <button class="chip" id="btnThisMonth" style="margin-left:auto" hidden>本月</button>
+      </div>
+      <div class="mo-wd">
+        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+      </div>
+      <div class="mo-grid" id="moGrid"></div>
+    </section>
+
     <!-- SEARCH -->
     <section id="viewSearch" class="pad" hidden>
       <div class="searchbar">
@@ -662,6 +734,10 @@ input,textarea{font:inherit;color:inherit}
     <button class="tab" role="tab" data-v="viewWeek" aria-selected="false">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h9"/></svg>
       <span>週</span>
+    </button>
+    <button class="tab" role="tab" data-v="viewMonth" aria-selected="false">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><circle cx="8" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1" fill="currentColor" stroke="none"/></svg>
+      <span>月</span>
     </button>
     <button class="fab" id="btnAdd" aria-label="一句話新增">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -818,6 +894,7 @@ const state = {
   pendingMode:null,
   viewDate: (()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; })(),   // the day view's date (Day view)
   weekOffset: 0,                                                             // weeks from the real current week (Week view)
+  monthOffset: 0,                                                            // months from the real current month (Month view)
   coords:null,
   weather:null,
   clientId: new URLSearchParams(location.search).get("client_id") || CFG.googleClientId || LS.get("clientId",""),
@@ -945,8 +1022,8 @@ const el = (t,c,h) => { const n=document.createElement(t); if(c)n.className=c; i
 
 function renderHeader(){
   const d = state.viewDate;
-  $("#hdDay").textContent = WD[d.getDay()] + " " + d.getDate();
-  $("#hdMonth").textContent = (d.getMonth()+1) + " 月・" + d.getFullYear();
+  $("#hdDay").textContent = (d.getMonth()+1)+"/"+d.getDate()+" ("+WD[d.getDay()].slice(1)+")";
+  $("#hdMonth").textContent = String(d.getFullYear());
   $("#btnToday").style.visibility = isViewingToday() ? "hidden" : "visible";
 }
 
@@ -1182,6 +1259,42 @@ function renderWeek(){
     list.appendChild(card);
   }
   $("#weekFree").textContent = "可用空檔約 " + Math.round(freeTotal) + " 小時";
+}
+
+/* ============================================================
+   RENDER — month
+   ============================================================ */
+function renderMonth(){
+  const base = new Date(); base.setDate(1); base.setHours(0,0,0,0);
+  base.setMonth(base.getMonth() + state.monthOffset);
+  $("#moRange").textContent = (base.getMonth()+1)+" 月 "+base.getFullYear();
+  $("#btnThisMonth").hidden = state.monthOffset===0;
+
+  const firstWeekday = base.getDay();
+  const daysInMonth = new Date(base.getFullYear(), base.getMonth()+1, 0).getDate();
+  const rows = Math.ceil((firstWeekday + daysInMonth) / 7);
+  const gridStart = new Date(base); gridStart.setDate(gridStart.getDate() - firstWeekday);
+
+  const today = new Date();
+  const grid = $("#moGrid"); grid.innerHTML = "";
+  for(let i=0; i<rows*7; i++){
+    const d = new Date(gridStart); d.setDate(gridStart.getDate()+i);
+    const inMonth = d.getMonth() === base.getMonth();
+    const cell = el("div","mo-cell"+(inMonth?"":" out")+(sameDay(d,today)?" is-today":""));
+    cell.appendChild(el("span","dd num", String(d.getDate())));
+
+    const evs = eventsOn(d);
+    if(evs.length){
+      const dots = el("div","mo-dots");
+      evs.slice(0,4).forEach(e=>{
+        const dot = el("i",""); dot.style.background = "var(--c-"+calOf(e.cal).color+")"; dots.appendChild(dot);
+      });
+      cell.appendChild(dots);
+      if(evs.length>4) cell.appendChild(el("span","mo-more","+"+(evs.length-4)));
+    }
+    cell.onclick = ()=>{ state.viewDate = new Date(d); switchView("viewToday"); };
+    grid.appendChild(cell);
+  }
 }
 
 /* ============================================================
@@ -2488,7 +2601,7 @@ function toast(msg){
 }
 function switchView(v){
   state.view = v;
-  ["viewToday","viewWeek","viewSearch","viewSettings"].forEach(id=>{
+  ["viewToday","viewWeek","viewMonth","viewSearch","viewSettings"].forEach(id=>{
     document.getElementById(id).hidden = (id!==v);
   });
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.v===v)));
@@ -2496,12 +2609,23 @@ function switchView(v){
   $("#scroll").scrollTop = 0;
   if(v==="viewToday"){ renderHeader(); renderBrief(); renderTimeline(); }
   if(v==="viewWeek") renderWeek();
+  if(v==="viewMonth") renderMonth();
   if(v==="viewSearch"){ renderSearch(); }
   if(v==="viewSettings") renderSettings();
+}
+/** The bottom-nav "今天" tab and the topbar's clock icon must both mean the
+    same thing: snap back to the REAL current date, not just switch tabs while
+    leaving a stale viewDate (e.g. left over from paging through the month). */
+function goToday(){
+  state.viewDate = (()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; })();
+  state.weekOffset = 0;
+  state.monthOffset = 0;
+  switchView("viewToday");
 }
 function renderAll(){
   renderHeader(); renderBrief(); renderTimeline();
   if(state.view==="viewWeek") renderWeek();
+  if(state.view==="viewMonth") renderMonth();
   if(state.view==="viewSearch") renderSearch();
   if(state.view==="viewSettings") renderSettings();
 }
@@ -2558,11 +2682,7 @@ $("#icsFile").addEventListener("change", e=>{
 });
 $("#btnReauth").onclick = ()=> obStart();
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
-$("#btnToday").onclick = ()=>{
-  state.viewDate = (()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; })();
-  state.weekOffset = 0;
-  switchView("viewToday"); renderAll(); toast("回到今天");
-};
+$("#btnToday").onclick = ()=>{ goToday(); toast("回到今天"); };
 $("#btnPrevDay").onclick = ()=> shiftViewDate(-1);
 $("#btnNextDay").onclick = ()=> shiftViewDate(1);
 $("#btnDateJump").onclick = ()=>{
@@ -2580,13 +2700,18 @@ $("#dateJumpInput").addEventListener("change", e=>{
 $("#btnPrevWeek").onclick = ()=>{ state.weekOffset--; renderWeek(); };
 $("#btnNextWeek").onclick = ()=>{ state.weekOffset++; renderWeek(); };
 $("#btnThisWeek").onclick = ()=>{ state.weekOffset=0; renderWeek(); };
+$("#btnPrevMonth").onclick = ()=>{ state.monthOffset--; renderMonth(); };
+$("#btnNextMonth").onclick = ()=>{ state.monthOffset++; renderMonth(); };
+$("#btnThisMonth").onclick = ()=>{ state.monthOffset=0; renderMonth(); };
 $("#btnTheme").onclick = ()=>{
   const order = ["auto","light","dark"];
   state.theme = order[(order.indexOf(state.theme)+1)%3];
   LS.set("theme", state.theme); applyTheme();
   toast("主題：" + ({auto:"跟隨系統",light:"淺色",dark:"深色"})[state.theme]);
 };
-document.querySelectorAll(".tab").forEach(b=> b.onclick = ()=> switchView(b.dataset.v));
+document.querySelectorAll(".tab").forEach(b=>{
+  b.onclick = b.dataset.v==="viewToday" ? goToday : ()=> switchView(b.dataset.v);
+});
 document.querySelectorAll("#themeSeg button").forEach(b=> b.onclick = ()=>{
   state.theme = b.dataset.t; LS.set("theme", state.theme); applyTheme();
 });
