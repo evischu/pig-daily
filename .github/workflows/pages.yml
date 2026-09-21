@@ -1,7 +1,8 @@
 name: Deploy Dayline
 
 # Publishes calendar-app/ to GitHub Pages.
-# One-time switch: repo Settings → Pages → Source: "GitHub Actions".
+# configure-pages turns Pages on by itself the first time this runs, so there is
+# no switch to flip in repo settings.
 
 on:
   push:
@@ -29,6 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: calendar-app

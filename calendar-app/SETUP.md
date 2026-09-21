@@ -7,21 +7,22 @@
 
 ---
 
-## 第一件事：把網站打開（3 分鐘）
+## 第一件事：把網站打開（不用動手）
 
-1. 用電腦打開 <https://github.com/evischu/pig-daily>
-2. 點上方的 **Settings**（設定）
-3. 左邊選單找到 **Pages**
-4. **Source** 那一欄，選 **GitHub Actions**
-5. 關掉就好，不用按儲存
-
+把這個分支合併到 `main` 之後，部署會自動跑，也會自動把 GitHub Pages 打開。
 等一兩分鐘，你的網站就會出現在：
 
 ```
 https://evischu.github.io/pig-daily/
 ```
 
+進度可以在 repo 的 **Actions** 分頁看，綠色勾勾＝上線了。
+
 > 這時候打開已經可以用了，只是還沒有登入按鈕——第二件事做完就會有。
+>
+> 萬一部署失敗、訊息提到 Pages 沒有啟用，再手動開一次：
+> **Settings → Pages → Source 選 GitHub Actions**，然後到 Actions 分頁
+> 按 **Re-run jobs**。
 
 ---
 
