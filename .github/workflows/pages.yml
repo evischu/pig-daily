@@ -1,8 +1,12 @@
 name: Deploy Dayline
 
 # Publishes calendar-app/ to GitHub Pages.
-# configure-pages turns Pages on by itself the first time this runs, so there is
-# no switch to flip in repo settings.
+#
+# configure-pages turns Pages on by itself the first time this runs. Doing
+# that needs the repo-administration permission for just this one job (that
+# grant lives only inside this run's short-lived token, scoped to this repo,
+# and is never exposed to the app code being deployed) — pages:write alone
+# only covers deploying to a site that already exists.
 
 on:
   push:
@@ -24,6 +28,11 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      administration: write   # first-run only: lets configure-pages create the site
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
