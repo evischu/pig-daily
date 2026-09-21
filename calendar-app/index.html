@@ -929,6 +929,8 @@ function at(dayOffset, h, m){
 }
 function startOfWeek(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; }
 function isViewingToday(){ return sameDay(state.viewDate, new Date()); }
+function weekOffsetFor(d){ return Math.round((startOfWeek(d) - startOfWeek(new Date())) / (7*86400000)); }
+function monthOffsetFor(d){ const n=new Date(); return (d.getFullYear()-n.getFullYear())*12 + (d.getMonth()-n.getMonth()); }
 function shiftViewDate(days){
   const d = new Date(state.viewDate); d.setDate(d.getDate()+days); state.viewDate = d;
   renderHeader(); renderBrief(); renderTimeline();
@@ -2608,8 +2610,11 @@ function switchView(v){
   $("#topbar").querySelector(".ctx-scroll").hidden = (v==="viewSettings");
   $("#scroll").scrollTop = 0;
   if(v==="viewToday"){ renderHeader(); renderBrief(); renderTimeline(); }
-  if(v==="viewWeek") renderWeek();
-  if(v==="viewMonth") renderMonth();
+  // Opening Week/Month lands on whichever week/month contains the day the
+  // person was just looking at — not always "this week" — so switching
+  // tabs stays oriented on the same date instead of silently resetting it.
+  if(v==="viewWeek"){ state.weekOffset = weekOffsetFor(state.viewDate); renderWeek(); }
+  if(v==="viewMonth"){ state.monthOffset = monthOffsetFor(state.viewDate); renderMonth(); }
   if(v==="viewSearch"){ renderSearch(); }
   if(v==="viewSettings") renderSettings();
 }
