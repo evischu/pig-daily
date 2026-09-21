@@ -1418,7 +1418,17 @@ const CONNECT_COPY = {
     retry:true
   },
   oauth_denied: { t:"Google 授權被取消", p:"授權視窗關閉或被拒絕了。", steps:["再按一次連線，並在 Google 畫面選擇允許"], retry:true },
-  oauth_api:    { t:"授權成功，但讀取行事曆失敗", p:"權杖拿到了，Calendar API 卻回報錯誤——通常是 API 沒啟用，或 scope 不足。", steps:["在 Google Cloud Console 確認已啟用 Google Calendar API"], retry:true }
+  oauth_api:    { t:"授權成功，但讀取行事曆失敗", p:"權杖拿到了，Calendar API 卻回報錯誤——通常是 API 沒啟用，或 scope 不足。", steps:["在 Google Cloud Console 確認已啟用 Google Calendar API"], retry:true },
+  oauth_timeout: {
+    t:"Google 那邊沒有回應",
+    p:"畫面顯示登入成功了，但訊息沒有傳回這個 App。這通常是瀏覽器把跳出來的登入視窗擋住了，或裝置的隱私設定擋掉了 Google 傳回來的資料，不是你按錯任何東西。",
+    steps:[
+      "iPhone／iPad：設定 App → Safari → 找到「防止跨網站跟蹤功能」，關掉它，再回來重試一次（登入成功後可以再打開）",
+      "如果瀏覽器有跳出「已封鎖快顯視窗」的提示，點它，選允許",
+      "都試過還是一樣，改用 Chrome App 打開這個網址再試一次"
+    ],
+    retry:true
+  }
 };
 
 function openConnect(code, detail){
@@ -1971,12 +1981,16 @@ async function pushRsvp(ev, answer){
   }catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
 }
 
+const _scriptPromises = {};
 function loadScript(src){
-  return new Promise((res,rej)=>{
+  if(_scriptPromises[src]) return _scriptPromises[src];   // one <script> tag per URL, ever
+  return _scriptPromises[src] = new Promise((res,rej)=>{
     const s=document.createElement("script");
-    s.src=src; s.async=true; s.onload=res; s.onerror=()=>rej(new Error("blocked"));
+    s.src=src; s.async=true;
+    s.onload=res;
+    s.onerror=()=>{ delete _scriptPromises[src]; rej(new Error("blocked")); };
     document.head.appendChild(s);
-    setTimeout(()=>rej(new Error("timeout")), 6000);
+    setTimeout(()=>{ delete _scriptPromises[src]; rej(new Error("timeout")); }, 6000);
   });
 }
 /** One retry, reads only — covers the consent prompt that had not settled yet. */
@@ -2014,10 +2028,25 @@ async function connectCalendar(){
 }
 
 async function connectOAuth(){
+  setAuthBusy(true, "打開 Google 登入視窗⋯");
   try{
     if(!window.google || !google.accounts){
+      // Reaching here means the eager preload at boot (below) hasn't finished —
+      // slow network, or the click landed within the first instant on the page.
+      // The await below reopens the exact gap that strands iOS Safari's popup
+      // (it silently drops window.open() once a user gesture has an async gap
+      // before it), so this path is a fallback, not the expected one.
       await loadScript("https://accounts.google.com/gsi/client");
     }
+
+    let settled = false;
+    const giveUp = setTimeout(()=>{
+      if(settled) return;
+      settled = true;
+      setAuthBusy(false);
+      openConnect("oauth_timeout");
+    }, 25000);
+
     const client = google.accounts.oauth2.initTokenClient({
       client_id: state.clientId,
       scope: SCOPES.join(" "),
@@ -2025,19 +2054,31 @@ async function connectOAuth(){
       // and the app must never silently pick the wrong one.
       prompt: "select_account",
       callback: async (resp)=>{
-        if(resp.error){ openConnect("oauth_denied", resp.error); return; }
+        if(settled) return;                 // the timeout already spoke for this attempt
+        settled = true;
+        clearTimeout(giveUp);
+        if(resp.error){ setAuthBusy(false); openConnect("oauth_denied", resp.error); return; }
         state.token = resp.access_token;
+        setAuthBusy(true, "讀取你的行事曆⋯");
         try{
           await pullFromGoogle();
+          setAuthBusy(false);
           finishConnect("oauth");
           toast("已連線 Google 行事曆");
-        }catch(e){ openConnect("oauth_api", e && e.message); }
+        }catch(e){ setAuthBusy(false); openConnect("oauth_api", e && e.message); }
       }
     });
-    client.requestAccessToken();
+    client.requestAccessToken();      // must run in the same tick as the click — see loadScript note above
   }catch(err){
+    setAuthBusy(false);
     openConnect("no_mcp");   // sandboxed: Google's own script cannot load here
   }
+}
+
+/** Warm the sign-in script long before any tap, so the click handler below can
+    call requestAccessToken() with nothing async ahead of it. */
+function preloadGoogleScript(){
+  if(state.clientId) loadScript("https://accounts.google.com/gsi/client").catch(()=>{});
 }
 async function gapi(path, params){
   const url = new URL("https://www.googleapis.com/calendar/v3/"+path);
@@ -2326,6 +2367,7 @@ $("#searchInput").addEventListener("input", renderSearch);
 applyTheme();
 renderHeader();
 obStart();
+preloadGoogleScript();
 
 // Tell people up front where real sign-in can happen, and fill in the origin
 // they must register — the single detail everyone gets wrong.
