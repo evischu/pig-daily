@@ -194,6 +194,11 @@ input,textarea{font:inherit;color:inherit}
 .drop input[type=file]{font-size:12.5px;max-width:100%}
 .drop .t{font-size:13.5px;font-weight:600}
 .drop .s{font-size:12px;color:var(--ink-3)}
+.key-input{
+  width:100%;margin-top:14px;border:1.5px solid var(--line);background:var(--surface-2);border-radius:13px;
+  padding:14px;font-family:var(--font-num);font-size:13px;outline:none;
+}
+.key-input:focus{border-color:var(--accent);background:var(--surface)}
 .ics-paste{
   width:100%;margin-top:12px;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;
   padding:11px;font-family:var(--font-num);font-size:11.5px;min-height:84px;resize:vertical;outline:none;
@@ -488,8 +493,8 @@ input,textarea{font:inherit;color:inherit}
     </div>
 
     <div class="ob-stage">
-      <!-- 1 ─ what it does -->
-      <div class="ob-step" data-step="welcome">
+      <!-- the only screen: sign in -->
+      <div class="ob-step" data-step="signin">
         <div class="ob-art" aria-hidden="true">
           <div class="r"><span class="tm">09:30</span><span class="bar" style="background:var(--c-work-bg)"></span></div>
           <div class="r"><span class="tm">11:00</span><span class="bar" style="background:var(--c-work-bg)"></span><span class="tag" style="background:var(--warn);color:#fff">待回覆</span></div>
@@ -497,49 +502,7 @@ input,textarea{font:inherit;color:inherit}
           <div class="r"><span class="tm">18:00</span><span class="bar" style="background:var(--c-family-bg)"></span></div>
         </div>
         <h1>你的行程，<br>打開就看完</h1>
-        <p class="lead">今天有幾件事、哪兩件撞在一起、幾點該出門——不用再一格一格找。</p>
-      </div>
-
-      <!-- 2 ─ the one connection step -->
-      <div class="ob-step" data-step="connect" hidden>
-        <h1 id="connTitle">連上你的行事曆</h1>
-        <p class="lead" id="connLead">按一下，選你的 Google 帳號，就好了。你的行程留在 Google，我們不會保存。</p>
-        <ul class="ob-list">
-          <li>
-            <i class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></i>
-            <div><b>只看行事曆</b><span>不會看你的信、照片或檔案。</span></div>
-          </li>
-          <li>
-            <i class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></i>
-            <div><b>隨時可以關掉</b><span>在 Google 帳號設定裡一鍵收回，不用問我們。</span></div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- 3 ─ optional extras -->
-      <div class="ob-step" data-step="extras" hidden>
-        <h1>順便看天氣<br>和該出門的時間？</h1>
-        <p class="lead">知道你在哪一區，就能告訴你今天的天氣、日出日落，還有出門要留多久。</p>
-        <ul class="ob-list">
-          <li>
-            <i class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/></svg></i>
-            <div><b>位置只在手機裡用</b><span>不會傳給我們，也不會存起來。</span></div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- 4 ─ make it a real app -->
-      <div class="ob-step" data-step="install" hidden>
-        <h1>放到主畫面，<br>就變成 App</h1>
-        <p class="lead">這樣以後直接從桌面點開，沒有網址列，跟一般 App 一樣。</p>
-        <div class="share-demo">
-          <span class="sq"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></span>
-          <span>1. 按螢幕下方的<b>分享</b>按鈕</span>
-        </div>
-        <div class="share-demo">
-          <span class="sq"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-          <span>2. 往下捲，選<b>加入主畫面</b></span>
-        </div>
+        <p class="lead">登入後，你名下所有的 Google 行事曆會自動全部帶進來。</p>
       </div>
     </div>
 
@@ -629,7 +592,11 @@ input,textarea{font:inherit;color:inherit}
       <div class="card" id="ruleList"></div>
 
       <div class="sec-head"><h2>外觀</h2><i class="rule"></i></div>
-      <div class="card"><div class="row"><div class="tx"><b>主題</b><span>跟隨系統或手動指定</span></div>
+      <div class="card">
+        <div class="row"><div class="tx"><b>顯示天氣</b><span>今天的氣溫與日出日落，位置只在手機上用</span></div>
+          <button class="toggle" id="wxToggle" aria-pressed="false" aria-label="顯示天氣"></button>
+        </div>
+        <div class="row"><div class="tx"><b>主題</b><span>跟隨系統或手動指定</span></div>
         <div class="seg" id="themeSeg" style="width:168px">
           <button data-t="auto" aria-pressed="true">自動</button>
           <button data-t="light" aria-pressed="false">淺色</button>
@@ -702,6 +669,36 @@ input,textarea{font:inherit;color:inherit}
 <div class="sheet" id="sheetConsent" hidden role="dialog" aria-modal="true" aria-label="Google 授權">
   <div class="grab"></div>
   <div class="sheet-body" id="consentBody"></div>
+</div>
+
+<div class="sheet" id="sheetKey" hidden role="dialog" aria-modal="true" aria-label="完成設定">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">這個網址還沒開通登入</h3>
+    <p style="margin:4px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.65">
+      Google 規定：任何要讀行事曆的 App，都得先跟 Google 領一串「登入代碼」。
+      <b>領一次就永久有效</b>，之後你和其他人都只要按登入、選帳號。
+    </p>
+    <div id="keyPreviewNote" hidden class="warnbox" style="margin-top:12px"><div><b>這是預覽頁，不能真的登入</b><br>Claude 的預覽視窗會擋掉 Google 的登入畫面。要真的登入，請用你自己的網址開啟這個 App。</div></div>
+
+    <input id="keyInput" class="key-input" type="text" inputmode="url" autocomplete="off"
+           spellcheck="false" placeholder="把登入代碼貼在這裡" aria-label="Google 登入代碼">
+    <button class="btn btn-primary" id="keyGo" style="margin-top:10px">貼好了，開始登入</button>
+
+    <div class="sec-head" style="margin-top:22px"><h2>怎麼領這串代碼</h2><i class="rule"></i></div>
+    <ol class="steps" style="margin-top:0">
+      <li><div>用電腦打開 <b>console.cloud.google.com</b>，登入同一個 Google 帳號</div></li>
+      <li><div>左上角專案選單 → <b>新增專案</b>，名稱隨便打，按建立</div></li>
+      <li><div><b>API 和服務 → 程式庫</b>，搜尋 <b>Google Calendar API</b>，按<b>啟用</b></div></li>
+      <li><div><b>OAuth 同意畫面</b>：使用者類型選<b>外部</b>，填名稱和你的信箱，一路按儲存；最後在<b>測試使用者</b>把要用的 Gmail 加進去</div></li>
+      <li><div><b>憑證 → 建立憑證 → OAuth 用戶端 ID</b>，類型選<b>網頁應用程式</b></div></li>
+      <li><div>「已授權的 JavaScript 來源」貼上 <b id="keyOrigin">你的網址</b>，按建立</div></li>
+      <li><div>複製跳出來的那串代碼，貼進上面的框</div></li>
+    </ol>
+
+    <button class="btn btn-ics" id="keyIcs" style="margin-top:16px">先用匯入檔案的方式</button>
+    <button class="btn btn-ghost" id="keyDemo">先看看示範資料</button>
+  </div>
 </div>
 
 <div class="sheet" id="sheetIcs" hidden role="dialog" aria-modal="true" aria-label="匯入行事曆檔案">
@@ -1244,6 +1241,20 @@ function renderSettings(){
     cl.appendChild(row);
   });
 
+  const wxT = $("#wxToggle");
+  if(wxT){
+    wxT.setAttribute("aria-pressed", String(LS.get("wx", null) === true));
+    wxT.onclick = async ()=>{
+      if(LS.get("wx", null) === true){
+        LS.set("wx", false); state.weather = null; renderWeather(); renderSettings();
+      } else {
+        await askWeather();
+        renderSettings();
+        if(LS.get("wx", null) !== true) toast("沒有拿到位置，天氣先關著");
+      }
+    };
+  }
+
   const rules = [
     {k:"leave", b:"該出門了", s:"依地點與即時路況回推車程，提前叫你"},
     {k:"meet",  b:"線上會議", s:"開始前 5 分鐘，通知直接帶加入按鈕"},
@@ -1462,21 +1473,9 @@ const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
                            window.navigator.standalone === true;
 
-let obSteps = ["welcome","connect","extras"];
-let obIndex = 0;
 let connectorReady = false;          // filled in by a silent probe at start
 
-function obBuildSteps(){
-  obSteps = ["welcome","connect","extras"];
-  if(isIOS() && !isStandalone()) obSteps.push("install");
-}
 function obRender(){
-  const step = obSteps[obIndex];
-  document.querySelectorAll(".ob-step").forEach(n => { n.hidden = (n.dataset.step !== step); });
-
-  const dots = $("#obDots"); dots.innerHTML = "";
-  obSteps.forEach((_,i)=>{ const d = el("i", i === obIndex ? "on" : ""); dots.appendChild(d); });
-
   const acts = $("#obActions"); acts.innerHTML = "";
   const add = (cls, html, fn, id) => {
     const b = el("button", "btn " + cls, html);
@@ -1485,58 +1484,21 @@ function obRender(){
     acts.appendChild(b);
     return b;
   };
-
-  if(step === "welcome"){
-    add("btn-primary", "開始", ()=> obGo(obIndex+1));
-  }
-
-  if(step === "connect"){
-    if(state.clientId){
-      $("#connTitle").textContent = "連上你的行事曆";
-      $("#connLead").textContent = "按一下，選你的 Google 帳號，就好了。你的行程留在 Google，我們不會保存。";
-      add("btn-google", GOOGLE_SVG + "<span>用 Google 帳號登入</span>", connectOAuth, "obPrimary");
-    } else if(connectorReady){
-      $("#connTitle").textContent = "連上你的行事曆";
-      $("#connLead").textContent = "按一下就會讀進你的 Google 行事曆。行程留在 Google，我們不會保存。";
-      add("btn-google", GOOGLE_SVG + "<span>讀取我的 Google 行事曆</span>", connectCalendar, "obPrimary");
-    } else {
-      $("#connTitle").textContent = "把行事曆帶進來";
-      $("#connLead").textContent = "這個版本還沒開放一鍵登入。你可以匯入一份行事曆檔案，照樣能用真正的行程。";
-      add("btn-google", "<span>匯入我的行事曆檔案</span>", ()=> showSheet("sheetIcs"), "obPrimary");
-    }
-    add("btn-ghost", "先看看，晚點再連", ()=> finishConnect("demo"));
-  }
-
-  if(step === "extras"){
-    add("btn-primary", "好，顯示天氣", async ()=>{
-      await askWeather();
-      obGo(obIndex+1);
-    });
-    add("btn-ghost", "以後再說", ()=>{ LS.set("wx", false); obGo(obIndex+1); });
-  }
-
-  if(step === "install"){
-    add("btn-primary", "知道了，開始使用", ()=> obGo(obIndex+1));
-  }
+  add("btn-google", GOOGLE_SVG + "<span>登入 Google 帳戶</span>", signIn, "obPrimary");
+  add("btn-ghost", "先看看（示範資料）", ()=> enterApp("demo"));
 }
-function obGo(i){
-  if(i >= obSteps.length){ enterApp(state.pendingMode || "demo"); return; }
-  obIndex = Math.max(0, i);
+function obStart(){
+  $("#authScreen").hidden = false;
   obRender();
   $("#authScreen").scrollTop = 0;
 }
-function obStart(atConnect){
-  obBuildSteps();
-  obIndex = atConnect ? obSteps.indexOf("connect") : 0;
-  $("#authScreen").hidden = false;
-  obRender();
+/** The one button. Real Google sign-in wherever it is possible. */
+function signIn(){
+  if(state.clientId) return connectOAuth();
+  if(connectorReady) return connectCalendar();
+  showSheet("sheetKey");             // this address has not been set up yet
 }
-/** A connection succeeded (or was skipped): carry on with onboarding. */
-function finishConnect(mode){
-  state.pendingMode = mode;
-  if(state.entered){ enterApp(mode); return; }
-  obGo(obIndex + 1);
-}
+function finishConnect(mode){ enterApp(mode); }
 function setAuthBusy(on, msg){
   const b = $("#obPrimary");
   if(!b) return;
@@ -2059,6 +2021,9 @@ async function connectOAuth(){
     const client = google.accounts.oauth2.initTokenClient({
       client_id: state.clientId,
       scope: SCOPES.join(" "),
+      // Always show the account chooser: most people have several Google accounts
+      // and the app must never silently pick the wrong one.
+      prompt: "select_account",
       callback: async (resp)=>{
         if(resp.error){ openConnect("oauth_denied", resp.error); return; }
         state.token = resp.access_token;
@@ -2082,39 +2047,60 @@ async function gapi(path, params){
   return r.json();
 }
 async function pullFromGoogle(){
-  const CT = {work:"work", family:"family", personal:"personal"};
-  const list = await gapi("users/me/calendarList", {maxResults:50});
-  state.cals = list.items.slice(0,6).map((c,i)=>({
-    id:c.id, name:c.summaryOverride||c.summary,
-    ctx: i===0 ? "personal" : (/work|工作|公司/i.test(c.summary)?"work":/family|家/i.test(c.summary)?"family":"personal"),
-    color: ["personal","work","family","task","work","personal"][i],
-    sub: c.accessRole==="owner" ? "你擁有" : "共用・"+c.accessRole,
-    on: c.selected!==false, privacy:false, gcolor:c.backgroundColor
-  }));
+  const list = await gapi("users/me/calendarList", {maxResults:250});
+  const items = (list.items || []).filter(c => c.id);
+
+  // Every calendar on the account is linked automatically — nothing to pick.
+  const PALETTE = ["personal","work","family","task","work","family","personal","task"];
+  state.cals = items.map((c,i)=>{
+    const name = c.summaryOverride || c.summary || ("行事曆 "+(i+1));
+    return {
+      id: c.id, gid: c.id, name,
+      ctx: c.primary ? "personal"
+         : /work|工作|公司|office/i.test(name) ? "work"
+         : /family|家|親子|小孩/i.test(name)   ? "family" : "personal",
+      color: PALETTE[i % PALETTE.length],
+      sub: c.primary ? "主要行事曆" : (c.accessRole === "owner" ? "你擁有" : "共用・"+(c.accessRole||"")),
+      on: c.selected !== false, privacy:false
+    };
+  });
+
+  // The primary calendar's id is the signed-in address — no extra scope needed.
+  const primary = items.find(c => c.primary);
+  const mail = primary ? primary.id : "已連線帳號";
+  state.account = {mail, initial: (mail[0] || "G").toUpperCase()};
+
   const timeMin = new Date(); timeMin.setDate(timeMin.getDate()-30); timeMin.setHours(0,0,0,0);
-  const timeMax = new Date(); timeMax.setDate(timeMax.getDate()+30);
-  const all = [];
-  for(const c of state.cals){
-    const r = await gapi("calendars/"+encodeURIComponent(c.id)+"/events", {
-      timeMin:timeMin.toISOString(), timeMax:timeMax.toISOString(),
-      singleEvents:"true", orderBy:"startTime", maxResults:"250"
-    });
-    (r.items||[]).forEach(ev=>{
-      const allDay = !!(ev.start && ev.start.date);
-      const s = new Date(allDay ? ev.start.date+"T00:00:00" : ev.start.dateTime);
-      const e = new Date(allDay ? ev.start.date+"T23:59:00" : ev.end.dateTime);
-      const me = (ev.attendees||[]).find(a=>a.self);
-      all.push({
-        id: ev.id, cal:c.id, title: ev.summary || "(沒有標題)",
-        start:s, end:e, loc: ev.location || "",
-        guests: (ev.attendees||[]).filter(a=>!a.self).map(a=>a.displayName||a.email).slice(0,6),
-        rsvp: me && me.responseStatus==="needsAction" ? "needsAction" : null,
-        meet: !!ev.hangoutLink, allDay
+  const timeMax = new Date(); timeMax.setDate(timeMax.getDate()+45);
+
+  // Fetched together; one unreadable calendar must not cost the others.
+  const pulls = await Promise.all(state.cals.map(async c=>{
+    try{
+      const r = await gapi("calendars/"+encodeURIComponent(c.id)+"/events", {
+        timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
+        singleEvents: "true", orderBy: "startTime", maxResults: "250"
       });
-    });
-  }
-  state.events = all;
-  state.account = {mail:"已連線帳號", initial:"G"};
+      return (r.items || []).map(ev=>{
+        const allDay = !!(ev.start && ev.start.date);
+        const s = new Date(allDay ? ev.start.date + "T00:00:00" : ev.start.dateTime);
+        const eDate = allDay
+          ? new Date(new Date(ev.end.date + "T00:00:00").getTime() - 60000)  // DTEND is exclusive
+          : new Date(ev.end.dateTime);
+        const me = (ev.attendees || []).find(a => a.self);
+        return {
+          id: ev.id, gid: ev.id, cal: c.id,
+          title: ev.summary || "(沒有標題)",
+          start: s, end: eDate, allDay,
+          loc: ev.location || "",
+          guests: (ev.attendees || []).filter(a => !a.self)
+                    .map(a => a.displayName || a.email).slice(0,6),
+          rsvp: me && me.responseStatus === "needsAction" ? "needsAction" : null,
+          meet: !!ev.hangoutLink
+        };
+      });
+    }catch(err){ c.error = "讀不到"; return []; }
+  }));
+  state.events = pulls.flat();
 }
 
 /* ============================================================
@@ -2286,6 +2272,21 @@ function applyTheme(){
 /* ---------- wiring ---------- */
 $("#icsGo").onclick    = ()=> importIcs($("#icsPaste").value);
 $("#coachClose").onclick = ()=>{ LS.set("coachDone", true); $("#installCoach").hidden = true; };
+
+/* one-time setup sheet */
+$("#keyGo").onclick = ()=>{
+  const v = $("#keyInput").value.trim();
+  if(!/\.apps\.googleusercontent\.com$/.test(v)){
+    toast("代碼結尾要是 .apps.googleusercontent.com");
+    return;
+  }
+  state.clientId = v;
+  LS.set("clientId", v);
+  hideSheet();
+  setTimeout(connectOAuth, 320);
+};
+$("#keyIcs").onclick  = ()=>{ hideSheet(); setTimeout(()=> showSheet("sheetIcs"), 280); };
+$("#keyDemo").onclick = ()=>{ hideSheet(); setTimeout(()=> enterApp("demo"), 260); };
 $("#icsFile").addEventListener("change", e=>{
   const f = e.target.files && e.target.files[0];
   if(!f) return;
@@ -2294,7 +2295,7 @@ $("#icsFile").addEventListener("change", e=>{
   r.onerror = ()=> toast("讀不到這個檔案，改用貼上的方式試試");
   r.readAsText(f);
 });
-$("#btnReauth").onclick = ()=> obStart(true);
+$("#btnReauth").onclick = ()=> obStart();
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
 $("#btnToday").onclick = ()=>{ switchView("viewToday"); renderAll(); toast("回到今天"); };
 $("#btnTheme").onclick = ()=>{
@@ -2324,13 +2325,20 @@ $("#searchInput").addEventListener("input", renderSearch);
 /* ---------- boot ---------- */
 applyTheme();
 renderHeader();
-obStart(false);
+obStart();
 
-// Silent probe: never prompts. Only decides which button the connect step shows.
-probeConnector().then(p=>{
-  connectorReady = !!(p.ok && p.auth === "connected");
-  if(!$("#authScreen").hidden && obSteps[obIndex] === "connect") obRender();
-});
+// Tell people up front where real sign-in can happen, and fill in the origin
+// they must register — the single detail everyone gets wrong.
+(function keySheetContext(){
+  const inPreview = !!(window.claude && typeof window.claude.use === "function");
+  const note = $("#keyPreviewNote");
+  if(note) note.hidden = !inPreview;
+  const o = $("#keyOrigin");
+  if(o) o.textContent = location.origin.startsWith("http") ? location.origin : "你的網址";
+})();
+
+// Silent probe: never prompts. Only decides what the sign-in button does.
+probeConnector().then(p=>{ connectorReady = !!(p.ok && p.auth === "connected"); });
 
 // Installable app shell. Harmless where service workers are unavailable.
 if("serviceWorker" in navigator && location.protocol === "https:"){
