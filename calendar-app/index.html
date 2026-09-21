@@ -231,13 +231,18 @@ input,textarea{font:inherit;color:inherit}
   display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
   background:var(--surface-2);border:1px solid var(--line-soft);border-radius:11px;padding:9px 12px;margin-bottom:4px;
 }
-.conn-status .spin{
+.spin{
   width:12px;height:12px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);
-  animation:spin .7s linear infinite;flex:none;
+  animation:spin .7s linear infinite;flex:none;display:inline-block;
 }
 .conn-status .ok,.conn-status .bad{width:7px;height:7px;border-radius:50%;flex:none}
 .conn-status .ok{background:var(--accent)} .conn-status .bad{background:var(--warn)}
 @keyframes spin{to{transform:rotate(360deg)}}
+.ob-restoring{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:10px;
+  color:var(--ink-2);font-size:14px;
+}
+.ob-restoring .spin{width:16px;height:16px;border-width:2.5px}
 .steps{counter-reset:s;list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
 .steps li{display:flex;gap:11px;align-items:flex-start;font-size:14px;line-height:1.5}
 .steps li::before{
@@ -575,6 +580,9 @@ input,textarea{font:inherit;color:inherit}
       <div class="ob-dots" id="obDots" aria-hidden="true"></div>
     </div>
 
+    <div class="ob-restoring" id="obRestoring" hidden>
+      <i class="spin"></i><span>正在還原登入狀態⋯</span>
+    </div>
     <div class="ob-stage">
       <!-- the only screen: sign in -->
       <div class="ob-step" data-step="signin">
@@ -998,8 +1006,15 @@ function eventsOn(date){
 }
 function calOf(id){ return state.cals.find(c=>c.id===id) || state.cals[0]; }
 /** Map a guessed context ("work"/"family"/"personal") onto a real calendar. */
+/** demo/ics calendars carry no accessRole (not real ACL-gated Google
+    calendars) and count as writable; a real Google calendar only does when
+    it's owned or shared with edit rights — never a subscribed read-only one
+    (a public holiday calendar, someone else's calendar shared "can view"). */
+function isWritable(c){ return c.accessRole == null || c.accessRole==="owner" || c.accessRole==="writer"; }
 function resolveCal(guess){
-  const hit = state.cals.find(c=>c.ctx===guess && c.on) || state.cals.find(c=>c.on) || state.cals[0];
+  const writable = state.cals.filter(c => c.on && isWritable(c));
+  const primary = writable.find(c => c.primary) || writable[0];
+  const hit = writable.find(c=>c.ctx===guess) || primary || state.cals.find(c=>c.on) || state.cals[0];
   return hit ? hit.id : null;
 }
 function isMasked(e){ const c = calOf(e.cal); return !!(c && c.privacy); }
@@ -2347,6 +2362,82 @@ async function connectCalendar(){
   openConnect(probe.code);
 }
 
+/* ---------- session persistence ----------
+   The implicit-grant token GIS hands back lives only in memory by design,
+   so without this a page reload — including one Safari does on its own
+   under memory pressure, not just one the person asks for — throws the
+   session away and lands back on the sign-in screen even though nothing
+   about the sign-in itself failed. Store just enough to skip straight back
+   in: the token, when it expires, and — since it cannot be used to fetch
+   anything new — never anything from the calendar itself. */
+function saveOAuthSession(token, expiresInSec){
+  LS.set("oauthSession", { token, expiresAt: Date.now() + (Number(expiresInSec)||3600)*1000 - 60000 });
+}
+function loadOAuthSession(){
+  const s = LS.get("oauthSession", null);
+  return (s && s.token && s.expiresAt) ? s : null;
+}
+function clearOAuthSession(){ LS.set("oauthSession", null); }
+
+/** Silent token renewal: no popup, no click required, and routinely comes
+    back empty (the browser or Google simply declines) — that is normal,
+    not an error, so it fails quietly into the ordinary sign-in screen
+    rather than showing any message. */
+function silentReauth(){
+  return new Promise(resolve=>{
+    (async ()=>{
+      try{
+        if(!window.google || !google.accounts) await loadScript("https://accounts.google.com/gsi/client");
+      }catch(e){ resolve(null); return; }
+      let done = false;
+      const give = setTimeout(()=>{ if(!done){ done=true; resolve(null); } }, 6000);
+      try{
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: state.clientId, scope: SCOPES.join(" "),
+          callback: (resp)=>{
+            if(done) return; done = true; clearTimeout(give);
+            resolve(resp && !resp.error ? resp : null);
+          }
+        });
+        client.requestAccessToken({prompt:""});   // "" = silent: no visible UI if it can succeed at all
+      }catch(e){ if(!done){ done=true; clearTimeout(give); resolve(null); } }
+    })();
+  });
+}
+/** Boot-time: try to walk straight back into the app on a stored session
+    before ever showing the sign-in screen. Every path is silent — a
+    person who was signed in yesterday should not see a flash of "sign in"
+    copy just because the page happened to reload. */
+async function tryRestoreSession(){
+  if(!state.clientId) return false;
+  const s = loadOAuthSession();
+  if(!s) return false;
+
+  $("#authScreen").hidden = false;
+  $(".ob-stage").hidden = true; $("#obActions").hidden = true;
+  $("#obRestoring").hidden = false;
+
+  state.token = s.token;
+  const restored = s.expiresAt > Date.now()
+    ? await pullFromGoogle().then(()=>true).catch(()=>false)
+    : false;
+
+  if(!restored){
+    const fresh = await silentReauth();
+    if(fresh){
+      state.token = fresh.access_token;
+      saveOAuthSession(fresh.access_token, fresh.expires_in);
+      try{ await pullFromGoogle(); }catch(e){ clearOAuthSession(); $("#obRestoring").hidden=true; $(".ob-stage").hidden=false; $("#obActions").hidden=false; return false; }
+    } else {
+      clearOAuthSession();
+      $("#obRestoring").hidden = true; $(".ob-stage").hidden = false; $("#obActions").hidden = false;
+      return false;
+    }
+  }
+  enterApp("oauth");
+  return true;
+}
+
 async function connectOAuth(){
   setAuthBusy(true, "打開 Google 登入視窗⋯");
   try{
@@ -2379,6 +2470,7 @@ async function connectOAuth(){
         clearTimeout(giveUp);
         if(resp.error){ setAuthBusy(false); openConnect("oauth_denied", resp.error); return; }
         state.token = resp.access_token;
+        saveOAuthSession(resp.access_token, resp.expires_in);
         setAuthBusy(true, "讀取你的行事曆⋯");
         try{
           await pullFromGoogle();
@@ -2425,7 +2517,11 @@ async function pullFromGoogle(){
   const items = (list.items || []).filter(c => c.id);
 
   // Every calendar on the account is linked automatically — nothing to pick.
-  const PALETTE = ["personal","work","family","task","work","family","personal","task"];
+  // "task" is a special dashed/ghost style reserved for the Google Tasks
+  // pseudo-calendar (see baseCals()) — never hand it to a real calendar here,
+  // or an ordinary event on someone's 4th or 8th calendar renders as an
+  // empty-looking dashed placeholder instead of a normal filled block.
+  const PALETTE = ["personal","work","family"];
   state.cals = items.map((c,i)=>{
     const name = c.summaryOverride || c.summary || ("行事曆 "+(i+1));
     return {
@@ -2436,7 +2532,8 @@ async function pullFromGoogle(){
       color: PALETTE[i % PALETTE.length],
       sub: c.primary ? "主要行事曆" : (c.accessRole === "owner" ? "你擁有" : "共用・"+(c.accessRole||"")),
       on: c.selected !== false, privacy:false,
-      accessRole: c.accessRole || (c.primary ? "owner" : null)   // gates who may manage sharing
+      primary: !!c.primary,
+      accessRole: c.accessRole || (c.primary ? "owner" : null)   // gates who may manage sharing / write to it
     };
   });
 
@@ -2685,7 +2782,7 @@ $("#icsFile").addEventListener("change", e=>{
   r.onerror = ()=> toast("讀不到這個檔案，改用貼上的方式試試");
   r.readAsText(f);
 });
-$("#btnReauth").onclick = ()=> obStart();
+$("#btnReauth").onclick = ()=>{ clearOAuthSession(); obStart(); };
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
 $("#btnToday").onclick = ()=>{ goToday(); toast("回到今天"); };
 $("#btnPrevDay").onclick = ()=> shiftViewDate(-1);
@@ -2739,6 +2836,7 @@ applyTheme();
 renderHeader();
 obStart();
 preloadGoogleScript();
+tryRestoreSession();   // no-op with zero UI flicker when nothing was stored
 
 // Tell people up front where real sign-in can happen, and fill in the origin
 // they must register — the single detail everyone gets wrong.
