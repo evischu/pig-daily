@@ -11,7 +11,7 @@
    ============================================================ */
 
 window.DAYLINE_CONFIG = {
-  googleClientId: "",
+  googleClientId: "689127092407-stcdd9i9a582ao0fjsr06mvh1en7cpcb.apps.googleusercontent.com",
 
   // 天氣用 Open-Meteo，免費、不需要任何金鑰，留著就好。
   weather: true
