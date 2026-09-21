@@ -201,6 +201,21 @@ input,textarea{font:inherit;color:inherit}
 .drop input[type=file]{font-size:12.5px;max-width:100%}
 .drop .t{font-size:13.5px;font-weight:600}
 .drop .s{font-size:12px;color:var(--ink-3)}
+.share-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line-soft)}
+.share-row:first-child{border-top:0}
+.share-row .who{flex:1;min-width:0}
+.share-row .em{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.share-row .rl{font-size:11.5px;color:var(--ink-3)}
+.share-row .rm{color:var(--now);font-size:12px;font-weight:500;flex:none}
+.share-add{display:flex;gap:8px;margin-top:14px}
+.share-add input{
+  flex:1;min-width:0;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;
+  padding:11px 12px;font-size:14px;outline:none;
+}
+.share-add select{
+  border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:0 8px;
+  font-size:12.5px;color:var(--ink-2);
+}
 .key-input{
   width:100%;margin-top:14px;border:1.5px solid var(--line);background:var(--surface-2);border-radius:13px;
   padding:14px;font-family:var(--font-num);font-size:13px;outline:none;
@@ -243,7 +258,9 @@ input,textarea{font:inherit;color:inherit}
   padding:10px 16px 0;
 }
 .topbar-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.today-date{display:flex;align-items:baseline;gap:8px}
+.today-date{display:flex;align-items:baseline;gap:8px;text-align:left;border-radius:8px;padding:2px 4px;margin:-2px -4px}
+.today-date:active{background:var(--surface-2)}
+.topbar-row .icon-btn{flex:none}
 .today-date .d{font-size:26px;font-weight:600;letter-spacing:-.03em}
 .today-date .m{font-size:13px;color:var(--ink-3);font-weight:500}
 .icon-btn{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--ink-2)}
@@ -341,6 +358,11 @@ input,textarea{font:inherit;color:inherit}
 .allday .swatch{width:3px;height:18px;border-radius:2px;flex:none}
 .allday .tt{font-size:13.5px;font-weight:600}
 .allday .tag{margin-left:auto;font-size:11px;color:var(--ink-3)}
+
+/* ---------- week nav ---------- */
+.wk-nav{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.wk-nav #wkRange{font-family:var(--font-num);font-size:13px;color:var(--ink-2);font-weight:500}
+.wk-nav .chip{padding:5px 11px;font-size:12px}
 
 /* ---------- week view ---------- */
 .wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
@@ -519,11 +541,17 @@ input,textarea{font:inherit;color:inherit}
   <!-- ============ TOPBAR ============ -->
   <header class="topbar" id="topbar" hidden>
     <div class="topbar-row">
-      <div class="today-date">
+      <button class="icon-btn" id="btnPrevDay" aria-label="前一天">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5 8 12l6.5 7"/></svg>
+      </button>
+      <button class="today-date" id="btnDateJump" aria-label="跳到日期">
         <span class="d" id="hdDay">週四 18</span>
         <span class="m" id="hdMonth">9 月・2026</span>
-      </div>
-      <div style="display:flex;gap:2px">
+      </button>
+      <button class="icon-btn" id="btnNextDay" aria-label="後一天">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 5 6.5 7-6.5 7"/></svg>
+      </button>
+      <div style="display:flex;gap:2px;margin-left:auto">
         <button class="icon-btn" id="btnTheme" aria-label="切換深淺色">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         </button>
@@ -534,6 +562,7 @@ input,textarea{font:inherit;color:inherit}
     </div>
     <div class="ctx-scroll" id="ctxScroll"></div>
   </header>
+  <input type="date" id="dateJumpInput" style="position:fixed;top:-999px;left:-999px;opacity:0;pointer-events:none" aria-hidden="true" tabindex="-1">
 
   <!-- ============ VIEWS ============ -->
   <main class="scroll" id="scroll" hidden>
@@ -550,14 +579,24 @@ input,textarea{font:inherit;color:inherit}
         <div class="wx" id="wxStrip" hidden></div>
       </div>
 
-      <div class="sec-head"><h2>今天</h2><i class="rule"></i><span class="side" id="dayRange"></span></div>
+      <div class="sec-head"><h2 id="dayLabel">今天</h2><i class="rule"></i><span class="side" id="dayRange"></span></div>
       <div id="allDayWrap"></div>
       <div class="timeline" id="timeline"></div>
     </section>
 
     <!-- WEEK -->
     <section id="viewWeek" class="pad" hidden>
-      <div class="sec-head" style="margin-top:4px"><h2>本週概覽</h2><i class="rule"></i><span class="side" id="weekFree"></span></div>
+      <div class="wk-nav">
+        <button class="icon-btn" id="btnPrevWeek" aria-label="上一週">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5 8 12l6.5 7"/></svg>
+        </button>
+        <span id="wkRange">9/21 – 9/27</span>
+        <button class="icon-btn" id="btnNextWeek" aria-label="下一週">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 5 6.5 7-6.5 7"/></svg>
+        </button>
+        <button class="chip" id="btnThisWeek" style="margin-left:auto" hidden>本週</button>
+      </div>
+      <div class="sec-head" style="margin-top:4px"><h2>週概覽</h2><i class="rule"></i><span class="side" id="weekFree"></span></div>
       <div class="wk-grid" id="wkGrid"></div>
       <div class="sec-head"><h2>逐日</h2><i class="rule"></i></div>
       <div class="wk-list" id="wkList"></div>
@@ -708,6 +747,11 @@ input,textarea{font:inherit;color:inherit}
   </div>
 </div>
 
+<div class="sheet" id="sheetShare" hidden role="dialog" aria-modal="true" aria-label="共用日曆">
+  <div class="grab"></div>
+  <div class="sheet-body" id="shareBody"></div>
+</div>
+
 <div class="sheet" id="sheetIcs" hidden role="dialog" aria-modal="true" aria-label="匯入行事曆檔案">
   <div class="grab"></div>
   <div class="sheet-body">
@@ -772,6 +816,8 @@ const state = {
   backend:"demo",
   entered:false,
   pendingMode:null,
+  viewDate: (()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; })(),   // the day view's date (Day view)
+  weekOffset: 0,                                                             // weeks from the real current week (Week view)
   coords:null,
   weather:null,
   clientId: new URLSearchParams(location.search).get("client_id") || CFG.googleClientId || LS.get("clientId",""),
@@ -805,6 +851,11 @@ function at(dayOffset, h, m){
   const d = new Date(); d.setHours(h, m||0, 0, 0); d.setDate(d.getDate()+dayOffset); return d;
 }
 function startOfWeek(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; }
+function isViewingToday(){ return sameDay(state.viewDate, new Date()); }
+function shiftViewDate(days){
+  const d = new Date(state.viewDate); d.setDate(d.getDate()+days); state.viewDate = d;
+  renderHeader(); renderBrief(); renderTimeline();
+}
 
 /* ---------- demo data (relative to the viewer's real today) ---------- */
 function demoEvents(){
@@ -893,9 +944,10 @@ const $ = s => document.querySelector(s);
 const el = (t,c,h) => { const n=document.createElement(t); if(c)n.className=c; if(h!==undefined)n.innerHTML=h; return n; };
 
 function renderHeader(){
-  const d = new Date();
+  const d = state.viewDate;
   $("#hdDay").textContent = WD[d.getDay()] + " " + d.getDate();
   $("#hdMonth").textContent = (d.getMonth()+1) + " 月・" + d.getFullYear();
+  $("#btnToday").style.visibility = isViewingToday() ? "hidden" : "visible";
 }
 
 function renderCtx(){
@@ -917,8 +969,9 @@ function renderCtx(){
 }
 
 function renderBrief(){
-  const today = new Date();
-  const list = eventsOn(today);
+  const day = state.viewDate;
+  const onToday = isViewingToday();
+  const list = eventsOn(day);
   const timed = list.filter(e=>!e.allDay && !e.task);
   const tasks = list.filter(e=>e.task);
   const conflicts = conflictPairs(timed);
@@ -938,7 +991,9 @@ function renderBrief(){
   });
 
   const now = new Date();
-  const next = timed.find(e=>e.end>now) || tasks.find(e=>e.end>now);
+  // Viewing today: the soonest thing still ahead. Any other day: just its first item —
+  // "leave at" and "starts in" only mean something when "now" falls inside this day.
+  const next = onToday ? (timed.find(e=>e.end>now) || tasks.find(e=>e.end>now)) : timed[0];
   const nb = $("#briefNext"); nb.innerHTML="";
   if(next){
     const c = calOf(next.cal);
@@ -949,7 +1004,7 @@ function renderBrief(){
     t.appendChild(document.createTextNode(hm(next.start)+"–"+hm(next.end)+(next.loc?"・"+next.loc:next.meet?"・線上會議":"")));
     nb.appendChild(t);
 
-    if(state.rules.leave && next.loc && next.loc!=="家"){
+    if(onToday && state.rules.leave && next.loc && next.loc!=="家"){
       const travel = 18;
       const leaveAt = new Date(next.start.getTime() - travel*60000);
       const diff = Math.round((leaveAt-now)/60000);
@@ -958,21 +1013,24 @@ function renderBrief(){
         ? "該出門<br><span class='num'>"+hm(leaveAt)+"</span>・剩 "+diff+" 分"
         : "車程約<br><span class='num'>"+travel+" 分</span>";
       nb.appendChild(p);
-    } else if(next.meet){
+    } else if(onToday && next.meet){
       const p = el("div","leave-pill");
       p.style.background="var(--accent-soft)"; p.style.color="var(--accent)";
       p.innerHTML="線上<br>開會前 5 分提醒";
       nb.appendChild(p);
     }
   } else {
-    nb.appendChild(el("div","t","<b>今天沒有剩下的行程了</b>晚上 20:00 會送出明天的簡報。"));
+    nb.appendChild(el("div","t", onToday
+      ? "<b>今天沒有剩下的行程了</b>晚上 20:00 會送出明天的簡報。"
+      : "<b>這天沒有行程</b>"));
   }
   $("#briefTime").textContent = (state.rules.brief? "07:00 更新" : "簡報已關閉");
 }
 
 function renderTimeline(){
-  const today = new Date();
-  const list = eventsOn(today);
+  const day = state.viewDate;
+  const onToday = isViewingToday();
+  const list = eventsOn(day);
   const allDay = list.filter(e=>e.allDay);
   const timed = list.filter(e=>!e.allDay);
 
@@ -992,10 +1050,15 @@ function renderTimeline(){
   let lo = 24, hi = 0;
   timed.forEach(e=>{ lo = Math.min(lo, e.start.getHours()); hi = Math.max(hi, e.end.getHours() + (e.end.getMinutes()?1:0)); });
   if(lo>hi){ lo = 8; hi = 20; }                       // nothing scheduled
-  const nowH = new Date().getHours();
-  lo = Math.max(0, Math.min(lo, nowH) - 1);
-  hi = Math.min(24, Math.max(hi, nowH+1) + 1);
+  if(onToday){
+    const nowH = new Date().getHours();
+    lo = Math.max(0, Math.min(lo, nowH) - 1);
+    hi = Math.min(24, Math.max(hi, nowH+1) + 1);
+  } else {
+    lo = Math.max(0, lo-1); hi = Math.min(24, hi+1);
+  }
   $("#dayRange").textContent = pad(lo)+":00 – "+pad(hi===24?23:hi)+":00";
+  $("#dayLabel").textContent = onToday ? "今天" : (WD[day.getDay()]+" "+(day.getMonth()+1)+"/"+day.getDate());
 
   const HH = 58;
   const tl = $("#timeline"); tl.innerHTML=""; tl.style.height = ((hi-lo)*HH)+"px";
@@ -1053,9 +1116,9 @@ function renderTimeline(){
     });
   });
 
-  // now line
+  // now line — only when this day is really today; a past/future day has no "now"
   const nowM = mins(new Date());
-  if(nowM/60 >= lo && nowM/60 <= hi){
+  if(onToday && nowM/60 >= lo && nowM/60 <= hi){
     const nl = el("div","nowline");
     nl.style.top = (((nowM/60)-lo)*HH)+"px";
     nl.appendChild(el("span","tag num", hm(new Date())));
@@ -1069,6 +1132,12 @@ function renderTimeline(){
    ============================================================ */
 function renderWeek(){
   const sow = startOfWeek(new Date());
+  sow.setDate(sow.getDate() + state.weekOffset*7);
+  const eow = new Date(sow); eow.setDate(eow.getDate()+6);
+  $("#wkRange").textContent = (sow.getMonth()+1)+"/"+sow.getDate()+" – "+
+    (eow.getMonth()!==sow.getMonth() ? (eow.getMonth()+1)+"/" : "")+eow.getDate();
+  $("#btnThisWeek").hidden = state.weekOffset===0;
+
   const grid = $("#wkGrid"); grid.innerHTML="";
   const list = $("#wkList"); list.innerHTML="";
   let freeTotal = 0;
@@ -1091,7 +1160,7 @@ function renderWeek(){
     });
     col.appendChild(bars);
     col.appendChild(el("span","free", free>0 ? free.toFixed(0)+"h" : "滿"));
-    col.onclick = ()=> switchView("viewToday");
+    col.onclick = ()=>{ state.viewDate = new Date(d); switchView("viewToday"); };
     grid.appendChild(col);
 
     const card = el("div","wk-day");
@@ -1240,6 +1309,11 @@ function renderSettings(){
       p.onclick = ()=>{ c.privacy=!c.privacy; renderSettings(); renderAll(); toast(c.name+"日曆："+(c.privacy?"只顯示忙碌":"顯示完整內容")); };
       row.appendChild(p);
     }
+    if(state.backend==="oauth" && c.accessRole==="owner"){
+      const s = el("button","chip","共用");
+      s.onclick = ()=> openShareSheet(c);
+      row.appendChild(s);
+    }
     const t = el("button","toggle");
     t.setAttribute("aria-pressed", String(c.on));
     t.setAttribute("aria-label", c.name+" 顯示");
@@ -1303,6 +1377,66 @@ function hideSheet(){
 }
 $("#scrim").onclick = hideSheet;
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") hideSheet(); });
+
+/* ---------- share sheet: Google's own per-calendar ACL ---------- */
+async function openShareSheet(cal){
+  const b = $("#shareBody");
+  b.innerHTML = "";
+  b.appendChild(el("h3","st","共用「"+cal.name+"」"));
+  b.appendChild(el("p","",'<span style="font-size:13px;color:var(--ink-2)">跟 Google 行事曆網頁版的「設定和共用」是同一份清單，改了兩邊都會看到。</span>'));
+  const list = el("div","", "<p style='color:var(--ink-3);font-size:13px;padding:14px 0'>讀取中⋯</p>");
+  b.appendChild(list);
+
+  const addRow = el("div","share-add");
+  const input = el("input",""); input.type="email"; input.placeholder="對方的 Gmail"; input.autocomplete="off";
+  const sel = el("select","");
+  [["reader","可查看內容"],["writer","可編輯"],["freeBusyReader","只顯示忙碌"]].forEach(([v,n])=>{
+    const o = document.createElement("option"); o.value=v; o.textContent=n; sel.appendChild(o);
+  });
+  const go = el("button","btn btn-primary","新增"); go.style.width="auto"; go.style.padding="0 18px"; go.style.height="44px"; go.style.fontSize="13.5px";
+  addRow.appendChild(input); addRow.appendChild(sel); addRow.appendChild(go);
+  b.appendChild(addRow);
+  b.appendChild(el("p","fineprint","對方下次打開 Google 行事曆就會看到這本日曆；要收回權限，回這裡按刪除即可。"));
+
+  async function refresh(){
+    list.innerHTML = "<p style='color:var(--ink-3);font-size:13px;padding:14px 0'>讀取中⋯</p>";
+    const shares = await listShares(cal.id);
+    list.innerHTML = "";
+    if(!shares.length){ list.appendChild(el("p","",'<span style="color:var(--ink-3);font-size:13px">目前沒有共用給任何人。</span>')); return; }
+    shares.forEach(rule=>{
+      const row = el("div","share-row");
+      const who = el("div","who");
+      who.appendChild(el("div","em", rule.scope.value));
+      who.appendChild(el("div","rl", ACL_ROLES[rule.role] || rule.role));
+      row.appendChild(who);
+      const isSelf = rule.scope.value.toLowerCase() === String(state.account.mail).toLowerCase();
+      if(!isSelf){
+        const rm = el("button","rm","移除");
+        rm.onclick = async ()=>{
+          rm.disabled = true; rm.textContent = "移除中⋯";
+          const r = await removeShare(cal.id, rule.id);
+          if(r.ok){ toast("已移除"); refresh(); }
+          else { rm.disabled=false; rm.textContent="移除"; toast("移除失敗："+(r.message||"")); }
+        };
+        row.appendChild(rm);
+      }
+      list.appendChild(row);
+    });
+  }
+
+  go.onclick = async ()=>{
+    const email = input.value.trim();
+    if(!email || !email.includes("@")){ toast("請輸入完整的 Gmail 地址"); return; }
+    go.disabled = true; go.textContent = "新增中⋯";
+    const r = await addShare(cal.id, email, sel.value);
+    go.disabled = false; go.textContent = "新增";
+    if(r.ok){ input.value=""; toast("已共用給 "+email); refresh(); }
+    else { toast("新增失敗："+(r.message||"請確認信箱格式")); }
+  };
+
+  showSheet("sheetShare");
+  refresh();
+}
 
 function openEvent(e){
   const c = calOf(e.cal);
@@ -1752,8 +1886,10 @@ async function saveQuickAdd(){
   if(state.backend === "demo"){ toast("已加入「"+calOf(cal).name+"」日曆"); return; }
   toast("正在寫入 Google⋯");
   const r = await pushEvent(ev);
-  if(r.ok){ toast("已寫入 Google 行事曆"); }
-  else {
+  if(r.ok){
+    if(r.gid) ev.gid = r.gid;
+    toast("已寫入 Google 行事曆");
+  } else {
     ev.unsynced = r.code;
     renderAll();
     toast("寫入失敗（"+r.code+"），先留在這台裝置上");
@@ -1963,29 +2099,91 @@ async function pullFromConnector(){
 
 /* ---------- writes: one attempt, one shape, never auto-retried ---------- */
 async function pushEvent(draft){
-  if(state.backend !== "mcp") return {ok:false, code:"local"};
-  const cal = state.cals.find(c => c.id === draft.cal);
-  const input = {
-    calendar_id: (cal && cal.gid) || "primary",
-    summary: draft.title,
-    start_time: draft.start.toISOString(),
-    end_time: draft.end.toISOString()
-  };
-  if(draft.loc) input.location = draft.loc;
-  try{ await mcpCall("create_event", input); return {ok:true}; }
-  catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+  if(state.backend === "mcp"){
+    const cal = state.cals.find(c => c.id === draft.cal);
+    const input = {
+      calendar_id: (cal && cal.gid) || "primary",
+      summary: draft.title,
+      start_time: draft.start.toISOString(),
+      end_time: draft.end.toISOString()
+    };
+    if(draft.loc) input.location = draft.loc;
+    try{ await mcpCall("create_event", input); return {ok:true}; }
+    catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+  }
+  if(state.backend === "oauth"){
+    const cal = state.cals.find(c => c.id === draft.cal);
+    const calId = (cal && cal.gid) || "primary";
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const body = draft.allDay
+      ? { summary: draft.title, start:{date: draft.start.toISOString().slice(0,10)},
+          end:{date: draft.end.toISOString().slice(0,10)} }
+      : { summary: draft.title,
+          start:{dateTime: draft.start.toISOString(), timeZone: tz},
+          end:{dateTime: draft.end.toISOString(), timeZone: tz} };
+    if(draft.loc) body.location = draft.loc;
+    try{
+      const created = await gapi("calendars/"+encodeURIComponent(calId)+"/events", {}, {method:"POST", body});
+      return {ok:true, gid: created && created.id};
+    }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
+  }
+  return {ok:false, code:"local"};
 }
 async function pushRsvp(ev, answer){
-  if(state.backend !== "mcp" || !ev.gid) return {ok:false, code:"local"};
-  const cal = state.cals.find(c => c.id === ev.cal);
+  if(!ev.gid) return {ok:false, code:"local"};
+
+  if(state.backend === "mcp"){
+    const cal = state.cals.find(c => c.id === ev.cal);
+    try{
+      await mcpCall("respond_to_event", {
+        calendar_id: (cal && cal.gid) || "primary",
+        event_id: ev.gid,
+        response: answer            // "yes" | "maybe" | "no"
+      });
+      return {ok:true};
+    }catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+  }
+
+  if(state.backend === "oauth"){
+    const cal = state.cals.find(c => c.id === ev.cal);
+    const calId = (cal && cal.gid) || "primary";
+    const RSVP = {yes:"accepted", maybe:"tentative", no:"declined"};
+    try{
+      // RSVP is a field inside the full attendees array — Google has no
+      // single-field "just my answer" endpoint, so fetch, flip only this
+      // account's entry, and send the whole array back unchanged otherwise.
+      const full = await gapi("calendars/"+encodeURIComponent(calId)+"/events/"+encodeURIComponent(ev.gid));
+      const attendees = (full.attendees || []).map(a => a.self ? Object.assign({}, a, {responseStatus: RSVP[answer]}) : a);
+      await gapi("calendars/"+encodeURIComponent(calId)+"/events/"+encodeURIComponent(ev.gid),
+        {sendUpdates:"none"}, {method:"PATCH", body:{attendees}});
+      return {ok:true};
+    }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
+  }
+  return {ok:false, code:"local"};
+}
+
+/* ---------- sharing: Google's own per-calendar ACL, exposed in Settings ---------- */
+const ACL_ROLES = {freeBusyReader:"只顯示忙碌", reader:"可查看內容", writer:"可編輯", owner:"擁有者"};
+async function listShares(calId){
+  if(state.backend !== "oauth") return [];
   try{
-    await mcpCall("respond_to_event", {
-      calendar_id: (cal && cal.gid) || "primary",
-      event_id: ev.gid,
-      response: answer            // "yes" | "maybe" | "no"
+    const r = await gapi("calendars/"+encodeURIComponent(calId)+"/acl", {maxResults:100});
+    return (r.items || []).filter(a => a.scope && a.scope.type === "user");
+  }catch(e){ return []; }
+}
+async function addShare(calId, email, role){
+  try{
+    await gapi("calendars/"+encodeURIComponent(calId)+"/acl", {}, {
+      method:"POST", body:{role, scope:{type:"user", value:email}}
     });
     return {ok:true};
-  }catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+  }catch(e){ return {ok:false, message:e.message}; }
+}
+async function removeShare(calId, ruleId){
+  try{
+    await gapi("calendars/"+encodeURIComponent(calId)+"/acl/"+encodeURIComponent(ruleId), {}, {method:"DELETE"});
+    return {ok:true};
+  }catch(e){ return {ok:false, message:e.message}; }
 }
 
 const _scriptPromises = {};
@@ -2087,12 +2285,25 @@ async function connectOAuth(){
 function preloadGoogleScript(){
   if(state.clientId) loadScript("https://accounts.google.com/gsi/client").catch(()=>{});
 }
-async function gapi(path, params){
+async function gapi(path, params, opts){
   const url = new URL("https://www.googleapis.com/calendar/v3/"+path);
   Object.entries(params||{}).forEach(([k,v])=>url.searchParams.set(k,v));
-  const r = await fetch(url, {headers:{Authorization:"Bearer "+state.token}});
-  if(!r.ok) throw new Error("Google API "+r.status);
-  return r.json();
+  const method = (opts && opts.method) || "GET";
+  const headers = {Authorization:"Bearer "+state.token};
+  let body;
+  if(opts && opts.body !== undefined){
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(opts.body);
+  }
+  const r = await fetch(url, {method, headers, body});
+  if(!r.ok){
+    let detail = "";
+    try{ detail = (await r.json()).error?.message || ""; }catch(e){}
+    const err = new Error("Google API "+r.status+(detail?"："+detail:""));
+    err.status = r.status;
+    throw err;
+  }
+  return r.status === 204 ? null : r.json();
 }
 async function pullFromGoogle(){
   const list = await gapi("users/me/calendarList", {maxResults:250});
@@ -2109,7 +2320,8 @@ async function pullFromGoogle(){
          : /family|家|親子|小孩/i.test(name)   ? "family" : "personal",
       color: PALETTE[i % PALETTE.length],
       sub: c.primary ? "主要行事曆" : (c.accessRole === "owner" ? "你擁有" : "共用・"+(c.accessRole||"")),
-      on: c.selected !== false, privacy:false
+      on: c.selected !== false, privacy:false,
+      accessRole: c.accessRole || (c.primary ? "owner" : null)   // gates who may manage sharing
     };
   });
 
@@ -2282,6 +2494,7 @@ function switchView(v){
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.v===v)));
   $("#topbar").querySelector(".ctx-scroll").hidden = (v==="viewSettings");
   $("#scroll").scrollTop = 0;
+  if(v==="viewToday"){ renderHeader(); renderBrief(); renderTimeline(); }
   if(v==="viewWeek") renderWeek();
   if(v==="viewSearch"){ renderSearch(); }
   if(v==="viewSettings") renderSettings();
@@ -2345,7 +2558,28 @@ $("#icsFile").addEventListener("change", e=>{
 });
 $("#btnReauth").onclick = ()=> obStart();
 $("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
-$("#btnToday").onclick = ()=>{ switchView("viewToday"); renderAll(); toast("回到今天"); };
+$("#btnToday").onclick = ()=>{
+  state.viewDate = (()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; })();
+  state.weekOffset = 0;
+  switchView("viewToday"); renderAll(); toast("回到今天");
+};
+$("#btnPrevDay").onclick = ()=> shiftViewDate(-1);
+$("#btnNextDay").onclick = ()=> shiftViewDate(1);
+$("#btnDateJump").onclick = ()=>{
+  const inp = $("#dateJumpInput");
+  inp.value = state.viewDate.toISOString().slice(0,10);
+  inp.showPicker ? inp.showPicker() : inp.click();
+};
+$("#dateJumpInput").addEventListener("change", e=>{
+  const v = e.target.value;
+  if(!v) return;
+  const [y,m,d] = v.split("-").map(Number);
+  state.viewDate = new Date(y, m-1, d);
+  renderHeader(); renderBrief(); renderTimeline();
+});
+$("#btnPrevWeek").onclick = ()=>{ state.weekOffset--; renderWeek(); };
+$("#btnNextWeek").onclick = ()=>{ state.weekOffset++; renderWeek(); };
+$("#btnThisWeek").onclick = ()=>{ state.weekOffset=0; renderWeek(); };
 $("#btnTheme").onclick = ()=>{
   const order = ["auto","light","dark"];
   state.theme = order[(order.indexOf(state.theme)+1)%3];
