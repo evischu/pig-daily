@@ -1,0 +1,2353 @@
+<title>Dayline 行事曆</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="config.js"></script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dayline">
+<meta name="theme-color" content="#EEF1F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1113" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* ---------- tokens : light (bare :root = complete palette) ---------- */
+:root{
+  --paper:#EEF1F2;
+  --surface:#FFFFFF;
+  --surface-2:#F6F8F9;
+  --line:#D9E0E3;
+  --line-soft:#E8ECEE;
+  --ink:#0F1619;
+  --ink-2:#48565E;
+  --ink-3:#7A8890;
+  --accent:#0E6E6B;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#D6E9E7;
+  --now:#D9441F;
+  --warn:#9A6710;
+  --warn-soft:#F6ECD8;
+  --shadow:0 1px 2px rgba(15,22,25,.05), 0 8px 24px -12px rgba(15,22,25,.18);
+  --shadow-lift:0 2px 6px rgba(15,22,25,.08), 0 24px 48px -20px rgba(15,22,25,.3);
+  --c-work:#3E6D9C;   --c-work-bg:#E5EDF5;
+  --c-family:#BC6239; --c-family-bg:#F7E9E1;
+  --c-personal:#4F8468; --c-personal-bg:#E2EDE6;
+  --c-task:#75689F;   --c-task-bg:#EAE7F2;
+  --sheet-scrim:rgba(15,22,25,.34);
+  --font-ui:"Archivo","Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-num:"IBM Plex Mono","Archivo",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1113;
+    --surface:#161C20;
+    --surface-2:#1D2429;
+    --line:#2A3238;
+    --line-soft:#232A2F;
+    --ink:#E7ECEE;
+    --ink-2:#A2AFB7;
+    --ink-3:#72818A;
+    --accent:#3EAFA5;
+    --accent-ink:#06211F;
+    --accent-soft:#123330;
+    --now:#FF7A52;
+    --warn:#D9A441;
+    --warn-soft:#2E2617;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    --shadow-lift:0 2px 6px rgba(0,0,0,.5), 0 24px 48px -20px rgba(0,0,0,.75);
+    --c-work:#84ABD6;   --c-work-bg:#1A2733;
+    --c-family:#E0906A; --c-family-bg:#31241C;
+    --c-personal:#8CBB9E; --c-personal-bg:#1C2A22;
+    --c-task:#A99BD6;   --c-task-bg:#242030;
+    --sheet-scrim:rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1113; --surface:#161C20; --surface-2:#1D2429; --line:#2A3238; --line-soft:#232A2F;
+  --ink:#E7ECEE; --ink-2:#A2AFB7; --ink-3:#72818A;
+  --accent:#3EAFA5; --accent-ink:#06211F; --accent-soft:#123330;
+  --now:#FF7A52; --warn:#D9A441; --warn-soft:#2E2617;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-lift:0 2px 6px rgba(0,0,0,.5), 0 24px 48px -20px rgba(0,0,0,.75);
+  --c-work:#84ABD6; --c-work-bg:#1A2733;
+  --c-family:#E0906A; --c-family-bg:#31241C;
+  --c-personal:#8CBB9E; --c-personal-bg:#1C2A22;
+  --c-task:#A99BD6; --c-task-bg:#242030;
+  --sheet-scrim:rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font-ui); font-size:15px; line-height:1.45;
+  -webkit-font-smoothing:antialiased; overscroll-behavior-y:none;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* ---------- shell ---------- */
+#app{
+  height:100%; max-width:460px; margin:0 auto; position:relative;
+  display:flex; flex-direction:column; background:var(--paper);
+  border-inline:1px solid var(--line-soft);
+}
+@media (max-width:480px){ #app{border-inline:0} }
+
+/* ---------- auth ---------- */
+#authScreen{
+  /* below the scrim (50) and sheets (51) so guidance opened from here stays tappable */
+  position:absolute; inset:0; z-index:45; background:var(--paper);
+  display:flex; flex-direction:column; overflow-y:auto;
+  padding:0 24px; padding-block:30px 26px;
+}
+.ob-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none}
+.ob-dots{display:flex;gap:6px}
+.ob-dots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .2s ease,width .2s ease}
+.ob-dots i.on{background:var(--accent);width:18px;border-radius:3px}
+.ob-stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding-block:28px;min-height:0}
+.ob-step{display:flex;flex-direction:column;gap:16px}
+.ob-step h1{
+  font-size:clamp(28px,8vw,36px);line-height:1.18;font-weight:600;letter-spacing:-.025em;margin:0;
+  text-wrap:balance;
+}
+.ob-step p.lead{margin:0;color:var(--ink-2);font-size:16px;line-height:1.65;max-width:26ch}
+.ob-art{
+  border-radius:18px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--shadow);
+  padding:15px;display:flex;flex-direction:column;gap:9px;
+}
+.ob-art .r{display:flex;align-items:center;gap:10px}
+.ob-art .r .bar{height:26px;border-radius:7px;flex:1}
+.ob-art .r .tm{font-family:var(--font-num);font-size:11px;color:var(--ink-3);width:38px;flex:none}
+.ob-art .r .tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;flex:none}
+.ob-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:15px}
+.ob-list li{display:flex;gap:13px;align-items:flex-start}
+.ob-list .ico{
+  width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);
+}
+.ob-list b{display:block;font-size:15.5px;font-weight:600;margin-bottom:2px}
+.ob-list span{display:block;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.ob-actions{flex:none;display:flex;flex-direction:column;gap:9px;padding-top:8px}
+.btn{height:56px;font-size:16.5px;border-radius:16px}
+.btn-ghost{height:46px;font-size:14.5px}
+.share-demo{
+  display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:13px 15px;font-size:14.5px;box-shadow:var(--shadow);
+}
+.share-demo .sq{
+  width:32px;height:32px;border-radius:9px;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;flex:none;
+}
+/* in-app coach: add to home screen */
+#installCoach{
+  position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:44;
+  max-width:436px;margin:0 auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--shadow-lift);padding:14px 15px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+#installCoach .tx{flex:1;min-width:0}
+#installCoach b{display:block;font-size:14.5px;font-weight:600;margin-bottom:3px}
+#installCoach span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+#installCoach .x{color:var(--ink-3);font-size:20px;line-height:1;padding:2px 4px;flex:none}
+.inline-ico{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;
+  background:var(--accent-soft);color:var(--accent);vertical-align:-5px;margin:0 2px}
+/* weather strip */
+.wx{
+  display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);
+  padding:10px 2px 0;margin-top:12px;border-top:1px solid var(--line-soft);
+}
+.wx .t{font-family:var(--font-num);font-size:15px;font-weight:600;color:var(--ink)}
+.wx .sep{color:var(--ink-3)}
+.wx .sun{margin-left:auto;font-family:var(--font-num);font-size:11.5px;color:var(--ink-3);text-align:right}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{
+  width:34px;height:34px;border-radius:10px;background:var(--accent);
+  display:grid;place-items:center;position:relative;flex:none;
+}
+.mark::before{content:"";width:16px;height:2px;background:var(--accent-ink);border-radius:2px;position:absolute;top:11px}
+.mark::after{content:"";width:9px;height:2px;background:var(--accent-ink);border-radius:2px;position:absolute;top:17px;left:9px;opacity:.6}
+.brand b{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.auth-hero h1{
+  font-size:34px;line-height:1.2;font-weight:600;letter-spacing:-.02em;margin:0 0 14px;
+  text-wrap:balance;
+}
+.auth-hero p{margin:0;color:var(--ink-2);font-size:15px;max-width:30ch}
+.auth-points{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.auth-points li{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--ink-2)}
+.auth-points b{display:block;color:var(--ink);font-weight:600;font-size:14.5px}
+.dot{width:7px;height:7px;border-radius:50%;margin-top:7px;flex:none}
+.btn{
+  width:100%;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-weight:600;font-size:15px;transition:transform .12s ease, opacity .12s ease;
+}
+.btn:active{transform:scale(.985)}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-google{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+.btn-ghost{color:var(--ink-2);height:44px;font-weight:500;font-size:14px}
+.btn-ics{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);height:46px;font-size:14.5px}
+.drop{
+  border:1.5px dashed var(--line);border-radius:14px;padding:18px 14px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px;background:var(--surface-2);
+}
+.drop input[type=file]{font-size:12.5px;max-width:100%}
+.drop .t{font-size:13.5px;font-weight:600}
+.drop .s{font-size:12px;color:var(--ink-3)}
+.key-input{
+  width:100%;margin-top:14px;border:1.5px solid var(--line);background:var(--surface-2);border-radius:13px;
+  padding:14px;font-family:var(--font-num);font-size:13px;outline:none;
+}
+.key-input:focus{border-color:var(--accent);background:var(--surface)}
+.ics-paste{
+  width:100%;margin-top:12px;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;
+  padding:11px;font-family:var(--font-num);font-size:11.5px;min-height:84px;resize:vertical;outline:none;
+}
+.gmark{width:18px;height:18px;flex:none}
+.auth-foot{display:flex;flex-direction:column;gap:6px}
+.conn-status{
+  display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
+  background:var(--surface-2);border:1px solid var(--line-soft);border-radius:11px;padding:9px 12px;margin-bottom:4px;
+}
+.conn-status .spin{
+  width:12px;height:12px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);
+  animation:spin .7s linear infinite;flex:none;
+}
+.conn-status .ok,.conn-status .bad{width:7px;height:7px;border-radius:50%;flex:none}
+.conn-status .ok{background:var(--accent)} .conn-status .bad{background:var(--warn)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps{counter-reset:s;list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.steps li{display:flex;gap:11px;align-items:flex-start;font-size:14px;line-height:1.5}
+.steps li::before{
+  counter-increment:s;content:counter(s);flex:none;width:21px;height:21px;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:11.5px;font-weight:700;
+  display:grid;place-items:center;margin-top:1px;
+}
+.steps b{font-weight:600}
+.steps code{font-family:var(--font-num);font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:5px;border:1px solid var(--line-soft)}
+.fineprint{font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.5}
+
+/* ---------- topbar ---------- */
+.topbar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:30;
+  background:color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+  padding:10px 16px 0;
+}
+.topbar-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.today-date{display:flex;align-items:baseline;gap:8px}
+.today-date .d{font-size:26px;font-weight:600;letter-spacing:-.03em}
+.today-date .m{font-size:13px;color:var(--ink-3);font-weight:500}
+.icon-btn{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--ink-2)}
+.icon-btn:active{background:var(--surface-2)}
+.ctx-scroll{display:flex;gap:7px;overflow-x:auto;padding:12px 0 11px;scrollbar-width:none}
+.ctx-scroll::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;padding:6px 13px;border-radius:999px;font-size:13px;font-weight:500;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip .swatch{width:7px;height:7px;border-radius:2px}
+
+/* ---------- scroll area ---------- */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:104px}
+.pad{padding:16px}
+
+/* ---------- brief card ---------- */
+.brief{
+  background:var(--surface);border-radius:18px;padding:16px;box-shadow:var(--shadow);
+  border:1px solid var(--line-soft);
+}
+.brief-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.brief-top .label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.brief-top .time{margin-left:auto;font-size:11.5px;color:var(--ink-3)}
+.brief-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .v{font-size:23px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.stat .k{font-size:11.5px;color:var(--ink-3)}
+.stat.alert .v{color:var(--now)}
+.stat.warn .v{color:var(--warn)}
+.brief-next{
+  display:flex;gap:11px;align-items:center;padding-top:13px;border-top:1px solid var(--line-soft);
+}
+.brief-next .rail{width:3px;align-self:stretch;border-radius:2px;min-height:34px}
+.brief-next .t{font-size:13px;color:var(--ink-2);line-height:1.35}
+.brief-next .t b{display:block;color:var(--ink);font-size:14.5px;font-weight:600}
+.leave-pill{
+  margin-left:auto;flex:none;font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:9px;
+  background:var(--warn-soft);color:var(--warn);text-align:center;line-height:1.3;
+}
+
+/* ---------- section head ---------- */
+.sec-head{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.sec-head h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0}
+.sec-head .rule{flex:1;height:1px;background:var(--line-soft)}
+.sec-head .side{font-size:12px;color:var(--ink-3)}
+
+/* ---------- timeline ---------- */
+.timeline{position:relative;margin-left:46px}
+.hour{height:58px;position:relative}
+.hour::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line-soft)}
+.hour .lab{
+  position:absolute;left:-46px;top:-7px;width:38px;text-align:right;
+  font-size:11px;color:var(--ink-3);font-family:var(--font-num);
+}
+.nowline{position:absolute;left:-46px;right:0;height:0;z-index:6;pointer-events:none}
+.nowline .bar{position:absolute;left:46px;right:0;top:-1px;height:1.5px;background:var(--now)}
+.nowline .tag{
+  position:absolute;left:0;top:-9px;font-size:10px;font-weight:600;color:#fff;background:var(--now);
+  padding:2px 5px;border-radius:5px;font-family:var(--font-num);
+}
+.ev{
+  position:absolute;border-radius:11px;padding:7px 9px 7px 11px;overflow:hidden;
+  border:1px solid transparent;cursor:pointer;transition:transform .12s ease;
+  display:flex;flex-direction:column;gap:1px;text-align:left;
+}
+.ev .tt,.ev .st{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev:active{transform:scale(.985)}
+.ev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px}
+.ev .tt{font-size:13px;font-weight:600;line-height:1.25;letter-spacing:-.01em}
+.ev .st{font-size:11px;opacity:.82;line-height:1.3;font-family:var(--font-num)}
+.ev .loc{font-size:11px;opacity:.72;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev.short{padding-top:4px;padding-bottom:4px;flex-direction:row;align-items:center;gap:7px}
+.ev.short .st{flex:none}
+.ev.work{background:var(--c-work-bg);color:var(--c-work)} .ev.work::before{background:var(--c-work)}
+.ev.family{background:var(--c-family-bg);color:var(--c-family)} .ev.family::before{background:var(--c-family)}
+.ev.personal{background:var(--c-personal-bg);color:var(--c-personal)} .ev.personal::before{background:var(--c-personal)}
+.ev.task{background:transparent;border:1px dashed var(--c-task);color:var(--c-task)} .ev.task::before{display:none}
+.ev .tt{color:var(--ink)}
+.ev.masked .tt{color:var(--ink-3);font-weight:500}
+.ev .badge{
+  position:absolute;right:7px;top:7px;font-size:9.5px;font-weight:700;padding:2px 5px;border-radius:5px;
+  background:var(--warn);color:#fff;letter-spacing:.02em;
+}
+.conflict-mark{
+  position:absolute;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--now);color:#fff;
+  display:grid;place-items:center;font-size:11px;font-weight:700;z-index:7;box-shadow:0 0 0 2.5px var(--paper);
+}
+.allday{
+  display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:11px;padding:9px 12px;margin-bottom:8px;box-shadow:var(--shadow);
+}
+.allday .swatch{width:3px;height:18px;border-radius:2px;flex:none}
+.allday .tt{font-size:13.5px;font-weight:600}
+.allday .tag{margin-left:auto;font-size:11px;color:var(--ink-3)}
+
+/* ---------- week view ---------- */
+.wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.wk-col{
+  background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:8px 4px;
+  display:flex;flex-direction:column;gap:5px;align-items:center;min-height:152px;
+}
+.wk-col.is-today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.wk-col .wd{font-size:10.5px;color:var(--ink-3)}
+.wk-col .dd{font-size:15px;font-weight:600;font-family:var(--font-num)}
+.wk-col.is-today .dd{color:var(--accent)}
+.wk-bars{display:flex;flex-direction:column;gap:3px;width:100%;padding:0 3px}
+.wk-bar{height:5px;border-radius:3px}
+.wk-col .free{margin-top:auto;font-size:10px;color:var(--ink-3);font-family:var(--font-num)}
+.wk-list{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.wk-day{background:var(--surface);border:1px solid var(--line-soft);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.wk-day h3{margin:0 0 9px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.wk-day h3 .n{font-family:var(--font-num);color:var(--ink-3);font-weight:500;font-size:12px}
+.wk-day h3 .today-tag{margin-left:auto;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+.mini{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line-soft);cursor:pointer}
+.mini:first-of-type{border-top:0}
+.mini .tm{font-family:var(--font-num);font-size:11.5px;color:var(--ink-3);width:44px;flex:none}
+.mini .sw{width:3px;height:13px;border-radius:2px;flex:none;align-self:center}
+.mini .nm{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty-day{font-size:12.5px;color:var(--ink-3);padding:3px 0}
+
+/* ---------- search ---------- */
+.searchbar{
+  display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);
+  border-radius:13px;padding:0 13px;height:46px;box-shadow:var(--shadow);
+}
+.searchbar input{flex:1;border:0;background:none;outline:none;font-size:15px}
+.searchbar input::placeholder{color:var(--ink-3)}
+.res{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.res-item{
+  background:var(--surface);border:1px solid var(--line-soft);border-radius:13px;padding:11px 13px;
+  display:flex;gap:11px;align-items:flex-start;cursor:pointer;box-shadow:var(--shadow);
+}
+.res-item .sw{width:3px;align-self:stretch;border-radius:2px;flex:none;min-height:30px}
+.res-item .nm{font-size:14.5px;font-weight:600;line-height:1.3}
+.res-item .meta{font-size:11.5px;color:var(--ink-3);margin-top:2px;font-family:var(--font-num)}
+.res-item mark{background:var(--accent-soft);color:inherit;border-radius:3px;padding:0 1px}
+.fuzzy-note{font-size:12px;color:var(--ink-3);margin-top:10px;display:flex;gap:6px;align-items:center}
+.hint-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+
+/* ---------- settings ---------- */
+.card{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-top:1px solid var(--line-soft)}
+.row:first-child{border-top:0}
+.row .tx{flex:1;min-width:0}
+.row .tx b{display:block;font-size:14.5px;font-weight:600}
+.row .tx span{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
+.sw3{width:3px;height:26px;border-radius:2px;flex:none}
+.toggle{
+  width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none;
+  transition:background .18s ease;
+}
+.toggle::after{
+  content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s ease;
+}
+.toggle[aria-pressed="true"]{background:var(--accent)}
+.toggle[aria-pressed="true"]::after{transform:translateX(18px)}
+.acct{display:flex;align-items:center;gap:12px;padding:15px 14px}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;flex:none}
+.status{font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px}
+.status .live{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.seg{display:flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;padding:6px 0;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.note{font-size:12px;color:var(--ink-3);line-height:1.6;padding:12px 14px;background:var(--surface-2);border-radius:12px;margin-top:10px}
+.note code{font-family:var(--font-num);font-size:11px;background:var(--surface);padding:1px 4px;border-radius:4px;border:1px solid var(--line-soft)}
+
+/* ---------- tabbar ---------- */
+.tabbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:40;
+  max-width:460px;margin:0 auto;
+  background:color-mix(in srgb, var(--paper) 90%, transparent);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line-soft);
+  display:grid;grid-template-columns:repeat(5,1fr);align-items:center;
+  padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-3);padding:4px 0}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab span{font-size:10px;font-weight:500}
+.fab{
+  justify-self:center;width:46px;height:46px;border-radius:15px;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;box-shadow:0 6px 18px -6px color-mix(in srgb, var(--accent) 60%, transparent);
+  transition:transform .12s ease;
+}
+.fab:active{transform:scale(.93)}
+
+/* ---------- sheets ---------- */
+.scrim{position:fixed;inset:0;background:var(--sheet-scrim);z-index:50;opacity:0;transition:opacity .22s ease}
+.scrim.open{opacity:1}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:460px;margin:0 auto;
+  background:var(--surface);border-radius:22px 22px 0 0;box-shadow:var(--shadow-lift);
+  transform:translateY(102%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+  max-height:88%;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.sheet.open{transform:translateY(0)}
+.grab{width:36px;height:4px;border-radius:3px;background:var(--line);margin:9px auto 0;flex:none}
+.sheet-body{overflow-y:auto;padding:14px 18px 22px}
+.sheet h3.st{margin:6px 0 2px;font-size:21px;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+.kv{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line-soft);font-size:14px}
+.kv .k{width:64px;flex:none;color:var(--ink-3);font-size:12.5px;padding-top:1px}
+.kv .v{flex:1;min-width:0}
+.rsvp{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+.rsvp button{padding:10px 0;border-radius:11px;border:1px solid var(--line);font-size:13px;font-weight:500;background:var(--surface-2)}
+.rsvp button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.warnbox{display:flex;gap:9px;background:var(--warn-soft);color:var(--warn);border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.45;margin-top:12px}
+
+/* ---------- quick add ---------- */
+.qa-input{
+  width:100%;border:0;background:var(--surface-2);border-radius:14px;padding:14px;font-size:16px;
+  outline:none;resize:none;min-height:62px;line-height:1.4;
+}
+.qa-parse{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;min-height:28px}
+.ptag{
+  font-size:12px;padding:5px 10px;border-radius:8px;background:var(--accent-soft);color:var(--accent);
+  font-weight:500;display:flex;gap:5px;align-items:center;
+}
+.ptag .pk{opacity:.65;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
+.ptag.miss{background:var(--surface-2);color:var(--ink-3)}
+.qa-preview{
+  margin-top:14px;border:1px solid var(--line-soft);border-radius:14px;padding:12px 13px;background:var(--surface-2);
+  display:flex;gap:11px;align-items:flex-start;
+}
+.qa-preview .sw{width:3px;align-self:stretch;border-radius:2px;flex:none;min-height:34px}
+.qa-ex{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.qa-ex button{font-size:12px;padding:6px 10px;border-radius:9px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-soft)}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed;left:50%;transform:translate(-50%,16px);bottom:104px;z-index:70;
+  background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:12px;font-size:13.5px;font-weight:500;
+  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;box-shadow:var(--shadow-lift);
+  max-width:calc(100% - 40px);text-align:center;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition-duration:.01ms !important;animation-duration:.01ms !important}
+}
+</style>
+
+<div id="app">
+
+  <!-- ============ AUTH ============ -->
+  <section id="authScreen">
+    <div class="ob-top">
+      <div class="brand"><div class="mark"></div><b>Dayline</b></div>
+      <div class="ob-dots" id="obDots" aria-hidden="true"></div>
+    </div>
+
+    <div class="ob-stage">
+      <!-- the only screen: sign in -->
+      <div class="ob-step" data-step="signin">
+        <div class="ob-art" aria-hidden="true">
+          <div class="r"><span class="tm">09:30</span><span class="bar" style="background:var(--c-work-bg)"></span></div>
+          <div class="r"><span class="tm">11:00</span><span class="bar" style="background:var(--c-work-bg)"></span><span class="tag" style="background:var(--warn);color:#fff">待回覆</span></div>
+          <div class="r"><span class="tm">15:00</span><span class="bar" style="background:var(--c-personal-bg)"></span><span class="tag" style="background:var(--now);color:#fff">撞期</span></div>
+          <div class="r"><span class="tm">18:00</span><span class="bar" style="background:var(--c-family-bg)"></span></div>
+        </div>
+        <h1>你的行程，<br>打開就看完</h1>
+        <p class="lead">登入後，你名下所有的 Google 行事曆會自動全部帶進來。</p>
+      </div>
+    </div>
+
+    <div class="ob-actions" id="obActions"></div>
+  </section>
+
+  <!-- ============ TOPBAR ============ -->
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-row">
+      <div class="today-date">
+        <span class="d" id="hdDay">週四 18</span>
+        <span class="m" id="hdMonth">9 月・2026</span>
+      </div>
+      <div style="display:flex;gap:2px">
+        <button class="icon-btn" id="btnTheme" aria-label="切換深淺色">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="icon-btn" id="btnToday" aria-label="回到今天">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.6 1.6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="ctx-scroll" id="ctxScroll"></div>
+  </header>
+
+  <!-- ============ VIEWS ============ -->
+  <main class="scroll" id="scroll" hidden>
+
+    <!-- TODAY -->
+    <section id="viewToday" class="pad">
+      <div class="brief">
+        <div class="brief-top">
+          <span class="label">今日簡報</span>
+          <span class="time num" id="briefTime">07:00 更新</span>
+        </div>
+        <div class="brief-stats" id="briefStats"></div>
+        <div class="brief-next" id="briefNext"></div>
+        <div class="wx" id="wxStrip" hidden></div>
+      </div>
+
+      <div class="sec-head"><h2>今天</h2><i class="rule"></i><span class="side" id="dayRange"></span></div>
+      <div id="allDayWrap"></div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <!-- WEEK -->
+    <section id="viewWeek" class="pad" hidden>
+      <div class="sec-head" style="margin-top:4px"><h2>本週概覽</h2><i class="rule"></i><span class="side" id="weekFree"></span></div>
+      <div class="wk-grid" id="wkGrid"></div>
+      <div class="sec-head"><h2>逐日</h2><i class="rule"></i></div>
+      <div class="wk-list" id="wkList"></div>
+    </section>
+
+    <!-- SEARCH -->
+    <section id="viewSearch" class="pad" hidden>
+      <div class="searchbar">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="color:var(--ink-3)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input id="searchInput" type="search" placeholder="找事件、地點或人名⋯" autocomplete="off" aria-label="搜尋行程">
+      </div>
+      <div class="fuzzy-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v5m0 3h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        容許錯字：打「牙醫回真」也找得到「牙醫回診」。
+      </div>
+      <div class="hint-grid" id="searchHints"></div>
+      <div class="res" id="searchRes"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="viewSettings" class="pad" hidden>
+      <div class="sec-head" style="margin-top:4px"><h2>Google 帳號</h2><i class="rule"></i></div>
+      <div class="card">
+        <div class="acct">
+          <div class="avatar" id="acctInitial">M</div>
+          <div class="tx" style="flex:1">
+            <b id="acctMail">demo@gmail.com</b>
+            <div class="status"><i class="live"></i><span id="acctStatus">示範模式・未連線真實帳號</span></div>
+          </div>
+          <button class="chip" id="btnReauth">切換</button>
+        </div>
+      </div>
+      <div class="note" id="connNote"></div>
+
+      <div class="sec-head"><h2>我的日曆</h2><i class="rule"></i><span class="side">隱私模式＝只顯示忙碌</span></div>
+      <div class="card" id="calList"></div>
+
+      <div class="sec-head"><h2>提醒規則</h2><i class="rule"></i></div>
+      <div class="card" id="ruleList"></div>
+
+      <div class="sec-head"><h2>外觀</h2><i class="rule"></i></div>
+      <div class="card">
+        <div class="row"><div class="tx"><b>顯示天氣</b><span>今天的氣溫與日出日落，位置只在手機上用</span></div>
+          <button class="toggle" id="wxToggle" aria-pressed="false" aria-label="顯示天氣"></button>
+        </div>
+        <div class="row"><div class="tx"><b>主題</b><span>跟隨系統或手動指定</span></div>
+        <div class="seg" id="themeSeg" style="width:168px">
+          <button data-t="auto" aria-pressed="true">自動</button>
+          <button data-t="light" aria-pressed="false">淺色</button>
+          <button data-t="dark" aria-pressed="false">深色</button>
+        </div></div></div>
+
+      <p class="fineprint" style="margin-top:22px;text-align:left">Dayline 原型 v0.1・示範資料依你裝置的當天日期即時生成。</p>
+    </section>
+  </main>
+
+  <!-- ============ TABBAR ============ -->
+  <nav class="tabbar" id="tabbar" hidden role="tablist">
+    <button class="tab" role="tab" data-v="viewToday" aria-selected="true">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg>
+      <span>今天</span>
+    </button>
+    <button class="tab" role="tab" data-v="viewWeek" aria-selected="false">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h9"/></svg>
+      <span>週</span>
+    </button>
+    <button class="fab" id="btnAdd" aria-label="一句話新增">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="tab" role="tab" data-v="viewSearch" aria-selected="false">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      <span>搜尋</span>
+    </button>
+    <button class="tab" role="tab" data-v="viewSettings" aria-selected="false">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.56-1.13 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.88V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1.47z"/></svg>
+      <span>設定</span>
+    </button>
+  </nav>
+
+  <div id="installCoach" hidden>
+    <span class="sq" style="width:32px;height:32px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+    </span>
+    <div class="tx">
+      <b>把 Dayline 放到主畫面</b>
+      <span>按下方的分享按鈕 → 往下捲 → <b style="display:inline">加入主畫面</b></span>
+    </div>
+    <button class="x" id="coachClose" aria-label="關閉">×</button>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<!-- ============ SHEETS ============ -->
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="sheet" id="sheetEvent" hidden role="dialog" aria-modal="true" aria-label="事件詳情">
+  <div class="grab"></div>
+  <div class="sheet-body" id="sheetEventBody"></div>
+</div>
+
+<div class="sheet" id="sheetAdd" hidden role="dialog" aria-modal="true" aria-label="一句話新增">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">一句話新增</h3>
+    <p style="margin:4px 0 14px;color:var(--ink-3);font-size:13px">照你講話的方式打，欄位自己會填。</p>
+    <textarea class="qa-input" id="qaInput" rows="2" placeholder="明天下午三點 跟小林在青田七六 開會一小時"></textarea>
+    <div class="qa-parse" id="qaParse"></div>
+    <div class="qa-preview" id="qaPreview" hidden></div>
+    <div class="qa-ex" id="qaEx"></div>
+    <button class="btn btn-primary" id="qaSave" style="margin-top:16px">加入行事曆</button>
+    <p class="fineprint" style="margin-top:10px">將寫入 Google 行事曆的「<span id="qaCalName">個人</span>」日曆。</p>
+  </div>
+</div>
+
+<div class="sheet" id="sheetConsent" hidden role="dialog" aria-modal="true" aria-label="Google 授權">
+  <div class="grab"></div>
+  <div class="sheet-body" id="consentBody"></div>
+</div>
+
+<div class="sheet" id="sheetKey" hidden role="dialog" aria-modal="true" aria-label="完成設定">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">這個網址還沒開通登入</h3>
+    <p style="margin:4px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.65">
+      Google 規定：任何要讀行事曆的 App，都得先跟 Google 領一串「登入代碼」。
+      <b>領一次就永久有效</b>，之後你和其他人都只要按登入、選帳號。
+    </p>
+    <div id="keyPreviewNote" hidden class="warnbox" style="margin-top:12px"><div><b>這是預覽頁，不能真的登入</b><br>Claude 的預覽視窗會擋掉 Google 的登入畫面。要真的登入，請用你自己的網址開啟這個 App。</div></div>
+
+    <input id="keyInput" class="key-input" type="text" inputmode="url" autocomplete="off"
+           spellcheck="false" placeholder="把登入代碼貼在這裡" aria-label="Google 登入代碼">
+    <button class="btn btn-primary" id="keyGo" style="margin-top:10px">貼好了，開始登入</button>
+
+    <div class="sec-head" style="margin-top:22px"><h2>怎麼領這串代碼</h2><i class="rule"></i></div>
+    <ol class="steps" style="margin-top:0">
+      <li><div>用電腦打開 <b>console.cloud.google.com</b>，登入同一個 Google 帳號</div></li>
+      <li><div>左上角專案選單 → <b>新增專案</b>，名稱隨便打，按建立</div></li>
+      <li><div><b>API 和服務 → 程式庫</b>，搜尋 <b>Google Calendar API</b>，按<b>啟用</b></div></li>
+      <li><div><b>OAuth 同意畫面</b>：使用者類型選<b>外部</b>，填名稱和你的信箱，一路按儲存；最後在<b>測試使用者</b>把要用的 Gmail 加進去</div></li>
+      <li><div><b>憑證 → 建立憑證 → OAuth 用戶端 ID</b>，類型選<b>網頁應用程式</b></div></li>
+      <li><div>「已授權的 JavaScript 來源」貼上 <b id="keyOrigin">你的網址</b>，按建立</div></li>
+      <li><div>複製跳出來的那串代碼，貼進上面的框</div></li>
+    </ol>
+
+    <button class="btn btn-ics" id="keyIcs" style="margin-top:16px">先用匯入檔案的方式</button>
+    <button class="btn btn-ghost" id="keyDemo">先看看示範資料</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheetIcs" hidden role="dialog" aria-modal="true" aria-label="匯入行事曆檔案">
+  <div class="grab"></div>
+  <div class="sheet-body">
+    <h3 class="st">匯入行事曆檔案</h3>
+    <p style="margin:4px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.6">
+      不用登入、不用連接器。Google 行事曆給每本日曆一個私人 iCal 網址，把那份檔案餵進來，
+      這個 App 就會用你真正的行程運作。
+    </p>
+
+    <ol class="steps">
+      <li><div>在<b>電腦版</b> Google 行事曆，左側把滑鼠移到日曆名稱 → <b>⋮ → 設定和共用</b></div></li>
+      <li><div>捲到最下面，複製<b>「日曆的私人網址 (iCal 格式)」</b>——結尾是 <code>basic.ics</code></div></li>
+      <li><div>把那個網址貼進瀏覽器打開，全選內容複製，貼到下面的框；或把下載到的 <code>.ics</code> 檔案選進來</div></li>
+    </ol>
+
+    <div class="drop">
+      <span class="t">選擇 .ics 檔案</span>
+      <input id="icsFile" type="file" accept=".ics,text/calendar" aria-label="選擇 ics 檔案">
+      <span class="s">檔案只在這台裝置上解析，不會被上傳</span>
+    </div>
+
+    <textarea class="ics-paste" id="icsPaste" placeholder="⋯或把 .ics 內容直接貼在這裡（BEGIN:VCALENDAR 開頭）" aria-label="貼上 ics 內容"></textarea>
+
+    <button class="btn btn-primary" id="icsGo" style="margin-top:14px">匯入</button>
+    <div class="warnbox" style="margin-top:12px"><div><b>這是唯讀快照</b><br>匯入的行程不會同步，之後改了要重新匯入一次；新增的行程也不會寫回 Google。要雙向同步，還是得走連接器或自架授權。</div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   Dayline — Google Calendar front-end, single file, dual mode.
+
+   LIVE  mode: real Google OAuth (GIS token client) + Calendar API v3.
+               Requires this page to be served from an origin that is
+               registered as an "Authorized JavaScript origin" on a
+               Google Cloud OAuth client, and a client id supplied via
+               ?client_id=... or the settings screen.
+   DEMO  mode: everything runs on generated data. Used automatically
+               when Google's script cannot load (e.g. inside a sandboxed
+               artifact frame, where the CSP blocks accounts.google.com).
+   ============================================================ */
+
+const SCOPES = [
+  "https://www.googleapis.com/auth/calendar.events",
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/tasks.readonly"
+];
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem("dayline:"+k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem("dayline:"+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- config (config.js is the one file an operator edits) ---------- */
+const CFG = Object.assign({googleClientId:"", weather:true}, window.DAYLINE_CONFIG || {});
+
+/* ---------- state ---------- */
+const state = {
+  mode:"demo",            // "demo" | "mcp" | "oauth" | "ics"
+  backend:"demo",
+  entered:false,
+  pendingMode:null,
+  coords:null,
+  weather:null,
+  clientId: new URLSearchParams(location.search).get("client_id") || CFG.googleClientId || LS.get("clientId",""),
+  token:null,
+  account:{ mail:"demo@gmail.com", initial:"D" },
+  ctx: LS.get("ctx","all"),
+  view:"viewToday",
+  cals:[],
+  events:[],
+  rules: LS.get("rules", {leave:true, meet:true, allday:true, family:true, brief:true}),
+  theme: LS.get("theme","auto")
+};
+
+/* ---------- calendars ---------- */
+function baseCals(){
+  return [
+    {id:"work",     name:"工作",       ctx:"work",     color:"work",     sub:"與同事 8 人共用・可編輯", on:true, privacy:false},
+    {id:"family",   name:"家庭",       ctx:"family",   color:"family",   sub:"與家人 3 人共用・可編輯", on:true, privacy:false},
+    {id:"personal", name:"個人",       ctx:"personal", color:"personal", sub:"僅自己",               on:true, privacy:false},
+    {id:"task",     name:"待辦 Tasks", ctx:"personal", color:"task",     sub:"Google Tasks",         on:true, privacy:false}
+  ];
+}
+
+/* ---------- date helpers ---------- */
+const WD = ["週日","週一","週二","週三","週四","週五","週六"];
+const pad = n => String(n).padStart(2,"0");
+const hm  = d => pad(d.getHours())+":"+pad(d.getMinutes());
+const mins = d => d.getHours()*60 + d.getMinutes();
+const sameDay = (a,b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+function at(dayOffset, h, m){
+  const d = new Date(); d.setHours(h, m||0, 0, 0); d.setDate(d.getDate()+dayOffset); return d;
+}
+function startOfWeek(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; }
+
+/* ---------- demo data (relative to the viewer's real today) ---------- */
+function demoEvents(){
+  const E = (cal,title,d0,sh,sm,eh,em,extra) => Object.assign({
+    id:"e"+Math.random().toString(36).slice(2,9),
+    cal, title, start:at(d0,sh,sm), end:at(d0,eh,em), loc:"", guests:[], rsvp:null, meet:false, allDay:false
+  }, extra||{});
+
+  return [
+    // --- today ---
+    E("work","每日站立會議",0,9,30,10,0,{meet:true, guests:["設計組 4 人"]}),
+    E("work","客戶提案討論",0,11,0,12,0,{loc:"會議室 A・3 樓", guests:["Ian","Vicky","客戶 2 人"], rsvp:"needsAction"}),
+    E("personal","午餐 with 小林",0,12,30,13,30,{loc:"青田七六"}),
+    E("work","專案進度會議",0,14,0,15,30,{meet:true, guests:["工程組 6 人"]}),
+    E("personal","牙醫回診",0,15,0,16,0,{loc:"民生東路・康寧牙醫"}),
+    E("family","小孩鋼琴課接送",0,18,0,19,0,{loc:"敦化南路音樂教室"}),
+    E("family","家庭晚餐",0,19,30,21,0,{loc:"家"}),
+    E("task","回覆廠商報價單",0,14,0,14,30,{task:true}),
+    E("task","繳電話費",0,21,0,21,30,{task:true}),
+
+    // --- tomorrow ---
+    E("personal","晨間健身",1,7,0,8,0,{loc:"健身房"}),
+    E("work","部門週會",1,10,0,11,0,{meet:true, rsvp:"needsAction", guests:["部門 12 人"]}),
+    E("work","設計審稿",1,14,0,15,0,{loc:"會議室 B"}),
+    E("family","媽媽生日",1,0,0,0,0,{allDay:true}),
+
+    // --- +2 ---
+    E("work","季度簡報排練",2,13,0,14,30,{loc:"大會議室"}),
+    E("family","小孩家長會",2,19,0,20,30,{loc:"學校"}),
+
+    // --- +3 ---
+    E("personal","剪頭髮",3,11,0,12,0,{loc:"大安區"}),
+    E("work","客戶驗收會議",3,15,0,16,30,{meet:true, guests:["客戶 4 人"]}),
+
+    // --- +4 ---
+    E("work","週報彙整",4,16,0,17,0,{}),
+    E("family","週五電影夜",4,20,0,22,0,{loc:"家"}),
+
+    // --- +5 / +6 ---
+    E("family","全家出遊",5,9,0,17,0,{loc:"陽明山"}),
+    E("personal","整理下週待辦",6,20,0,21,0,{}),
+
+    // --- past (for search) ---
+    E("personal","牙醫回診",-14,15,0,16,0,{loc:"民生東路・康寧牙醫"}),
+    E("work","年度預算會議",-9,10,0,12,0,{loc:"大會議室"}),
+    E("family","阿嬤生日聚餐",-6,18,0,20,30,{loc:"欣葉台菜"})
+  ];
+}
+
+/* ---------- filtering ---------- */
+function visibleCals(){
+  const on = new Set(state.cals.filter(c=>c.on).map(c=>c.id));
+  if(state.ctx==="all") return on;
+  return new Set(state.cals.filter(c=>c.on && c.ctx===state.ctx).map(c=>c.id));
+}
+function eventsOn(date){
+  const vis = visibleCals();
+  return state.events
+    .filter(e => vis.has(e.cal) && sameDay(e.start, date))
+    .sort((a,b)=> a.start-b.start || a.end-b.end);
+}
+function calOf(id){ return state.cals.find(c=>c.id===id) || state.cals[0]; }
+/** Map a guessed context ("work"/"family"/"personal") onto a real calendar. */
+function resolveCal(guess){
+  const hit = state.cals.find(c=>c.ctx===guess && c.on) || state.cals.find(c=>c.on) || state.cals[0];
+  return hit ? hit.id : null;
+}
+function isMasked(e){ const c = calOf(e.cal); return !!(c && c.privacy); }
+function titleOf(e){ return isMasked(e) ? "忙碌" : e.title; }
+
+/* ---------- conflicts ---------- */
+function conflictPairs(list){
+  const out = [];
+  for(let i=0;i<list.length;i++) for(let j=i+1;j<list.length;j++){
+    const a=list[i], b=list[j];
+    if(a.allDay||b.allDay||a.task||b.task) continue;
+    if(a.start < b.end && b.start < a.end) out.push([a,b]);
+  }
+  return out;
+}
+
+/* ============================================================
+   RENDER — today
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const el = (t,c,h) => { const n=document.createElement(t); if(c)n.className=c; if(h!==undefined)n.innerHTML=h; return n; };
+
+function renderHeader(){
+  const d = new Date();
+  $("#hdDay").textContent = WD[d.getDay()] + " " + d.getDate();
+  $("#hdMonth").textContent = (d.getMonth()+1) + " 月・" + d.getFullYear();
+}
+
+function renderCtx(){
+  const box = $("#ctxScroll"); box.innerHTML="";
+  const items = [
+    {k:"all", n:"全部", c:null},
+    {k:"work", n:"工作", c:"var(--c-work)"},
+    {k:"family", n:"家庭", c:"var(--c-family)"},
+    {k:"personal", n:"個人", c:"var(--c-personal)"}
+  ];
+  items.forEach(it=>{
+    const b = el("button","chip");
+    b.setAttribute("aria-pressed", String(state.ctx===it.k));
+    if(it.c) b.appendChild(el("i","swatch")).style.background = it.c;
+    b.appendChild(document.createTextNode(it.n));
+    b.onclick = ()=>{ state.ctx=it.k; LS.set("ctx",it.k); renderCtx(); renderAll(); };
+    box.appendChild(b);
+  });
+}
+
+function renderBrief(){
+  const today = new Date();
+  const list = eventsOn(today);
+  const timed = list.filter(e=>!e.allDay && !e.task);
+  const tasks = list.filter(e=>e.task);
+  const conflicts = conflictPairs(timed);
+  const pending = timed.filter(e=>e.rsvp==="needsAction");
+
+  const stats = [
+    {v:timed.length, k:"件行程", cls:""},
+    {v:conflicts.length, k:"個時間衝突", cls:conflicts.length?"alert":""},
+    {v:pending.length, k:"個待回覆", cls:pending.length?"warn":""}
+  ];
+  const box = $("#briefStats"); box.innerHTML="";
+  stats.forEach(s=>{
+    const n = el("div","stat "+s.cls);
+    n.appendChild(el("span","v num", String(s.v)));
+    n.appendChild(el("span","k", s.k));
+    box.appendChild(n);
+  });
+
+  const now = new Date();
+  const next = timed.find(e=>e.end>now) || tasks.find(e=>e.end>now);
+  const nb = $("#briefNext"); nb.innerHTML="";
+  if(next){
+    const c = calOf(next.cal);
+    const rail = el("i","rail"); rail.style.background = "var(--c-"+c.color+")";
+    nb.appendChild(rail);
+    const t = el("div","t");
+    t.appendChild(el("b","", titleOf(next)));
+    t.appendChild(document.createTextNode(hm(next.start)+"–"+hm(next.end)+(next.loc?"・"+next.loc:next.meet?"・線上會議":"")));
+    nb.appendChild(t);
+
+    if(state.rules.leave && next.loc && next.loc!=="家"){
+      const travel = 18;
+      const leaveAt = new Date(next.start.getTime() - travel*60000);
+      const diff = Math.round((leaveAt-now)/60000);
+      const p = el("div","leave-pill");
+      p.innerHTML = diff>0
+        ? "該出門<br><span class='num'>"+hm(leaveAt)+"</span>・剩 "+diff+" 分"
+        : "車程約<br><span class='num'>"+travel+" 分</span>";
+      nb.appendChild(p);
+    } else if(next.meet){
+      const p = el("div","leave-pill");
+      p.style.background="var(--accent-soft)"; p.style.color="var(--accent)";
+      p.innerHTML="線上<br>開會前 5 分提醒";
+      nb.appendChild(p);
+    }
+  } else {
+    nb.appendChild(el("div","t","<b>今天沒有剩下的行程了</b>晚上 20:00 會送出明天的簡報。"));
+  }
+  $("#briefTime").textContent = (state.rules.brief? "07:00 更新" : "簡報已關閉");
+}
+
+function renderTimeline(){
+  const today = new Date();
+  const list = eventsOn(today);
+  const allDay = list.filter(e=>e.allDay);
+  const timed = list.filter(e=>!e.allDay);
+
+  // all-day strip
+  const ad = $("#allDayWrap"); ad.innerHTML="";
+  allDay.forEach(e=>{
+    const c = calOf(e.cal);
+    const n = el("div","allday");
+    const s = el("i","swatch"); s.style.background="var(--c-"+c.color+")"; n.appendChild(s);
+    n.appendChild(el("span","tt", titleOf(e)));
+    n.appendChild(el("span","tag","整天"));
+    n.onclick = ()=>openEvent(e);
+    ad.appendChild(n);
+  });
+
+  // hour range: hug the day's real events, with an hour of air on each side
+  let lo = 24, hi = 0;
+  timed.forEach(e=>{ lo = Math.min(lo, e.start.getHours()); hi = Math.max(hi, e.end.getHours() + (e.end.getMinutes()?1:0)); });
+  if(lo>hi){ lo = 8; hi = 20; }                       // nothing scheduled
+  const nowH = new Date().getHours();
+  lo = Math.max(0, Math.min(lo, nowH) - 1);
+  hi = Math.min(24, Math.max(hi, nowH+1) + 1);
+  $("#dayRange").textContent = pad(lo)+":00 – "+pad(hi===24?23:hi)+":00";
+
+  const HH = 58;
+  const tl = $("#timeline"); tl.innerHTML=""; tl.style.height = ((hi-lo)*HH)+"px";
+  for(let h=lo; h<hi; h++){
+    const row = el("div","hour");
+    row.style.position="absolute"; row.style.left="0"; row.style.right="0";
+    row.style.top = ((h-lo)*HH)+"px";
+    row.appendChild(el("span","lab", pad(h)+":00"));
+    tl.appendChild(row);
+  }
+
+  // overlap columns
+  const clusters = [];
+  timed.slice().sort((a,b)=>a.start-b.start).forEach(e=>{
+    const c = clusters.find(cl => cl.some(x => x.start < e.end && e.start < x.end));
+    if(c) c.push(e); else clusters.push([e]);
+  });
+
+  const conflicted = new Set();
+  conflictPairs(timed).forEach(([a,b])=>{ conflicted.add(a.id); conflicted.add(b.id); });
+
+  clusters.forEach(cluster=>{
+    const cols = [];
+    cluster.forEach(e=>{
+      let idx = cols.findIndex(col => col[col.length-1].end <= e.start);
+      if(idx<0){ cols.push([e]); idx = cols.length-1; } else cols[idx].push(e);
+      e._col = idx;
+    });
+    const n = cols.length;
+    cluster.forEach(e=>{
+      const c = calOf(e.cal);
+      const top = ((mins(e.start)/60) - lo) * HH;
+      const dur = Math.max(24, ((e.end-e.start)/3600000) * HH - 3);
+      const node = el("button","ev "+c.color+(isMasked(e)?" masked":"")+(dur<40?" short":""));
+      node.style.top = top+"px";
+      node.style.height = dur+"px";
+      node.style.left = "calc("+(e._col*(100/n))+"% + 2px)";
+      node.style.width = "calc("+(100/n)+"% - 4px)";
+      node.appendChild(el("span","tt", titleOf(e)));
+      if(dur>=40 || true){
+        node.appendChild(el("span","st", hm(e.start)+"–"+hm(e.end)));
+      }
+      if(dur>=64 && (e.loc || e.meet) && !isMasked(e)){
+        node.appendChild(el("span","loc", e.loc || "Google Meet"));
+      }
+      if(e.rsvp==="needsAction") node.appendChild(el("span","badge","待回覆"));
+      node.onclick = ()=>openEvent(e);
+      tl.appendChild(node);
+
+      if(conflicted.has(e.id) && e._col===n-1){
+        const m = el("i","conflict-mark","!");
+        m.style.top = (top-6)+"px";
+        tl.appendChild(m);
+      }
+    });
+  });
+
+  // now line
+  const nowM = mins(new Date());
+  if(nowM/60 >= lo && nowM/60 <= hi){
+    const nl = el("div","nowline");
+    nl.style.top = (((nowM/60)-lo)*HH)+"px";
+    nl.appendChild(el("span","tag num", hm(new Date())));
+    nl.appendChild(el("i","bar"));
+    tl.appendChild(nl);
+  }
+}
+
+/* ============================================================
+   RENDER — week
+   ============================================================ */
+function renderWeek(){
+  const sow = startOfWeek(new Date());
+  const grid = $("#wkGrid"); grid.innerHTML="";
+  const list = $("#wkList"); list.innerHTML="";
+  let freeTotal = 0;
+
+  for(let i=0;i<7;i++){
+    const d = new Date(sow); d.setDate(sow.getDate()+i);
+    const evs = eventsOn(d).filter(e=>!e.allDay && !e.task);
+    const busy = evs.reduce((s,e)=>s+(e.end-e.start)/3600000, 0);
+    const free = Math.max(0, 11 - busy); // 09:00–20:00 working window
+    freeTotal += free;
+
+    const col = el("div","wk-col"+(sameDay(d,new Date())?" is-today":""));
+    col.appendChild(el("span","wd", WD[d.getDay()].slice(1)));
+    col.appendChild(el("span","dd num", String(d.getDate())));
+    const bars = el("div","wk-bars");
+    evs.slice(0,5).forEach(e=>{
+      const b = el("i","wk-bar");
+      b.style.background = "var(--c-"+calOf(e.cal).color+")";
+      bars.appendChild(b);
+    });
+    col.appendChild(bars);
+    col.appendChild(el("span","free", free>0 ? free.toFixed(0)+"h" : "滿"));
+    col.onclick = ()=> switchView("viewToday");
+    grid.appendChild(col);
+
+    const card = el("div","wk-day");
+    const h = el("h3","");
+    h.appendChild(document.createTextNode(WD[d.getDay()]));
+    h.appendChild(el("span","n", (d.getMonth()+1)+"/"+d.getDate()));
+    if(sameDay(d,new Date())) h.appendChild(el("span","today-tag","今天"));
+    card.appendChild(h);
+    const all = eventsOn(d);
+    if(!all.length) card.appendChild(el("div","empty-day","整天空著"));
+    all.forEach(e=>{
+      const row = el("div","mini");
+      row.appendChild(el("span","tm num", e.allDay?"整天":hm(e.start)));
+      const sw = el("i","sw"); sw.style.background="var(--c-"+calOf(e.cal).color+")"; row.appendChild(sw);
+      row.appendChild(el("span","nm", titleOf(e)));
+      row.onclick = ()=>openEvent(e);
+      card.appendChild(row);
+    });
+    list.appendChild(card);
+  }
+  $("#weekFree").textContent = "可用空檔約 " + Math.round(freeTotal) + " 小時";
+}
+
+/* ============================================================
+   SEARCH — typo-tolerant
+   ============================================================ */
+function lev(a,b){
+  if(a===b) return 0;
+  const m=a.length, n=b.length;
+  if(!m||!n) return Math.max(m,n);
+  let prev = Array.from({length:n+1},(_,i)=>i), cur = new Array(n+1);
+  for(let i=1;i<=m;i++){
+    cur[0]=i;
+    for(let j=1;j<=n;j++){
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1]===b[j-1]?0:1));
+    }
+    [prev,cur] = [cur,prev];
+  }
+  return prev[n];
+}
+function scoreEvent(q, e){
+  const hay = [e.title, e.loc||"", (e.guests||[]).join(" "), calOf(e.cal).name].join(" ").toLowerCase();
+  const query = q.toLowerCase().trim();
+  if(!query) return 0;
+  if(hay.includes(query)) return 100 - hay.indexOf(query);
+  // sliding-window fuzzy over the title
+  const t = e.title.toLowerCase();
+  const L = query.length;
+  let best = Infinity;
+  for(let i=0; i<=Math.max(0,t.length-L); i++){
+    best = Math.min(best, lev(query, t.slice(i, i+L)));
+  }
+  if(t.length < L) best = Math.min(best, lev(query, t));
+  const tol = L<=2 ? 0 : L<=4 ? 1 : 2;
+  return best<=tol ? 60 - best*10 : 0;
+}
+function renderSearch(){
+  const q = $("#searchInput").value;
+  const box = $("#searchRes"); box.innerHTML="";
+  const hints = $("#searchHints");
+  if(!hints.childElementCount){
+    ["牙醫","客戶","生日","小孩","線上會議"].forEach(h=>{
+      const b = el("button","chip", h);
+      b.onclick = ()=>{ $("#searchInput").value=h; renderSearch(); };
+      hints.appendChild(b);
+    });
+  }
+  if(!q.trim()){ hints.hidden=false; return; }
+  hints.hidden=true;
+
+  const vis = visibleCals();
+  const hits = state.events
+    .filter(e=>vis.has(e.cal))
+    .map(e=>({e, s:scoreEvent(q,e)}))
+    .filter(x=>x.s>0)
+    .sort((a,b)=> b.s-a.s || Math.abs(a.e.start-Date.now()) - Math.abs(b.e.start-Date.now()))
+    .slice(0,25);
+
+  if(!hits.length){
+    box.appendChild(el("p","empty-day","找不到「"+q+"」。試試地點或人名。"));
+    return;
+  }
+  hits.forEach(({e,s})=>{
+    const c = calOf(e.cal);
+    const item = el("div","res-item");
+    const sw = el("i","sw"); sw.style.background="var(--c-"+c.color+")"; item.appendChild(sw);
+    const tx = el("div","",""); tx.style.flex="1"; tx.style.minWidth="0";
+    const nm = el("div","nm");
+    const title = titleOf(e);
+    const idx = title.toLowerCase().indexOf(q.toLowerCase().trim());
+    if(idx>=0){
+      nm.appendChild(document.createTextNode(title.slice(0,idx)));
+      nm.appendChild(el("mark","", title.substr(idx, q.trim().length)));
+      nm.appendChild(document.createTextNode(title.slice(idx+q.trim().length)));
+    } else nm.textContent = title;
+    tx.appendChild(nm);
+    const dd = e.start;
+    tx.appendChild(el("div","meta",
+      (dd.getMonth()+1)+"/"+dd.getDate()+" "+WD[dd.getDay()]+(e.allDay?"":" "+hm(e.start))+
+      "・"+c.name + (e.loc?"・"+e.loc:"") + (s<100?"　≈ 近似比對":"")));
+    item.appendChild(tx);
+    item.onclick = ()=>openEvent(e);
+    box.appendChild(item);
+  });
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings(){
+  $("#acctMail").textContent = state.account.mail;
+  $("#acctInitial").textContent = state.account.initial;
+  const backendCopy = {
+    mcp:   {s:"已連線・透過 claude.ai 的 Google Calendar 連接器",
+            n:"這個頁面用你在 claude.ai 授權的 Google 身分讀寫行事曆，程式碼看不到你的權杖。要撤銷：claude.ai → 設定 → 連接器 → Google Calendar。"},
+    oauth: {s:"已連線・自架版 OAuth",
+            n:"以 Google Identity Services 直接授權。事件資料只在這台裝置與 Google 之間往返，不經過任何中介伺服器。"},
+    ics:   {s:"已匯入 .ics 快照・唯讀",
+            n:"目前顯示的是你匯入的行事曆檔案，全部在這台裝置上解析。這是快照：Google 那邊之後的改動不會自動同步，要更新就重新匯入一次。"},
+    demo:  {s:"示範模式・未連線真實帳號",
+            n:"目前顯示的是依今天日期生成的示範行程。要接上你真正的行事曆，按右上角的<b>切換</b>，再按連線——最快的路是在 claude.ai 設定裡加上 <b>Google Calendar</b> 連接器。"}
+  }[state.backend] || {s:"未連線", n:""};
+
+  $("#acctStatus").textContent = backendCopy.s;
+  $("#connNote").innerHTML = backendCopy.n;
+
+  const badCals = state.cals.filter(c=>c.error);
+  if(badCals.length){
+    $("#connNote").innerHTML += "<br><br><b>有 "+badCals.length+" 本日曆讀不到</b>（"+
+      badCals.map(c=>c.name+"："+c.error).join("、")+"）。其餘照常顯示。";
+  }
+
+  const cl = $("#calList"); cl.innerHTML="";
+  state.cals.forEach(c=>{
+    const row = el("div","row");
+    const sw = el("i","sw3"); sw.style.background="var(--c-"+c.color+")"; row.appendChild(sw);
+    const tx = el("div","tx");
+    tx.appendChild(el("b","",c.name));
+    tx.appendChild(el("span","",c.sub + (c.privacy?"・只顯示忙碌":"")));
+    row.appendChild(tx);
+
+    if(c.id!=="task"){
+      const p = el("button","chip");
+      p.textContent = c.privacy ? "隱私" : "顯示內容";
+      p.setAttribute("aria-pressed", String(c.privacy));
+      p.onclick = ()=>{ c.privacy=!c.privacy; renderSettings(); renderAll(); toast(c.name+"日曆："+(c.privacy?"只顯示忙碌":"顯示完整內容")); };
+      row.appendChild(p);
+    }
+    const t = el("button","toggle");
+    t.setAttribute("aria-pressed", String(c.on));
+    t.setAttribute("aria-label", c.name+" 顯示");
+    t.onclick = ()=>{ c.on=!c.on; renderSettings(); renderAll(); };
+    row.appendChild(t);
+    cl.appendChild(row);
+  });
+
+  const wxT = $("#wxToggle");
+  if(wxT){
+    wxT.setAttribute("aria-pressed", String(LS.get("wx", null) === true));
+    wxT.onclick = async ()=>{
+      if(LS.get("wx", null) === true){
+        LS.set("wx", false); state.weather = null; renderWeather(); renderSettings();
+      } else {
+        await askWeather();
+        renderSettings();
+        if(LS.get("wx", null) !== true) toast("沒有拿到位置，天氣先關著");
+      }
+    };
+  }
+
+  const rules = [
+    {k:"leave", b:"該出門了", s:"依地點與即時路況回推車程，提前叫你"},
+    {k:"meet",  b:"線上會議", s:"開始前 5 分鐘，通知直接帶加入按鈕"},
+    {k:"allday",b:"整天事件", s:"前一晚 20:00 提醒，當天早上不吵你"},
+    {k:"family",b:"家庭日曆彙整", s:"一天一則摘要，不逐則跳通知"},
+    {k:"brief", b:"每日簡報", s:"早上 07:00 一則：今天幾件事、衝突、待回覆"}
+  ];
+  const rl = $("#ruleList"); rl.innerHTML="";
+  rules.forEach(r=>{
+    const row = el("div","row");
+    const tx = el("div","tx"); tx.appendChild(el("b","",r.b)); tx.appendChild(el("span","",r.s));
+    row.appendChild(tx);
+    const t = el("button","toggle");
+    t.setAttribute("aria-pressed", String(!!state.rules[r.k]));
+    t.setAttribute("aria-label", r.b);
+    t.onclick = ()=>{ state.rules[r.k]=!state.rules[r.k]; LS.set("rules",state.rules); renderSettings(); renderBrief(); };
+    row.appendChild(t);
+    rl.appendChild(row);
+  });
+}
+
+/* ============================================================
+   SHEETS
+   ============================================================ */
+let openSheet = null;
+function showSheet(id){
+  const s = document.getElementById(id);
+  const scrim = $("#scrim");
+  scrim.hidden=false; s.hidden=false;
+  requestAnimationFrame(()=>{ scrim.classList.add("open"); s.classList.add("open"); });
+  openSheet = s;
+}
+function hideSheet(){
+  if(!openSheet) return;
+  const s = openSheet, scrim = $("#scrim");
+  s.classList.remove("open"); scrim.classList.remove("open");
+  setTimeout(()=>{ s.hidden=true; scrim.hidden=true; }, 260);
+  openSheet = null;
+}
+$("#scrim").onclick = hideSheet;
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") hideSheet(); });
+
+function openEvent(e){
+  const c = calOf(e.cal);
+  const b = $("#sheetEventBody"); b.innerHTML="";
+  const tag = el("div","");
+  tag.style.cssText="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3)";
+  const sw = el("i",""); sw.style.cssText="width:8px;height:8px;border-radius:2px;background:var(--c-"+c.color+")";
+  tag.appendChild(sw); tag.appendChild(document.createTextNode(c.name + (c.privacy? "・隱私模式" : "")));
+  b.appendChild(tag);
+  b.appendChild(el("h3","st", titleOf(e)));
+
+  const when = e.allDay ? "整天"
+    : (e.start.getMonth()+1)+"/"+e.start.getDate()+" "+WD[e.start.getDay()]+"　"+hm(e.start)+" – "+hm(e.end)+
+      "　<span style='color:var(--ink-3)'>"+Math.round((e.end-e.start)/60000)+" 分</span>";
+  const rows = [["時間", when]];
+  if(!isMasked(e)){
+    if(e.loc) rows.push(["地點", e.loc + "<div style='margin-top:6px'><span class='chip' style='display:inline-flex'>路程約 18 分・16:42 該出門</span></div>"]);
+    if(e.meet) rows.push(["會議", "Google Meet<div style='margin-top:6px'><span class='chip' style='display:inline-flex'>開始前 5 分提醒</span></div>"]);
+    if(e.guests && e.guests.length) rows.push(["參與者", e.guests.join("、")]);
+  }
+  rows.push(["提醒", state.rules.leave && e.loc ? "該出門時＋抵達前 10 分" : e.meet ? "開始前 5 分鐘" : "開始前 10 分鐘"]);
+  rows.forEach(([k,v])=>{
+    const r = el("div","kv");
+    r.appendChild(el("div","k",k));
+    r.appendChild(el("div","v",v));
+    b.appendChild(r);
+  });
+
+  if(e.unsynced){
+    b.appendChild(el("div","warnbox","<div><b>尚未寫入 Google</b><br>這則行程目前只存在這台裝置上（"+e.unsynced+"）。連線修好後重新加入一次即可。</div>"));
+  }
+  if(isMasked(e)){
+    b.appendChild(el("div","warnbox","<div><b>隱私模式</b><br>這本共享日曆設定為只顯示忙碌時段。其他人（以及這個畫面）看不到標題、地點與參與者。</div>"));
+  }
+
+  const others = eventsOn(e.start).filter(x=>x.id!==e.id && !x.allDay && !x.task && x.start<e.end && e.start<x.end);
+  if(others.length){
+    b.appendChild(el("div","warnbox","<div><b>時間衝突</b><br>與「"+titleOf(others[0])+"」（"+hm(others[0].start)+"–"+hm(others[0].end)+"）重疊。要不要把其中一個往後挪 30 分鐘？</div>"));
+  }
+
+  if(e.rsvp==="needsAction"){
+    const wrap = el("div","rsvp");
+    [["yes","參加"],["maybe","可能"],["no","不克前往"]].forEach(([k,n])=>{
+      const btn = el("button","",n);
+      btn.onclick = async ()=>{
+        const before = e.rsvp;
+        e.rsvp = k; hideSheet(); renderAll();
+        if(state.backend === "demo"){ toast("已回覆：" + n); return; }
+        const r = await pushRsvp(e, k);
+        if(r.ok) toast("已回覆：" + n);
+        else { e.rsvp = before; renderAll(); toast("回覆沒送出（"+r.code+"）"); }
+      };
+      wrap.appendChild(btn);
+    });
+    b.appendChild(el("p","",'<span style="font-size:12.5px;color:var(--ink-3)">尚未回覆這則邀請</span>'));
+    b.appendChild(wrap);
+  }
+  showSheet("sheetEvent");
+}
+
+/* ---------- connection guidance: one branch per error code ---------- */
+const CONNECT_COPY = {
+  server_not_connected: {
+    t:"還沒把 Google 行事曆接上 claude.ai",
+    p:"Claude 有官方的 Google Calendar 連接器。接上之後，這個 App 就會用你自己的 Google 授權讀寫行事曆——不用申請任何 API 金鑰。",
+    steps:[
+      "在另一個分頁打開 <b>claude.ai</b>，進 <b>設定 → 連接器</b>",
+      "按 <b>Browse connectors</b>（瀏覽連接器），找官方的 <b>Google Calendar</b>，按 <b>Connect</b>",
+      "用你平常在用的 Google 帳號登入並允許",
+      "回到這一頁，按下面的<b>重新檢查</b>"
+    ],
+    warn:"不要按任何「<b>Add custom</b>／新增自訂連接器」。那是要你自己架 MCP 伺服器用的，官方連接器不需要填任何網址。",
+    retry:true
+  },
+  upstream_error: {
+    t:"這個頁面還沒拿到連接器授權",
+    p:"授權還沒確認給這個頁面。最常見的是下面兩種情況，修法不一樣。",
+    steps:[
+      "跳出 <b>This artifact uses connectors</b> 視窗時 → 直接按 <b>Continue</b>",
+      "那個視窗裡如果寫著 <b>No matching connector found</b>，代表你的帳號還沒安裝連接器 → 到 <b>claude.ai → 設定 → 連接器 → Browse connectors</b>，找 <b>Google Calendar</b> 按 <b>Connect</b>",
+      "接好之後回到這一頁，按下面的<b>重新檢查</b>"
+    ],
+    warn:"那個視窗右邊的「<b>Add custom</b>」<b>不要按</b>。它會叫你填 MCP 伺服器網址，跟官方 Google Calendar 無關。",
+    retry:true
+  },
+  needs_reauth: {
+    t:"Google 授權過期了",
+    p:"連接器還在，但憑證失效——通常是密碼變更或授權被撤銷。",
+    steps:["到 <b>claude.ai → 設定 → 連接器</b>","找到 <b>Google Calendar</b>，按<b>重新連接</b>","回來按重新檢查"],
+    retry:true
+  },
+  not_in_manifest: {
+    t:"你在這個頁面關掉了 Google 行事曆",
+    p:"連接器本身是好的，但這個頁面被拒絕使用它——可能是詢問時選了不允許。",
+    steps:["重新整理這一頁","出現「允許這個 Artifact 使用 Google Calendar」時選<b>允許</b>"],
+    retry:true
+  },
+  blocked_by_policy: {
+    t:"組織政策擋下了這個連接器",
+    p:"你的 Claude 組織管理員停用了 Google Calendar 連接器，這不是頁面能解決的。",
+    steps:["請管理員在組織設定中開放 Google Calendar 連接器"],
+    retry:false
+  },
+  approval_required: {
+    t:"這個呼叫需要逐次核准",
+    p:"組織政策要求每次呼叫都要人工核准，而 Artifact 目前還不支援逐次核准流程。",
+    steps:["請管理員把 Google Calendar 改為免逐次核准"],
+    retry:false
+  },
+  server_unavailable: { t:"Google 那邊暫時沒有回應", p:"連接器連得上，但上游服務逾時或回報錯誤。這通常是暫時的。", steps:["等幾秒，按重新檢查再試一次"], retry:true },
+  rate_limited:        { t:"呼叫太頻繁", p:"稍等一下再試。", steps:["等 30 秒，按重新檢查"], retry:true },
+  tool_error:          { t:"連接器回報了錯誤", p:"Google Calendar 連接器收到請求但回報失敗。下面是它回覆的原文。", steps:[], retry:true },
+  no_mcp: {
+    t:"這個畫面沒有連接器可用",
+    p:"連接器只在 claude.ai 的 Artifact 檢視裡才有。如果你是把這個檔案自己架在別的網址上，就要改走 Google OAuth。",
+    steps:[
+      "<b>最簡單</b>：回到 claude.ai 開啟這個 Artifact，再按一次連線",
+      "<b>自架</b>：在 Google Cloud 建 OAuth 用戶端，網址後面加 <code>?client_id=…</code>（做法見 repo 的 README）"
+    ],
+    retry:true
+  },
+  oauth_denied: { t:"Google 授權被取消", p:"授權視窗關閉或被拒絕了。", steps:["再按一次連線，並在 Google 畫面選擇允許"], retry:true },
+  oauth_api:    { t:"授權成功，但讀取行事曆失敗", p:"權杖拿到了，Calendar API 卻回報錯誤——通常是 API 沒啟用，或 scope 不足。", steps:["在 Google Cloud Console 確認已啟用 Google Calendar API"], retry:true }
+};
+
+function openConnect(code, detail){
+  const c = CONNECT_COPY[code] || {
+    t:"連不上 Google 行事曆",
+    p:"發生了未預期的狀況（代碼 "+code+"）。你可以先用示範資料看完整個 App。",
+    steps:[], retry:true
+  };
+  const b = $("#consentBody"); b.innerHTML="";
+  b.appendChild(el("h3","st", c.t));
+  b.appendChild(el("p","",'<span style="font-size:13.5px;color:var(--ink-2);line-height:1.6">'+c.p+'</span>'));
+
+  if(c.steps.length){
+    const ol = el("ol","steps");
+    c.steps.forEach(s=> ol.appendChild(el("li","", "<div>"+s+"</div>")));
+    b.appendChild(ol);
+  }
+  if(c.warn){
+    b.appendChild(el("div","warnbox","<div><b>小心這個按鈕</b><br>"+c.warn+"</div>"));
+  }
+  if(detail){
+    b.appendChild(el("div","note","<span class='num' style='font-size:11.5px'>"+String(detail).slice(0,300)+"</span>"));
+  }
+  b.appendChild(el("p","",'<span class="num" style="font-size:10.5px;color:var(--ink-3)">'+code+'</span>'));
+
+  if(c.retry){
+    const again = el("button","btn btn-primary","重新檢查");
+    again.style.marginTop="14px";
+    again.onclick = ()=>{ hideSheet(); setTimeout(connectCalendar, 260); };
+    b.appendChild(again);
+  }
+  const ics = el("button","btn btn-ics","改用匯入 .ics 檔案（免登入，用你真正的行程）");
+  ics.style.marginTop = "8px";
+  ics.onclick = ()=>{ hideSheet(); setTimeout(()=>showSheet("sheetIcs"), 280); };
+  b.appendChild(ics);
+
+  const demo = el("button","btn btn-ghost","先用示範資料看完整功能 →");
+  demo.onclick = ()=>{ hideSheet(); setTimeout(()=>finishConnect("demo"), 260); };
+  b.appendChild(demo);
+  showSheet("sheetConsent");
+}
+
+/* ============================================================
+   ONBOARDING — four short screens, one action each.
+   Written for someone whose first smartphone this is: no jargon,
+   one big button, and never a screen you cannot get out of.
+   ============================================================ */
+const GOOGLE_SVG = '<svg class="gmark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.8-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 17.2 2 20.5 2 24s.8 6.8 2.3 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.2 30 2 24 2 15.4 2 7.9 6.9 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/></svg>';
+
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+                           window.navigator.standalone === true;
+
+let connectorReady = false;          // filled in by a silent probe at start
+
+function obRender(){
+  const acts = $("#obActions"); acts.innerHTML = "";
+  const add = (cls, html, fn, id) => {
+    const b = el("button", "btn " + cls, html);
+    if(id) b.id = id;
+    b.onclick = fn;
+    acts.appendChild(b);
+    return b;
+  };
+  add("btn-google", GOOGLE_SVG + "<span>登入 Google 帳戶</span>", signIn, "obPrimary");
+  add("btn-ghost", "先看看（示範資料）", ()=> enterApp("demo"));
+}
+function obStart(){
+  $("#authScreen").hidden = false;
+  obRender();
+  $("#authScreen").scrollTop = 0;
+}
+/** The one button. Real Google sign-in wherever it is possible. */
+function signIn(){
+  if(state.clientId) return connectOAuth();
+  if(connectorReady) return connectCalendar();
+  showSheet("sheetKey");             // this address has not been set up yet
+}
+function finishConnect(mode){ enterApp(mode); }
+function setAuthBusy(on, msg){
+  const b = $("#obPrimary");
+  if(!b) return;
+  b.disabled = !!on;
+  if(on) b.innerHTML = '<i class="spin" style="border-color:var(--line);border-top-color:var(--accent)"></i><span>' + (msg || "連線中⋯") + '</span>';
+  else obRender();
+}
+
+/* ============================================================
+   WEATHER — Open-Meteo: free, no account, no API key.
+   Position is read on the device and sent to nobody else.
+   ============================================================ */
+const WX = {
+  0:"晴朗", 1:"大致晴朗", 2:"局部多雲", 3:"陰天",
+  45:"有霧", 48:"有霧", 51:"毛毛雨", 53:"毛毛雨", 55:"毛毛雨",
+  61:"小雨", 63:"下雨", 65:"大雨", 66:"凍雨", 67:"凍雨",
+  71:"小雪", 73:"下雪", 75:"大雪", 77:"雪粒",
+  80:"陣雨", 81:"陣雨", 82:"強陣雨", 85:"陣雪", 86:"陣雪",
+  95:"雷雨", 96:"雷雨冰雹", 99:"雷雨冰雹"
+};
+function getPosition(){
+  return new Promise((res, rej)=>{
+    if(!navigator.geolocation) return rej(new Error("no geolocation"));
+    navigator.geolocation.getCurrentPosition(res, rej, {timeout:8000, maximumAge:1800000});
+  });
+}
+async function askWeather(){
+  try{
+    const pos = await getPosition();
+    LS.set("wx", true);
+    state.coords = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+    LS.set("coords", state.coords);
+    await loadWeather();
+  }catch(e){
+    LS.set("wx", false);      // declined or unavailable — never block, never nag
+  }
+}
+async function loadWeather(){
+  if(!CFG.weather || LS.get("wx", null) !== true) return;
+  const c = state.coords || LS.get("coords", null);
+  if(!c) return;
+  try{
+    const u = new URL("https://api.open-meteo.com/v1/forecast");
+    u.searchParams.set("latitude", c.lat.toFixed(3));
+    u.searchParams.set("longitude", c.lon.toFixed(3));
+    u.searchParams.set("current", "temperature_2m,weather_code");
+    u.searchParams.set("daily", "sunrise,sunset,temperature_2m_max,temperature_2m_min");
+    u.searchParams.set("timezone", "auto");
+    u.searchParams.set("forecast_days", "1");
+    const r = await fetch(u);
+    if(!r.ok) throw new Error("weather " + r.status);
+    state.weather = await r.json();
+    renderWeather();
+  }catch(e){ /* weather is a bonus: stay silent, show nothing */ }
+}
+function renderWeather(){
+  const strip = $("#wxStrip");
+  const w = state.weather;
+  if(!strip) return;
+  if(!w || !w.current){ strip.hidden = true; return; }
+  const t = Math.round(w.current.temperature_2m);
+  const desc = WX[w.current.weather_code] || "";
+  const d = w.daily || {};
+  const hi = d.temperature_2m_max && Math.round(d.temperature_2m_max[0]);
+  const lo = d.temperature_2m_min && Math.round(d.temperature_2m_min[0]);
+  const sr = d.sunrise && d.sunrise[0] ? d.sunrise[0].slice(11,16) : null;
+  const ss = d.sunset  && d.sunset[0]  ? d.sunset[0].slice(11,16)  : null;
+  strip.hidden = false;
+  strip.innerHTML =
+    '<span class="t">' + t + '°</span>' +
+    '<span>' + desc + '</span>' +
+    (hi != null ? '<span class="sep">·</span><span class="num">' + hi + '° / ' + lo + '°</span>' : '') +
+    (sr ? '<span class="sun">日出 ' + sr + '<br>日落 ' + ss + '</span>' : '');
+}
+
+/* ---------- add to home screen coach ---------- */
+function maybeCoach(){
+  const c = $("#installCoach");
+  if(!c) return;
+  c.hidden = !(isIOS() && !isStandalone() && LS.get("coachDone", false) !== true && state.entered);
+}
+
+/* ============================================================
+   QUICK ADD — Chinese natural-language parsing
+   ============================================================ */
+const CN_NUM = {零:0,一:1,二:2,兩:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10,十一:11,十二:12};
+function cnNum(s){
+  if(/^\d+$/.test(s)) return parseInt(s,10);
+  if(CN_NUM[s]!==undefined) return CN_NUM[s];
+  const m = s.match(/^十([一二三四五六七八九])$/); if(m) return 10+CN_NUM[m[1]];
+  const m2 = s.match(/^([二三四五])十([一二三四五六七八九])?$/); if(m2) return CN_NUM[m2[1]]*10 + (m2[2]?CN_NUM[m2[2]]:0);
+  return null;
+}
+function parseText(txt){
+  const out = {date:null, dateLabel:null, time:null, timeLabel:null, dur:60, durLabel:null,
+               loc:null, people:null, cal:"personal", title:null};
+  let s = " " + txt.trim() + " ";
+
+  /* --- date --- */
+  const today = new Date();
+  const dayMap = {"今天":0,"今日":0,"明天":1,"明日":1,"後天":2,"大後天":3};
+  for(const k in dayMap){
+    if(s.includes(k)){ out.date = at(dayMap[k],0,0); out.dateLabel = k; s = s.replace(k," "); break; }
+  }
+  if(!out.date){
+    const w = s.match(/(下下|下|這|本)?\s*(週|星期|禮拜)([一二三四五六日天])/);
+    if(w){
+      const target = w[3]==="日"||w[3]==="天" ? 0 : CN_NUM[w[3]];
+      let delta = (target - today.getDay() + 7) % 7;
+      if(w[1]==="下") delta += (delta===0?7:0) || (today.getDay()>=target?0:7);
+      if(w[1]==="下") delta = ((target - today.getDay() + 7) % 7) + 7 - (((target - today.getDay() + 7) % 7)===0?0:0);
+      if(w[1]==="下下") delta = ((target - today.getDay() + 7) % 7) + 14;
+      if(!w[1] && delta===0) delta = 7;
+      out.date = at(delta,0,0);
+      out.dateLabel = (w[1]||"")+"週"+w[3];
+      s = s.replace(w[0]," ");
+    }
+  }
+  if(!out.date){
+    const md = s.match(/(\d{1,2})\s*[\/月]\s*(\d{1,2})\s*日?/);
+    if(md){
+      const d = new Date(today.getFullYear(), parseInt(md[1],10)-1, parseInt(md[2],10));
+      if(d < today) d.setFullYear(d.getFullYear()+1);
+      d.setHours(0,0,0,0);
+      out.date = d; out.dateLabel = md[1]+"/"+md[2];
+      s = s.replace(md[0]," ");
+    }
+  }
+
+  /* --- time --- */
+  const period = (s.match(/(凌晨|早上|上午|中午|下午|傍晚|晚上|半夜)/)||[])[1] || null;
+  if(period) s = s.replace(period," ");
+  let h=null, mi=0, rawT=null;
+  const t1 = s.match(/(\d{1,2})\s*[:：]\s*(\d{2})/);
+  const t2 = s.match(/([一二兩三四五六七八九十]{1,3}|\d{1,2})\s*[點时時]\s*(半|[一二三四五六七八九十]{1,3}\s*分|\d{1,2}\s*分)?/);
+  if(t1){ h=parseInt(t1[1],10); mi=parseInt(t1[2],10); rawT=t1[0]; s=s.replace(t1[0]," "); }
+  else if(t2){
+    h = cnNum(t2[1].trim());
+    if(t2[2]){
+      const f = t2[2].replace(/\s|分/g,"");
+      mi = f==="半" ? 30 : (cnNum(f) || 0);
+    }
+    rawT = t2[0]; s = s.replace(t2[0]," ");
+  }
+  if(h!==null){
+    if(period==="下午"||period==="傍晚"||period==="晚上"){ if(h<12) h+=12; }
+    if(period==="中午" && h<12) h+=12;
+    if((period==="早上"||period==="上午") && h===12) h=0;
+    if(!period && h<8) h+=12;   // "三點" defaults to the afternoon
+    out.time = {h, m:mi};
+    out.timeLabel = pad(h)+":"+pad(mi);
+  }
+
+  /* --- duration --- */
+  const dh = s.match(/([一二兩三四五六七八九十]{1,3}|\d{1,2})\s*(?:個)?\s*(?:小時|鐘頭|hr|h)/);
+  const dm = s.match(/([一二三四五六七八九十]{1,3}|\d{1,3})\s*分鐘/);
+  if(s.includes("半小時")){ out.dur=30; out.durLabel="30 分"; s=s.replace("半小時"," "); }
+  else if(dh){ out.dur = (cnNum(dh[1].trim())||1)*60; out.durLabel = out.dur/60 + " 小時"; s=s.replace(dh[0]," "); }
+  else if(dm){ out.dur = cnNum(dm[1].trim())||30; out.durLabel = out.dur + " 分"; s=s.replace(dm[0]," "); }
+
+  /* --- location --- */
+  const lc = s.match(/[在於]\s*([^\s，,。]{1,14}?)(?=\s|跟|和|與|開會|吃飯|見面|討論|$)/);
+  if(lc){ out.loc = lc[1]; s = s.replace(lc[0]," "); }
+
+  /* --- people --- */
+  const pp = s.match(/[跟和與]\s*([^\s，,。]{1,12}?)(?=\s|在|於|開會|吃飯|見面|討論|$)/);
+  if(pp){ out.people = pp[1]; s = s.replace(pp[0]," "); }
+
+  /* --- calendar guess --- */
+  const full = txt;
+  if(/會議|開會|提案|客戶|簡報|報價|上班|加班|面試|週會|審稿|驗收/.test(full)) out.cal="work";
+  else if(/小孩|孩子|媽|爸|老婆|老公|家人|家庭|接送|親子|家長|奶奶|阿嬤|生日/.test(full)) out.cal="family";
+
+  /* --- title = leftovers --- */
+  let title = s.replace(/\s+/g," ").trim();
+  title = title.replace(/^[的了嗎吧、,，。]+|[的了嗎吧、,，。]+$/g,"").trim();
+  if(!title) title = out.people ? ("與"+out.people+"見面") : "新行程";
+  out.title = title;
+  return out;
+}
+
+function renderQuickAdd(){
+  const txt = $("#qaInput").value;
+  const tags = $("#qaParse"); tags.innerHTML="";
+  const prev = $("#qaPreview");
+  if(!txt.trim()){ prev.hidden=true; $("#qaSave").disabled=false; return; }
+  const p = parseText(txt);
+
+  const mk = (k,v,miss) => {
+    const t = el("div","ptag"+(miss?" miss":""));
+    t.appendChild(el("span","pk",k));
+    t.appendChild(document.createTextNode(v));
+    return t;
+  };
+  tags.appendChild(mk("日期", p.dateLabel || "今天", !p.dateLabel));
+  tags.appendChild(mk("時間", p.timeLabel || "待定", !p.timeLabel));
+  tags.appendChild(mk("時長", p.durLabel || "1 小時", !p.durLabel));
+  if(p.loc) tags.appendChild(mk("地點", p.loc));
+  if(p.people) tags.appendChild(mk("對象", p.people));
+  const calId = resolveCal(p.cal);
+  tags.appendChild(mk("日曆", calOf(calId).name));
+
+  const c = calOf(calId);
+  const d = p.date || at(0,0,0);
+  const start = new Date(d); if(p.time) start.setHours(p.time.h, p.time.m, 0, 0); else start.setHours(9,0,0,0);
+  const end = new Date(start.getTime() + p.dur*60000);
+
+  prev.hidden=false; prev.innerHTML="";
+  const sw = el("i","sw"); sw.style.background="var(--c-"+c.color+")"; prev.appendChild(sw);
+  const tx = el("div",""); tx.style.flex="1";
+  tx.appendChild(el("div","", "<b style='font-size:15px'>"+p.title+"</b>"));
+  tx.appendChild(el("div","", "<span class='num' style='font-size:12.5px;color:var(--ink-2)'>"+
+    (d.getMonth()+1)+"/"+d.getDate()+" "+WD[d.getDay()]+"　"+hm(start)+"–"+hm(end)+"</span>"));
+  if(p.loc) tx.appendChild(el("div","", "<span style='font-size:12.5px;color:var(--ink-3)'>"+p.loc+"</span>"));
+  prev.appendChild(tx);
+  $("#qaCalName").textContent = c.name;
+  prev._draft = {p, start, end, cal:calId};
+}
+
+async function saveQuickAdd(){
+  const prev = $("#qaPreview");
+  if(prev.hidden || !prev._draft){ toast("先打一句話，例如「明天下午三點開會」"); return; }
+  const {p, start, end, cal} = prev._draft;
+  const ev = {
+    id:"e"+Math.random().toString(36).slice(2,9), gid:null,
+    cal, title:p.title, start, end, loc:p.loc||"", guests:p.people?[p.people]:[],
+    rsvp:null, meet:false, allDay:false
+  };
+  state.events.push(ev);
+  hideSheet();
+  $("#qaInput").value=""; renderQuickAdd();
+  renderAll();
+
+  if(state.backend === "demo"){ toast("已加入「"+calOf(cal).name+"」日曆"); return; }
+  toast("正在寫入 Google⋯");
+  const r = await pushEvent(ev);
+  if(r.ok){ toast("已寫入 Google 行事曆"); }
+  else {
+    ev.unsynced = r.code;
+    renderAll();
+    toast("寫入失敗（"+r.code+"），先留在這台裝置上");
+  }
+}
+
+/* ============================================================
+   CONNECTION — three backends, tried in this order
+
+   1) CONNECTOR : the viewer's "Google Calendar" connector on claude.ai,
+                  reached through the page's `mcp` capability. Runs on the
+                  viewer's own Google authorisation — no API key, no
+                  hosting, nothing for the user to register. Preferred.
+   2) OAUTH     : self-hosted copy with ?client_id=… (GIS token client).
+   3) DEMO      : generated data, so the UI is never a dead end.
+
+   The connector's tool argument names are not published to this page
+   (describeTool answers only for Claude's own servers), so reads probe a
+   short list of plausible shapes and remember the one that works.
+   Probing is confined to list_events, which is read-only; writes are
+   attempted once with a single shape and never retried.
+   ============================================================ */
+const GCAL = "Google Calendar";
+const SHAPE_KEY = "evShape";
+
+let mcpPromise = null;
+function useMcp(){
+  if(!mcpPromise){
+    mcpPromise = (window.claude && typeof window.claude.use === "function")
+      ? window.claude.use("mcp").catch(()=>null)
+      : Promise.resolve(null);
+  }
+  return mcpPromise;
+}
+const errCode = e => (e && e.code) ? e.code : "upstream_error";
+
+async function mcpCall(tool, input, opts){
+  const mcp = await useMcp();
+  if(!mcp) throw {code:"no_mcp", message:"這個環境沒有連接器能力"};
+  const r = await mcp.callTool(GCAL, tool, input, opts);
+  return (r && typeof r === "object" && "payload" in r) ? r.payload : r;
+}
+
+/** Is the connector reachable? Listing never asks the viewer for consent. */
+async function probeConnector(){
+  const mcp = await useMcp();
+  if(!mcp) return {ok:false, code:"no_mcp"};
+  try{
+    const res = await mcp.listTools(GCAL);
+    const s = (res && res.servers || []).find(x => x.server === GCAL);
+    if(!s) return {ok:false, code:"server_not_connected"};
+    if(s.authStatus === "needs_reauth") return {ok:false, code:"needs_reauth"};
+    if(!s.tools || !s.tools.length) return {ok:false, code:"server_not_connected"};
+    // authStatus "unknown" only means the viewer has not been asked about this
+    // page yet — the tool names come from our own manifest, so it is NOT evidence
+    // that the connector is installed. Only a real call can tell the difference.
+    return {ok:true, auth:s.authStatus};
+  }catch(e){ return {ok:false, code:errCode(e)}; }
+}
+
+/* ---------- shape-tolerant readers ---------- */
+function asArray(payload){
+  if(Array.isArray(payload)) return payload;
+  if(!payload || typeof payload !== "object") return [];
+  for(const k of ["events","items","calendars","results","data","value","entries"]){
+    if(Array.isArray(payload[k])) return payload[k];
+  }
+  for(const k in payload){ if(Array.isArray(payload[k])) return payload[k]; }
+  return [];
+}
+function pick(o, keys){
+  if(!o) return null;
+  for(const k of keys){ if(o[k] !== undefined && o[k] !== null && o[k] !== "") return o[k]; }
+  return null;
+}
+function parseWhen(v){
+  if(!v) return null;
+  if(typeof v === "object"){
+    return parseWhen(pick(v, ["dateTime","date_time","datetime","date","value","time"]));
+  }
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+function isDateOnly(v){
+  if(!v) return false;
+  if(typeof v === "object") return !!(v.date && !v.dateTime && !v.date_time);
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(v));
+}
+function dayISO(offset){
+  const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+offset); return d;
+}
+function guessCtx(name, i){
+  if(/work|工作|公司|office|業務/i.test(name)) return "work";
+  if(/family|家庭|家人|親子|kids|小孩/i.test(name)) return "family";
+  return i === 0 ? "personal" : "personal";
+}
+
+function eventShapes(calId, from, to){
+  const f = from.toISOString(), t = to.toISOString();
+  const fd = f.slice(0,10), td = t.slice(0,10);
+  const withCal = o => calId ? Object.assign({calendar_id:calId}, o) : Object.assign({}, o);
+  return [
+    withCal({time_min:f, time_max:t, max_results:250}),
+    calId ? {calendarId:calId, timeMin:f, timeMax:t, maxResults:250} : {timeMin:f, timeMax:t},
+    withCal({start_time:f, end_time:t}),
+    withCal({start_date:fd, end_date:td}),
+    withCal({from:f, to:t}),
+    {time_min:f, time_max:t},
+    {}
+  ];
+}
+/** list_events is read-only, so trying another argument shape is safe. */
+async function listEventsAdaptive(calId, from, to){
+  const shapes = eventShapes(calId, from, to);
+  const remembered = LS.get(SHAPE_KEY, null);
+  const order = (remembered !== null && shapes[remembered])
+    ? [remembered].concat(shapes.map((_,i)=>i).filter(i=>i!==remembered))
+    : shapes.map((_,i)=>i);
+  let lastErr = null;
+  for(const i of order){
+    try{
+      const payload = await mcpCall("list_events", shapes[i], {cache:{staleTime:60000}});
+      LS.set(SHAPE_KEY, i);
+      // Did the winning shape actually carry a calendar id? If not, the answer
+      // covers every calendar at once and must not be fetched again per calendar.
+      const scoped = "calendar_id" in shapes[i] || "calendarId" in shapes[i];
+      return {payload, scoped};
+    }catch(e){
+      const c = errCode(e);
+      if(c !== "tool_error" && c !== "bad_request") throw e;   // not an argument problem
+      lastErr = e;
+    }
+  }
+  throw lastErr || {code:"tool_error", message:"list_events 不接受任何已知的參數組合"};
+}
+
+function normEvent(raw, calId){
+  if(!raw || typeof raw !== "object") return null;
+  const sRaw = pick(raw, ["start","start_time","startTime","begin","when"]);
+  const eRaw = pick(raw, ["end","end_time","endTime","finish"]);
+  const start = parseWhen(sRaw);
+  if(!start) return null;
+  const end = parseWhen(eRaw) || new Date(start.getTime() + 3600000);
+  const att = Array.isArray(raw.attendees) ? raw.attendees : [];
+  const me = att.find(a => a && (a.self === true || a.is_self === true));
+  const rs = me ? String(pick(me, ["responseStatus","response_status","status"]) || "") : "";
+  const gid = pick(raw, ["id","event_id","eventId","iCalUID"]);
+  return {
+    id: String(gid || "g"+Math.random().toString(36).slice(2,9)),
+    gid: gid ? String(gid) : null,
+    cal: calId,
+    title: pick(raw, ["summary","title","name","subject"]) || "(沒有標題)",
+    start, end,
+    allDay: isDateOnly(sRaw),
+    loc: pick(raw, ["location","place","where"]) || "",
+    guests: att.filter(a => a && !a.self)
+               .map(a => pick(a, ["displayName","display_name","name","email"]))
+               .filter(Boolean).slice(0,6),
+    rsvp: /needs.?action|pending/i.test(rs) ? "needsAction" : null,
+    meet: !!pick(raw, ["hangoutLink","hangout_link","meeting_url","meetingUrl","conferenceUrl"])
+  };
+}
+
+async function pullFromConnector(){
+  let rawCals = [];
+  try{ rawCals = asArray(await mcpCall("list_calendars", {}, {cache:{staleTime:300000}})); }
+  catch(e){ rawCals = []; }                       // some connectors expose only the primary calendar
+
+  const src = rawCals.length ? rawCals.slice(0,8) : [{id:null, summary:"我的行事曆", primary:true}];
+  state.cals = src.map((c,i)=>{
+    const gid = pick(c, ["id","calendar_id","calendarId"]);
+    const name = pick(c, ["summary","summaryOverride","name","title"]) || ("行事曆 "+(i+1));
+    return {
+      id: "c"+i, gid: gid ? String(gid) : null, name,
+      ctx: guessCtx(name, i),
+      color: ["personal","work","family","task","work","family","personal","task"][i%8],
+      sub: c.primary ? "主要行事曆" : (pick(c, ["accessRole","access_role","description"]) || "共用"),
+      on: c.selected !== false, privacy:false
+    };
+  });
+
+  const from = dayISO(-30), to = dayISO(30);
+  const all = [];
+  const seen = new Set();
+  let lastErr = null;
+  for(const c of state.cals){
+    let res;
+    try{ res = await listEventsAdaptive(c.gid, from, to); }
+    catch(e){ c.error = errCode(e); lastErr = e; continue; }
+
+    asArray(res.payload).forEach(raw=>{
+      const ev = normEvent(raw, c.id);
+      if(!ev) return;
+      // A connector that ignores the calendar argument returns the same events
+      // for every calendar — key on identity so nothing is drawn twice.
+      const key = ev.gid || (ev.title + "@" + ev.start.getTime());
+      if(seen.has(key)) return;
+      seen.add(key);
+      all.push(ev);
+    });
+    if(!res.scoped) break;   // one answer already covered every calendar
+  }
+  if(!all.length && lastErr) throw lastErr;
+  state.events = all;
+  state.account = {mail:"Google 行事曆", initial:"G"};
+}
+
+/* ---------- writes: one attempt, one shape, never auto-retried ---------- */
+async function pushEvent(draft){
+  if(state.backend !== "mcp") return {ok:false, code:"local"};
+  const cal = state.cals.find(c => c.id === draft.cal);
+  const input = {
+    calendar_id: (cal && cal.gid) || "primary",
+    summary: draft.title,
+    start_time: draft.start.toISOString(),
+    end_time: draft.end.toISOString()
+  };
+  if(draft.loc) input.location = draft.loc;
+  try{ await mcpCall("create_event", input); return {ok:true}; }
+  catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+}
+async function pushRsvp(ev, answer){
+  if(state.backend !== "mcp" || !ev.gid) return {ok:false, code:"local"};
+  const cal = state.cals.find(c => c.id === ev.cal);
+  try{
+    await mcpCall("respond_to_event", {
+      calendar_id: (cal && cal.gid) || "primary",
+      event_id: ev.gid,
+      response: answer            // "yes" | "maybe" | "no"
+    });
+    return {ok:true};
+  }catch(e){ return {ok:false, code:errCode(e), message:e.message}; }
+}
+
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src=src; s.async=true; s.onload=res; s.onerror=()=>rej(new Error("blocked"));
+    document.head.appendChild(s);
+    setTimeout(()=>rej(new Error("timeout")), 6000);
+  });
+}
+/** One retry, reads only — covers the consent prompt that had not settled yet. */
+async function pullWithOneRetry(){
+  try{ return await pullFromConnector(); }
+  catch(e){
+    if(!e || e.retryable !== true) throw e;
+    const wait = Math.min(Math.max(e.retryAfterMs || 1800, 800), 8000);
+    setAuthBusy(true, "等待授權確認⋯");
+    await new Promise(r => setTimeout(r, wait));
+    return await pullFromConnector();
+  }
+}
+
+/** Entry point for the "connect" button: connector → OAuth → guidance. */
+async function connectCalendar(){
+  setAuthBusy(true, "正在連線 Google 行事曆⋯");
+  const probe = await probeConnector();
+
+  if(probe.ok){
+    try{
+      await pullWithOneRetry();
+      setAuthBusy(false);
+      finishConnect("mcp");
+      toast("已讀取你的 Google 行事曆");
+    }catch(e){
+      setAuthBusy(false);
+      openConnect(errCode(e), e && e.message);
+    }
+    return;
+  }
+  if(probe.code === "no_mcp" && state.clientId){ setAuthBusy(false); return connectOAuth(); }
+  setAuthBusy(false);
+  openConnect(probe.code);
+}
+
+async function connectOAuth(){
+  try{
+    if(!window.google || !google.accounts){
+      await loadScript("https://accounts.google.com/gsi/client");
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: state.clientId,
+      scope: SCOPES.join(" "),
+      // Always show the account chooser: most people have several Google accounts
+      // and the app must never silently pick the wrong one.
+      prompt: "select_account",
+      callback: async (resp)=>{
+        if(resp.error){ openConnect("oauth_denied", resp.error); return; }
+        state.token = resp.access_token;
+        try{
+          await pullFromGoogle();
+          finishConnect("oauth");
+          toast("已連線 Google 行事曆");
+        }catch(e){ openConnect("oauth_api", e && e.message); }
+      }
+    });
+    client.requestAccessToken();
+  }catch(err){
+    openConnect("no_mcp");   // sandboxed: Google's own script cannot load here
+  }
+}
+async function gapi(path, params){
+  const url = new URL("https://www.googleapis.com/calendar/v3/"+path);
+  Object.entries(params||{}).forEach(([k,v])=>url.searchParams.set(k,v));
+  const r = await fetch(url, {headers:{Authorization:"Bearer "+state.token}});
+  if(!r.ok) throw new Error("Google API "+r.status);
+  return r.json();
+}
+async function pullFromGoogle(){
+  const list = await gapi("users/me/calendarList", {maxResults:250});
+  const items = (list.items || []).filter(c => c.id);
+
+  // Every calendar on the account is linked automatically — nothing to pick.
+  const PALETTE = ["personal","work","family","task","work","family","personal","task"];
+  state.cals = items.map((c,i)=>{
+    const name = c.summaryOverride || c.summary || ("行事曆 "+(i+1));
+    return {
+      id: c.id, gid: c.id, name,
+      ctx: c.primary ? "personal"
+         : /work|工作|公司|office/i.test(name) ? "work"
+         : /family|家|親子|小孩/i.test(name)   ? "family" : "personal",
+      color: PALETTE[i % PALETTE.length],
+      sub: c.primary ? "主要行事曆" : (c.accessRole === "owner" ? "你擁有" : "共用・"+(c.accessRole||"")),
+      on: c.selected !== false, privacy:false
+    };
+  });
+
+  // The primary calendar's id is the signed-in address — no extra scope needed.
+  const primary = items.find(c => c.primary);
+  const mail = primary ? primary.id : "已連線帳號";
+  state.account = {mail, initial: (mail[0] || "G").toUpperCase()};
+
+  const timeMin = new Date(); timeMin.setDate(timeMin.getDate()-30); timeMin.setHours(0,0,0,0);
+  const timeMax = new Date(); timeMax.setDate(timeMax.getDate()+45);
+
+  // Fetched together; one unreadable calendar must not cost the others.
+  const pulls = await Promise.all(state.cals.map(async c=>{
+    try{
+      const r = await gapi("calendars/"+encodeURIComponent(c.id)+"/events", {
+        timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
+        singleEvents: "true", orderBy: "startTime", maxResults: "250"
+      });
+      return (r.items || []).map(ev=>{
+        const allDay = !!(ev.start && ev.start.date);
+        const s = new Date(allDay ? ev.start.date + "T00:00:00" : ev.start.dateTime);
+        const eDate = allDay
+          ? new Date(new Date(ev.end.date + "T00:00:00").getTime() - 60000)  // DTEND is exclusive
+          : new Date(ev.end.dateTime);
+        const me = (ev.attendees || []).find(a => a.self);
+        return {
+          id: ev.id, gid: ev.id, cal: c.id,
+          title: ev.summary || "(沒有標題)",
+          start: s, end: eDate, allDay,
+          loc: ev.location || "",
+          guests: (ev.attendees || []).filter(a => !a.self)
+                    .map(a => a.displayName || a.email).slice(0,6),
+          rsvp: me && me.responseStatus === "needsAction" ? "needsAction" : null,
+          meet: !!ev.hangoutLink
+        };
+      });
+    }catch(err){ c.error = "讀不到"; return []; }
+  }));
+  state.events = pulls.flat();
+}
+
+/* ============================================================
+   ICS IMPORT — a read-only snapshot, no login of any kind.
+   Everything here runs on the device; nothing is uploaded.
+   ============================================================ */
+function unfoldICS(text){
+  return text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/\n[ \t]/g,"");
+}
+function unescapeICS(s){
+  return String(s).replace(/\\n/gi,"\n").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\");
+}
+function parseICSDate(val){
+  const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/.exec(String(val).trim());
+  if(!m) return null;
+  const Y=+m[1], M=+m[2]-1, D=+m[3];
+  if(!m[4]) return {d:new Date(Y,M,D,0,0,0,0), allDay:true};
+  const h=+m[4], mi=+m[5], s=+m[6];
+  // A TZID we cannot resolve is read as local time — good enough for a snapshot.
+  return {d: m[7] ? new Date(Date.UTC(Y,M,D,h,mi,s)) : new Date(Y,M,D,h,mi,s), allDay:false};
+}
+function parseICS(text){
+  const out = []; let cur = null;
+  unfoldICS(text).split("\n").forEach(raw=>{
+    const line = raw.trim();
+    if(!line) return;
+    if(line === "BEGIN:VEVENT"){ cur = {}; return; }
+    if(line === "END:VEVENT"){ if(cur) out.push(cur); cur = null; return; }
+    if(!cur) return;
+    const i = line.indexOf(":");
+    if(i < 0) return;
+    const key = line.slice(0,i).split(";")[0].toUpperCase();
+    if(!(key in cur)) cur[key] = line.slice(i+1);
+  });
+  return out;
+}
+/** Modest RRULE expansion — enough that a real calendar isn't mostly empty. */
+function expandRule(start, rrule, from, to){
+  const p = {};
+  String(rrule).split(";").forEach(kv=>{ const a = kv.split("="); if(a[0]) p[a[0].toUpperCase()] = a[1]; });
+  if(!p.FREQ) return [start];
+  const DAY = {SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+  const interval = Math.max(1, parseInt(p.INTERVAL||"1",10) || 1);
+  const count = p.COUNT ? parseInt(p.COUNT,10) : null;
+  const untilD = p.UNTIL ? (parseICSDate(p.UNTIL)||{}).d : null;
+  const limit = (untilD && untilD < to) ? untilD : to;
+  const byday = p.BYDAY ? p.BYDAY.split(",").map(x=>x.slice(-2)).filter(x=>x in DAY) : null;
+  const out = [];
+  let cursor = new Date(start), n = 0, guard = 0;
+
+  while(cursor <= limit && guard++ < 600){
+    if(count && n >= count) break;
+    if(p.FREQ === "WEEKLY" && byday && byday.length){
+      const weekStart = new Date(cursor);
+      weekStart.setDate(cursor.getDate() - cursor.getDay());
+      byday.forEach(d=>{
+        if(count && n >= count) return;
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + DAY[d]);
+        day.setHours(start.getHours(), start.getMinutes(), 0, 0);
+        if(day >= start && day <= limit){ out.push(new Date(day)); n++; }
+      });
+      cursor.setDate(cursor.getDate() + 7*interval);
+    } else {
+      out.push(new Date(cursor)); n++;
+      if(p.FREQ === "DAILY")        cursor.setDate(cursor.getDate() + interval);
+      else if(p.FREQ === "WEEKLY")  cursor.setDate(cursor.getDate() + 7*interval);
+      else if(p.FREQ === "MONTHLY") cursor.setMonth(cursor.getMonth() + interval);
+      else if(p.FREQ === "YEARLY")  cursor.setFullYear(cursor.getFullYear() + interval);
+      else break;
+    }
+  }
+  return out.filter(d => d >= from && d <= to);
+}
+function icsToEvents(text, calId){
+  const from = dayISO(-30), to = dayISO(45);
+  const events = [];
+  parseICS(text).forEach(e=>{
+    const ds = e.DTSTART && parseICSDate(e.DTSTART);
+    if(!ds) return;
+    const de = e.DTEND ? parseICSDate(e.DTEND) : null;
+    const dur = de ? Math.max(60000, de.d - ds.d) : (ds.allDay ? 86400000 : 3600000);
+    const title = unescapeICS(e.SUMMARY || "(沒有標題)");
+    const uid = e.UID || ("i"+Math.random().toString(36).slice(2,9));
+    const desc = e.DESCRIPTION || "";
+    const starts = e.RRULE ? expandRule(ds.d, e.RRULE, from, to) : [ds.d];
+    starts.forEach((s,i)=>{
+      if(s < from || s > to) return;
+      events.push({
+        id: uid + "#" + i, gid:null, cal:calId, title,
+        start: new Date(s), end: new Date(s.getTime() + dur),
+        allDay: ds.allDay,
+        loc: e.LOCATION ? unescapeICS(e.LOCATION) : "",
+        guests: [], rsvp: null,
+        meet: /meet\.google|zoom\.us|teams\.microsoft/i.test(desc + " " + (e.LOCATION||""))
+      });
+    });
+  });
+  return events.sort((a,b)=> a.start - b.start);
+}
+function importIcs(text){
+  if(!/BEGIN:VCALENDAR/i.test(text || "")){
+    toast("這看起來不是 .ics 內容（要以 BEGIN:VCALENDAR 開頭）");
+    return;
+  }
+  const events = icsToEvents(text, "ics");
+  if(!events.length){
+    toast("讀完了，但前後兩個月內沒有任何行程");
+    return;
+  }
+  state.cals = [{id:"ics", gid:null, name:"匯入的行事曆", ctx:"personal", color:"personal",
+                 sub:"唯讀快照・"+events.length+" 筆", on:true, privacy:false}];
+  state.events = events;
+  state.account = {mail:"匯入的 .ics 檔案", initial:"I"};
+  hideSheet();
+  setTimeout(()=>{ toast("已匯入 "+events.length+" 筆行程"); finishConnect("ics"); }, 240);
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function switchView(v){
+  state.view = v;
+  ["viewToday","viewWeek","viewSearch","viewSettings"].forEach(id=>{
+    document.getElementById(id).hidden = (id!==v);
+  });
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.v===v)));
+  $("#topbar").querySelector(".ctx-scroll").hidden = (v==="viewSettings");
+  $("#scroll").scrollTop = 0;
+  if(v==="viewWeek") renderWeek();
+  if(v==="viewSearch"){ renderSearch(); }
+  if(v==="viewSettings") renderSettings();
+}
+function renderAll(){
+  renderHeader(); renderBrief(); renderTimeline();
+  if(state.view==="viewWeek") renderWeek();
+  if(state.view==="viewSearch") renderSearch();
+  if(state.view==="viewSettings") renderSettings();
+}
+function enterApp(mode){
+  state.mode = mode; state.backend = mode;
+  if(mode === "demo"){
+    state.cals = baseCals();
+    state.events = demoEvents();
+    state.account = {mail:"demo@gmail.com", initial:"D"};
+  }
+  if(!state.cals.length) state.cals = baseCals();
+  state.entered = true;
+  $("#authScreen").hidden = true;
+  $("#topbar").hidden = false; $("#scroll").hidden = false; $("#tabbar").hidden = false;
+  renderCtx(); renderAll(); switchView("viewToday");
+  maybeCoach();
+  loadWeather();
+  // scroll so that "now" sits comfortably in view
+  setTimeout(()=>{ const nl=document.querySelector(".nowline"); if(nl) $("#scroll").scrollTop = Math.max(0, nl.offsetTop - 180); }, 60);
+}
+function applyTheme(){
+  const r = document.documentElement;
+  if(state.theme==="auto") r.removeAttribute("data-theme");
+  else r.setAttribute("data-theme", state.theme);
+  document.querySelectorAll("#themeSeg button").forEach(b=>
+    b.setAttribute("aria-pressed", String(b.dataset.t===state.theme)));
+}
+
+/* ---------- wiring ---------- */
+$("#icsGo").onclick    = ()=> importIcs($("#icsPaste").value);
+$("#coachClose").onclick = ()=>{ LS.set("coachDone", true); $("#installCoach").hidden = true; };
+
+/* one-time setup sheet */
+$("#keyGo").onclick = ()=>{
+  const v = $("#keyInput").value.trim();
+  if(!/\.apps\.googleusercontent\.com$/.test(v)){
+    toast("代碼結尾要是 .apps.googleusercontent.com");
+    return;
+  }
+  state.clientId = v;
+  LS.set("clientId", v);
+  hideSheet();
+  setTimeout(connectOAuth, 320);
+};
+$("#keyIcs").onclick  = ()=>{ hideSheet(); setTimeout(()=> showSheet("sheetIcs"), 280); };
+$("#keyDemo").onclick = ()=>{ hideSheet(); setTimeout(()=> enterApp("demo"), 260); };
+$("#icsFile").addEventListener("change", e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload  = ()=> importIcs(String(r.result));
+  r.onerror = ()=> toast("讀不到這個檔案，改用貼上的方式試試");
+  r.readAsText(f);
+});
+$("#btnReauth").onclick = ()=> obStart();
+$("#btnAdd").onclick = ()=>{ showSheet("sheetAdd"); setTimeout(()=>$("#qaInput").focus(), 300); };
+$("#btnToday").onclick = ()=>{ switchView("viewToday"); renderAll(); toast("回到今天"); };
+$("#btnTheme").onclick = ()=>{
+  const order = ["auto","light","dark"];
+  state.theme = order[(order.indexOf(state.theme)+1)%3];
+  LS.set("theme", state.theme); applyTheme();
+  toast("主題：" + ({auto:"跟隨系統",light:"淺色",dark:"深色"})[state.theme]);
+};
+document.querySelectorAll(".tab").forEach(b=> b.onclick = ()=> switchView(b.dataset.v));
+document.querySelectorAll("#themeSeg button").forEach(b=> b.onclick = ()=>{
+  state.theme = b.dataset.t; LS.set("theme", state.theme); applyTheme();
+});
+$("#qaInput").addEventListener("input", renderQuickAdd);
+$("#qaSave").onclick = saveQuickAdd;
+$("#searchInput").addEventListener("input", renderSearch);
+
+(function seedExamples(){
+  const ex = ["明天下午三點 跟小林在青田七六 開會一小時","下週二早上十點 部門週會","3/28 晚上七點 家庭聚餐兩小時","後天 牙醫回診 半小時"];
+  const box = $("#qaEx");
+  ex.forEach(t=>{
+    const b = el("button","",t);
+    b.onclick = ()=>{ $("#qaInput").value=t; renderQuickAdd(); };
+    box.appendChild(b);
+  });
+})();
+
+/* ---------- boot ---------- */
+applyTheme();
+renderHeader();
+obStart();
+
+// Tell people up front where real sign-in can happen, and fill in the origin
+// they must register — the single detail everyone gets wrong.
+(function keySheetContext(){
+  const inPreview = !!(window.claude && typeof window.claude.use === "function");
+  const note = $("#keyPreviewNote");
+  if(note) note.hidden = !inPreview;
+  const o = $("#keyOrigin");
+  if(o) o.textContent = location.origin.startsWith("http") ? location.origin : "你的網址";
+})();
+
+// Silent probe: never prompts. Only decides what the sign-in button does.
+probeConnector().then(p=>{ connectorReady = !!(p.ok && p.auth === "connected"); });
+
+// Installable app shell. Harmless where service workers are unavailable.
+if("serviceWorker" in navigator && location.protocol === "https:"){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
+
+// keep the now-line honest
+setInterval(()=>{ if(!$("#scroll").hidden && state.view==="viewToday"){ renderBrief(); renderTimeline(); } }, 60000);
+})();
+</script>
