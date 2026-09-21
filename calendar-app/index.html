@@ -76,6 +76,13 @@
 }
 
 *{box-sizing:border-box}
+/* claude.ai's Artifact preview auto-injects this reset; standalone deploys
+   (GitHub Pages, or any other host) do not, so it has to live here too —
+   otherwise the browser's very-low-priority default [hidden]{display:none}
+   loses to any author rule that sets display on the same element (#authScreen,
+   #installCoach, .sheet, .qa-preview, .wx all do), and toggling .hidden from
+   JS silently does nothing: the screen it was meant to hide stays on top. */
+[hidden]{display:none!important}
 html,body{height:100%}
 body{
   margin:0; background:var(--paper); color:var(--ink);
