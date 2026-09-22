@@ -1085,6 +1085,10 @@ function baseCals(){
 const WD = ["週日","週一","週二","週三","週四","週五","週六"];
 const pad = n => String(n).padStart(2,"0");
 const hm  = d => pad(d.getHours())+":"+pad(d.getMinutes());
+/** Local calendar date as YYYY-MM-DD. Never use toISOString().slice(0,10)
+    for this — it reads the UTC date, which is the wrong day whenever the
+    local time is near midnight in a positive UTC-offset zone (e.g. 台灣). */
+const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const mins = d => d.getHours()*60 + d.getMinutes();
 const sameDay = (a,b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 function at(dayOffset, h, m){
@@ -2059,7 +2063,7 @@ function openEventEdit(e){
 
   const row = el("div","edit-row");
   const dateInp = document.createElement("input"); dateInp.type="date"; dateInp.className="edit-input";
-  dateInp.value = e.start.toISOString().slice(0,10); dateInp.setAttribute("aria-label","日期");
+  dateInp.value = ymd(e.start); dateInp.setAttribute("aria-label","日期");
   row.appendChild(dateInp);
   b.appendChild(row);
 
@@ -2799,8 +2803,8 @@ async function pushEventEdit(ev, fields){
   if(fields.title !== undefined) body.summary = fields.title;
   if(fields.loc !== undefined) body.location = fields.loc;
   if(fields.start && fields.end){
-    body.start = ev.allDay ? {date: fields.start.toISOString().slice(0,10)} : {dateTime: fields.start.toISOString(), timeZone: tz};
-    body.end   = ev.allDay ? {date: new Date(fields.end.getTime()+60000).toISOString().slice(0,10)} : {dateTime: fields.end.toISOString(), timeZone: tz};
+    body.start = ev.allDay ? {date: ymd(fields.start)} : {dateTime: fields.start.toISOString(), timeZone: tz};
+    body.end   = ev.allDay ? {date: ymd(new Date(fields.end.getTime()+60000))} : {dateTime: fields.end.toISOString(), timeZone: tz};
   }
   try{
     await gapi("calendars/"+encodeURIComponent(calId)+"/events/"+encodeURIComponent(ev.gid), {}, {method:"PATCH", body});
@@ -2834,8 +2838,8 @@ async function pushEvent(draft){
     const calId = (cal && cal.gid) || "primary";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const body = draft.allDay
-      ? { summary: draft.title, start:{date: draft.start.toISOString().slice(0,10)},
-          end:{date: draft.end.toISOString().slice(0,10)} }
+      ? { summary: draft.title, start:{date: ymd(draft.start)},
+          end:{date: ymd(draft.end)} }
       : { summary: draft.title,
           start:{dateTime: draft.start.toISOString(), timeZone: tz},
           end:{dateTime: draft.end.toISOString(), timeZone: tz} };
@@ -3445,7 +3449,7 @@ $("#btnPrevDay").onclick = ()=> shiftViewDate(-1);
 $("#btnNextDay").onclick = ()=> shiftViewDate(1);
 $("#btnDateJump").onclick = ()=>{
   const inp = $("#dateJumpInput");
-  inp.value = state.viewDate.toISOString().slice(0,10);
+  inp.value = ymd(state.viewDate);
   inp.showPicker ? inp.showPicker() : inp.click();
 };
 $("#dateJumpInput").addEventListener("change", e=>{
