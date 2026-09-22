@@ -1,0 +1,12 @@
+{
+  "appId": "com.evischu.dayline",
+  "appName": "Dayline",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#EEF1F2"
+  }
+}

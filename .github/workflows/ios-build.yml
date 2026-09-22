@@ -1,0 +1,56 @@
+name: iOS build check
+
+# Proves the Capacitor-wrapped app actually compiles, on a real macOS
+# runner — this repo has no Mac and never will, so this is the only place
+# that check can happen before you own a signing certificate.
+#
+# This builds for the SIMULATOR only, which needs no Apple Developer
+# account, no certificate, no provisioning profile — just confirms the
+# Xcode project is sound. A signed, on-device / App Store build is a
+# separate workflow (ios-release.yml, added once you have a paid Apple
+# Developer account and its certificates stored as repo secrets).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app-shell/**'
+      - 'calendar-app/**'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build-simulator:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: app-shell
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install JS dependencies
+        run: npm install
+
+      - name: Sync web app into the native project
+        run: npm run sync
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios/App
+          pod install
+
+      - name: Build for iOS Simulator (no signing required)
+        run: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

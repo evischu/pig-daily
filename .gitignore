@@ -14,3 +14,13 @@ images/*.webp
 .DS_Store
 __pycache__/
 *.pyc
+
+# app-shell (Capacitor iOS wrapper): rebuilt from calendar-app/ + npm install,
+# never edited directly, not worth versioning
+app-shell/node_modules/
+app-shell/www/
+app-shell/ios/App/Pods/
+app-shell/ios/App/Podfile.lock
+app-shell/ios/.build/
+app-shell/ios/App/build/
+app-shell/ios/App/DerivedData/

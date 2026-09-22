@@ -1,0 +1,17 @@
+{
+  "name": "dayline-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dayline — Capacitor wrapper so the existing web app can be built as a real iOS app",
+  "scripts": {
+    "sync": "bash scripts/sync-web.sh && cap sync ios",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}
