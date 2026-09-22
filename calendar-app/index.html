@@ -534,6 +534,15 @@ input,textarea{font:inherit;color:inherit}
 .rsvp button{padding:10px 0;border-radius:11px;border:1px solid var(--line);font-size:13px;font-weight:500;background:var(--surface-2)}
 .rsvp button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .warnbox{display:flex;gap:9px;background:var(--warn-soft);color:var(--warn);border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.45;margin-top:12px}
+.ev-actions{display:flex;gap:8px;margin-top:16px}
+.ev-actions .btn{height:46px;font-size:13.5px}
+.btn-danger{background:var(--surface-2);color:var(--now);border:1px solid var(--line)}
+.edit-input{
+  width:100%;margin-top:10px;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;
+  padding:12px 13px;font-size:15px;outline:none;color:var(--ink);
+}
+.edit-row{display:flex;gap:8px;margin-top:10px}
+.edit-row .edit-input{margin-top:0;flex:1;min-width:0}
 
 /* ---------- quick add ---------- */
 .qa-input{
@@ -2023,7 +2032,108 @@ function openEvent(e){
     b.appendChild(el("p","",'<span style="font-size:12.5px;color:var(--ink-3)">尚未回覆這則邀請</span>'));
     b.appendChild(wrap);
   }
+
+  if(state.backend==="oauth" && e.gid && !isMasked(e) && isWritable(calOf(e.cal))){
+    if(e.recurring){
+      b.appendChild(el("p","",'<span style="font-size:12px;color:var(--ink-3)">這是週期行程的其中一次，編輯或刪除只會動到這一次，不影響整個系列。</span>'));
+    }
+    const actions = el("div","ev-actions");
+    const editBtn = el("button","btn btn-ics","編輯");
+    editBtn.onclick = ()=> openEventEdit(e);
+    const delBtn = el("button","btn btn-danger","刪除");
+    delBtn.onclick = ()=> confirmDeleteEvent(e);
+    actions.appendChild(editBtn); actions.appendChild(delBtn);
+    b.appendChild(actions);
+  }
   showSheet("sheetEvent");
+}
+
+/** Replace the detail view with an inline edit form — same sheet, no new one. */
+function openEventEdit(e){
+  const b = $("#sheetEventBody"); b.innerHTML="";
+  b.appendChild(el("h3","st","編輯行程"));
+
+  const titleInp = document.createElement("input");
+  titleInp.type="text"; titleInp.className="edit-input"; titleInp.value=e.title; titleInp.setAttribute("aria-label","標題");
+  b.appendChild(titleInp);
+
+  const row = el("div","edit-row");
+  const dateInp = document.createElement("input"); dateInp.type="date"; dateInp.className="edit-input";
+  dateInp.value = e.start.toISOString().slice(0,10); dateInp.setAttribute("aria-label","日期");
+  row.appendChild(dateInp);
+  b.appendChild(row);
+
+  let startInp, endInp;
+  if(!e.allDay){
+    const row2 = el("div","edit-row");
+    startInp = document.createElement("input"); startInp.type="time"; startInp.className="edit-input";
+    startInp.value = pad(e.start.getHours())+":"+pad(e.start.getMinutes()); startInp.setAttribute("aria-label","開始時間");
+    endInp = document.createElement("input"); endInp.type="time"; endInp.className="edit-input";
+    endInp.value = pad(e.end.getHours())+":"+pad(e.end.getMinutes()); endInp.setAttribute("aria-label","結束時間");
+    row2.appendChild(startInp); row2.appendChild(endInp);
+    b.appendChild(row2);
+  }
+
+  const locInp = document.createElement("input");
+  locInp.type="text"; locInp.className="edit-input"; locInp.value=e.loc||""; locInp.placeholder="地點（選填）"; locInp.setAttribute("aria-label","地點");
+  b.appendChild(locInp);
+
+  const actions = el("div","ev-actions");
+  const saveBtn = el("button","btn btn-primary","儲存");
+  const cancelBtn = el("button","btn btn-ics","取消");
+  cancelBtn.onclick = ()=> openEvent(e);
+  saveBtn.onclick = async ()=>{
+    const title = titleInp.value.trim();
+    if(!title){ toast("標題不能是空的"); return; }
+    const [y,m,d] = dateInp.value.split("-").map(Number);
+    let newStart, newEnd;
+    if(e.allDay){
+      newStart = new Date(y, m-1, d, 0, 0);
+      newEnd = new Date(y, m-1, d, 23, 59);
+    } else {
+      const [sh,sm] = startInp.value.split(":").map(Number);
+      const [eh,em] = endInp.value.split(":").map(Number);
+      newStart = new Date(y, m-1, d, sh, sm);
+      newEnd = new Date(y, m-1, d, eh, em);
+      if(newEnd <= newStart) newEnd = new Date(newStart.getTime()+30*60000);
+    }
+    saveBtn.disabled = true; saveBtn.textContent = "儲存中⋯";
+    const r = await pushEventEdit(e, {title, loc:locInp.value.trim(), start:newStart, end:newEnd});
+    if(r.ok){
+      e.title = title; e.loc = locInp.value.trim(); e.start = newStart; e.end = newEnd;
+      hideSheet(); renderAll();
+      toast("已儲存");
+    } else {
+      saveBtn.disabled = false; saveBtn.textContent = "儲存";
+      toast("儲存失敗（"+r.code+"）");
+    }
+  };
+  actions.appendChild(saveBtn); actions.appendChild(cancelBtn);
+  b.appendChild(actions);
+}
+
+function confirmDeleteEvent(e){
+  const b = $("#sheetEventBody"); b.innerHTML="";
+  b.appendChild(el("h3","st","刪除「"+titleOf(e)+"」？"));
+  b.appendChild(el("p","",'<span style="font-size:13.5px;color:var(--ink-2)">這會直接從 Google 行事曆刪除，沒有辦法復原。</span>'));
+  const actions = el("div","ev-actions");
+  const yes = el("button","btn btn-danger","確定刪除");
+  const no = el("button","btn btn-ics","取消");
+  no.onclick = ()=> openEvent(e);
+  yes.onclick = async ()=>{
+    yes.disabled = true; yes.textContent = "刪除中⋯";
+    const r = await pushEventDelete(e);
+    if(r.ok){
+      state.events = state.events.filter(x=>x.id!==e.id);
+      hideSheet(); renderAll();
+      toast("已刪除");
+    } else {
+      yes.disabled = false; yes.textContent = "確定刪除";
+      toast("刪除失敗（"+r.code+"）");
+    }
+  };
+  actions.appendChild(yes); actions.appendChild(no);
+  b.appendChild(actions);
 }
 
 /* ---------- connection guidance: one branch per error code ---------- */
@@ -2678,6 +2788,34 @@ async function pushEventTime(ev, newStart, newEnd){
   }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
 }
 
+/** Full edit — title/location/start/end together — and delete. Only the
+    direct-login (oauth) backend can write for real; other backends never
+    show these controls (openEvent gates on state.backend === "oauth"). */
+async function pushEventEdit(ev, fields){
+  const cal = state.cals.find(c => c.id === ev.cal);
+  const calId = (cal && cal.gid) || "primary";
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const body = {};
+  if(fields.title !== undefined) body.summary = fields.title;
+  if(fields.loc !== undefined) body.location = fields.loc;
+  if(fields.start && fields.end){
+    body.start = ev.allDay ? {date: fields.start.toISOString().slice(0,10)} : {dateTime: fields.start.toISOString(), timeZone: tz};
+    body.end   = ev.allDay ? {date: new Date(fields.end.getTime()+60000).toISOString().slice(0,10)} : {dateTime: fields.end.toISOString(), timeZone: tz};
+  }
+  try{
+    await gapi("calendars/"+encodeURIComponent(calId)+"/events/"+encodeURIComponent(ev.gid), {}, {method:"PATCH", body});
+    return {ok:true};
+  }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
+}
+async function pushEventDelete(ev){
+  const cal = state.cals.find(c => c.id === ev.cal);
+  const calId = (cal && cal.gid) || "primary";
+  try{
+    await gapi("calendars/"+encodeURIComponent(calId)+"/events/"+encodeURIComponent(ev.gid), {}, {method:"DELETE"});
+    return {ok:true};
+  }catch(e){ return {ok:false, code:"api_"+(e.status||"error"), message:e.message}; }
+}
+
 async function pushEvent(draft){
   if(state.backend === "mcp"){
     const cal = state.cals.find(c => c.id === draft.cal);
@@ -3017,7 +3155,8 @@ async function pullFromGoogle(){
           guests: (ev.attendees || []).filter(a => !a.self)
                     .map(a => a.displayName || a.email).slice(0,6),
           rsvp: me && me.responseStatus === "needsAction" ? "needsAction" : null,
-          meet: !!ev.hangoutLink
+          meet: !!ev.hangoutLink,
+          recurring: !!ev.recurringEventId
         };
       });
     }catch(err){ c.error = "讀不到"; return []; }
