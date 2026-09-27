@@ -679,6 +679,7 @@ input,textarea{font:inherit;color:inherit}
   <!-- ============ TOPBAR ============ -->
   <header class="topbar" id="topbar" hidden>
     <div class="topbar-row">
+      <div class="day-nav" id="dayNav" style="display:flex;align-items:center;gap:2px">
       <button class="icon-btn" id="btnPrevDay" aria-label="前一天">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5 8 12l6.5 7"/></svg>
       </button>
@@ -689,6 +690,7 @@ input,textarea{font:inherit;color:inherit}
       <button class="icon-btn" id="btnNextDay" aria-label="後一天">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 5 6.5 7-6.5 7"/></svg>
       </button>
+      </div>
       <div style="display:flex;gap:2px;margin-left:auto">
         <button class="icon-btn" id="btnTheme" aria-label="切換深淺色">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -3359,6 +3361,11 @@ function switchView(v){
   });
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.v===v)));
   $("#topbar").querySelector(".ctx-scroll").hidden = (v==="viewSettings");
+  // The day-by-day prev/next/date-jump controls only ever act on the Today
+  // view's data (see shiftViewDate). Week/Month/Search/Settings each show
+  // their own date range in-content, so leaving these visible elsewhere
+  // just lets people "change the date" and watch nothing happen.
+  $("#dayNav").hidden = (v!=="viewToday");
   $("#scroll").scrollTop = 0;
   if(v==="viewToday"){ renderHeader(); renderBrief(); renderTimeline(); }
   // Opening Week/Month lands on whichever week/month contains the day the
