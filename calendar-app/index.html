@@ -1166,8 +1166,15 @@ function visibleCals(){
 }
 function eventsOn(date){
   const vis = visibleCals();
+  const dayStart = new Date(date); dayStart.setHours(0,0,0,0);
+  const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate()+1);
+  // Overlap with the day, not "starts on exactly this day" — a multi-day
+  // all-day span (e.g. 3 days' leave) has a single start date in Google's
+  // data, so matching only that day made it vanish on every day after the
+  // first. This also correctly carries a same-day timed event that runs
+  // past midnight onto the next day, which is what a real calendar does.
   return state.events
-    .filter(e => vis.has(e.cal) && sameDay(e.start, date))
+    .filter(e => vis.has(e.cal) && e.start < dayEnd && e.end > dayStart)
     .sort((a,b)=> a.start-b.start || a.end-b.end);
 }
 function calOf(id){ return state.cals.find(c=>c.id===id) || state.cals[0]; }
