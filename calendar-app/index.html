@@ -1104,6 +1104,10 @@ function monthOffsetFor(d){ const n=new Date(); return (d.getFullYear()-n.getFul
 function shiftViewDate(days){
   const d = new Date(state.viewDate); d.setDate(d.getDate()+days); state.viewDate = d;
   renderHeader(); renderBrief(); renderTimeline();
+  const dayEnd = new Date(d); dayEnd.setDate(dayEnd.getDate()+1);
+  ensureRangeLoaded(d, dayEnd).then(extended=>{
+    if(extended && sameDay(state.viewDate, d)){ renderBrief(); renderTimeline(); }
+  });
 }
 
 /* ---------- demo data (relative to the viewer's real today) ---------- */
@@ -1394,6 +1398,16 @@ function renderWeek(){
     (eow.getMonth()!==sow.getMonth() ? (eow.getMonth()+1)+"/" : "")+eow.getDate();
   $("#btnThisWeek").hidden = state.weekOffset===0;
 
+  // Paging far enough can walk past what was ever actually fetched (see
+  // ensureRangeLoaded) — render with whatever's on hand now, then quietly
+  // redraw once the gap is filled rather than showing a false "nothing
+  // this week" for a week nobody has loaded yet.
+  const weekOffsetAtCall = state.weekOffset;
+  const rangeEnd = new Date(sow); rangeEnd.setDate(rangeEnd.getDate()+7);
+  ensureRangeLoaded(sow, rangeEnd).then(extended=>{
+    if(extended && state.view==="viewWeek" && state.weekOffset===weekOffsetAtCall) renderWeek();
+  });
+
   const grid = $("#wkGrid"); grid.innerHTML="";
   const list = $("#wkList"); list.innerHTML="";
   let freeTotal = 0;
@@ -1453,6 +1467,15 @@ function renderMonth(){
   const daysInMonth = new Date(base.getFullYear(), base.getMonth()+1, 0).getDate();
   const rows = Math.ceil((firstWeekday + daysInMonth) / 7);
   const gridStart = new Date(base); gridStart.setDate(gridStart.getDate() - firstWeekday);
+
+  // Same reasoning as renderWeek: a month several pages away may never have
+  // been fetched at all — draw what's known now, then redraw once the gap
+  // is filled in behind it.
+  const monthOffsetAtCall = state.monthOffset;
+  const gridEnd = new Date(gridStart); gridEnd.setDate(gridEnd.getDate() + rows*7);
+  ensureRangeLoaded(gridStart, gridEnd).then(extended=>{
+    if(extended && state.view==="viewMonth" && state.monthOffset===monthOffsetAtCall) renderMonth();
+  });
 
   const today = new Date();
   const grid = $("#moGrid"); grid.innerHTML = "";
@@ -2974,6 +2997,39 @@ function loadOAuthSession(){
 }
 function clearOAuthSession(){ LS.set("oauthSession", null); }
 
+/** How much of the calendar has actually been fetched from Google, as
+    opposed to what's merely on screen right now — Week/Month navigation
+    and jumping far by date can walk past the initial boot window (see
+    pullFromGoogle/ensureRangeLoaded), so this has to be tracked separately
+    from state.events itself. Restored from the cache so a page reload
+    doesn't forget it before the background refresh finishes. */
+let loadedRange = null;
+
+/** Last-known calendar snapshot, so re-opening the app can show something
+    real *instantly* instead of a spinner while the network catches up —
+    and, crucially, so a background token refresh that quietly fails (very
+    common for Safari's silent GIS renewal — see silentReauth) never forces
+    the person back through a visible sign-in step just to look at a day
+    they already loaded once. Writing still needs a live token; reading
+    the last snapshot never should. */
+function saveEventsCache(){
+  LS.set("eventsCache", {
+    cals: state.cals, account: state.account,
+    events: state.events.map(e => Object.assign({}, e, {
+      start: e.start.toISOString(), end: e.end.toISOString()
+    })),
+    loadedRange: loadedRange ? {from: loadedRange.from.toISOString(), to: loadedRange.to.toISOString()} : null,
+    savedAt: Date.now()
+  });
+}
+function loadEventsCache(){
+  const c = LS.get("eventsCache", null);
+  if(!c || !Array.isArray(c.events)) return null;
+  c.events = c.events.map(e => Object.assign({}, e, { start:new Date(e.start), end:new Date(e.end) }));
+  c.loadedRange = c.loadedRange ? {from:new Date(c.loadedRange.from), to:new Date(c.loadedRange.to)} : null;
+  return c;
+}
+
 /** Silent token renewal: no popup, no click required, and routinely comes
     back empty (the browser or Google simply declines) — that is normal,
     not an error, so it fails quietly into the ordinary sign-in screen
@@ -2999,6 +3055,14 @@ function silentReauth(){
     })();
   });
 }
+/** Several places can discover a dead token at once (every calendar in
+    Promise.all firing its own 401 the same instant) — share one silent
+    renewal between them instead of opening several. */
+let _reauthPromise = null;
+function silentReauthOnce(){
+  if(!_reauthPromise) _reauthPromise = silentReauth().finally(()=>{ _reauthPromise = null; });
+  return _reauthPromise;
+}
 /** Boot-time: try to walk straight back into the app on a stored session
     before ever showing the sign-in screen. Every path is silent — a
     person who was signed in yesterday should not see a flash of "sign in"
@@ -3008,6 +3072,23 @@ async function tryRestoreSession(){
   const s = loadOAuthSession();
   if(!s) return false;
 
+  const cache = loadEventsCache();
+  if(cache){
+    // A person who already signed in on this device should never sit
+    // looking at a spinner (or worse, a sign-in button) just to see a
+    // calendar we already fetched once — show it immediately, and let
+    // whatever token trouble exists get sorted out quietly behind it.
+    state.token = s.token;
+    state.cals = cache.cals; state.events = cache.events; state.account = cache.account;
+    loadedRange = cache.loadedRange;
+    enterApp("oauth");
+    refreshInBackground(s);
+    return true;
+  }
+
+  // First-ever restore on this device: nothing cached to show yet, so this
+  // one path still has to wait and can still fall back to the sign-in
+  // screen if the stored token turns out to be unusable.
   $("#authScreen").hidden = false;
   $(".ob-stage").hidden = true; $("#obActions").hidden = true;
   $("#obRestoring").hidden = false;
@@ -3018,7 +3099,7 @@ async function tryRestoreSession(){
     : false;
 
   if(!restored){
-    const fresh = await silentReauth();
+    const fresh = await silentReauthOnce();
     if(fresh){
       state.token = fresh.access_token;
       saveOAuthSession(fresh.access_token, fresh.expires_in);
@@ -3031,6 +3112,28 @@ async function tryRestoreSession(){
   }
   enterApp("oauth");
   return true;
+}
+/** Runs after a cached snapshot is already showing: quietly bring it up to
+    date. Any failure here — expired token, silent renewal declined by the
+    browser, a flaky connection — just leaves the last real snapshot on
+    screen rather than forcing the person back through a visible sign-in
+    for a read they already have. Only an actual write (see gapi/gtasks)
+    needs a live token badly enough to be worth bothering them about. */
+async function refreshInBackground(s){
+  try{
+    if(s.expiresAt > Date.now()){
+      await pullFromGoogle();
+      renderAll();
+      return;
+    }
+    const fresh = await silentReauthOnce();
+    if(fresh){
+      state.token = fresh.access_token;
+      saveOAuthSession(fresh.access_token, fresh.expires_in);
+      await pullFromGoogle();
+      renderAll();
+    }
+  }catch(e){ /* stale-but-real beats an interruption for a read */ }
 }
 
 async function connectOAuth(){
@@ -3098,6 +3201,17 @@ async function gapi(path, params, opts){
     body = JSON.stringify(opts.body);
   }
   const r = await fetch(url, {method, headers, body});
+  if(r.status === 401 && !(opts && opts._retried)){
+    // The token this call carried died mid-session — every access token
+    // expires within the hour no matter what (see saveOAuthSession) — so
+    // try one silent renewal before this becomes a visible failure at all.
+    const fresh = await silentReauthOnce();
+    if(fresh){
+      state.token = fresh.access_token;
+      saveOAuthSession(fresh.access_token, fresh.expires_in);
+      return gapi(path, params, Object.assign({}, opts, {_retried:true}));
+    }
+  }
   if(!r.ok){
     let detail = "";
     try{ detail = (await r.json()).error?.message || ""; }catch(e){}
@@ -3140,37 +3254,72 @@ async function pullFromGoogle(){
   const timeMin = new Date(); timeMin.setDate(timeMin.getDate()-30); timeMin.setHours(0,0,0,0);
   const timeMax = new Date(); timeMax.setDate(timeMax.getDate()+45);
 
-  // Fetched together; one unreadable calendar must not cost the others.
-  const pulls = await Promise.all(state.cals.map(async c=>{
-    try{
-      const r = await gapi("calendars/"+encodeURIComponent(c.id)+"/events", {
-        timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
-        singleEvents: "true", orderBy: "startTime", maxResults: "250"
-      });
-      return (r.items || []).map(ev=>{
-        const allDay = !!(ev.start && ev.start.date);
-        const s = new Date(allDay ? ev.start.date + "T00:00:00" : ev.start.dateTime);
-        const eDate = allDay
-          ? new Date(new Date(ev.end.date + "T00:00:00").getTime() - 60000)  // DTEND is exclusive
-          : new Date(ev.end.dateTime);
-        const me = (ev.attendees || []).find(a => a.self);
-        return {
-          id: ev.id, gid: ev.id, cal: c.id,
-          title: ev.summary || "(沒有標題)",
-          start: s, end: eDate, allDay,
-          loc: ev.location || "",
-          guests: (ev.attendees || []).filter(a => !a.self)
-                    .map(a => a.displayName || a.email).slice(0,6),
-          rsvp: me && me.responseStatus === "needsAction" ? "needsAction" : null,
-          meet: !!ev.hangoutLink,
-          recurring: !!ev.recurringEventId
-        };
-      });
-    }catch(err){ c.error = "讀不到"; return []; }
-  }));
-  state.events = pulls.flat();
+  state.events = await pullEventsForRange(timeMin, timeMax);
+  loadedRange = {from: timeMin, to: timeMax};
 
   await pullGoogleTasks(timeMin, timeMax);
+  saveEventsCache();
+}
+/** One Google Calendar event -> Dayline's internal shape. Shared by the
+    initial boot pull and by ensureRangeLoaded (below), so the two never
+    quietly drift into mapping events differently. */
+function mapGEvent(ev, calId){
+  const allDay = !!(ev.start && ev.start.date);
+  const s = new Date(allDay ? ev.start.date + "T00:00:00" : ev.start.dateTime);
+  const eDate = allDay
+    ? new Date(new Date(ev.end.date + "T00:00:00").getTime() - 60000)  // DTEND is exclusive
+    : new Date(ev.end.dateTime);
+  const me = (ev.attendees || []).find(a => a.self);
+  return {
+    id: ev.id, gid: ev.id, cal: calId,
+    title: ev.summary || "(沒有標題)",
+    start: s, end: eDate, allDay,
+    loc: ev.location || "",
+    guests: (ev.attendees || []).filter(a => !a.self)
+              .map(a => a.displayName || a.email).slice(0,6),
+    rsvp: me && me.responseStatus === "needsAction" ? "needsAction" : null,
+    meet: !!ev.hangoutLink,
+    recurring: !!ev.recurringEventId
+  };
+}
+/** Plain calendar events (never Task-list pseudo-calendars) for one
+    [from, to) window, across every calendar currently known. */
+async function pullEventsForRange(from, to){
+  const cals = state.cals.filter(c => !c.isTaskList);
+  const pulls = await Promise.all(cals.map(async c=>{
+    try{
+      const r = await gapi("calendars/"+encodeURIComponent(c.id)+"/events", {
+        timeMin: from.toISOString(), timeMax: to.toISOString(),
+        singleEvents: "true", orderBy: "startTime", maxResults: "250"
+      });
+      return (r.items || []).map(ev => mapGEvent(ev, c.id));
+    }catch(err){ c.error = "讀不到"; return []; }
+  }));
+  return pulls.flat();
+}
+/** The initial boot pull only ever covers -30/+45 days from whenever the
+    app happened to load — Week/Month navigation (and jumping far by date)
+    can walk right past that window, and without this they'd silently show
+    an empty range instead of what's actually on the calendar. Called
+    before rendering Week/Month/a distant day; a no-op (no network, no
+    delay) whenever the requested range is already covered. */
+async function ensureRangeLoaded(from, to){
+  if(state.backend !== "oauth" || !loadedRange) return false;
+  const need = [];
+  if(from < loadedRange.from) need.push([from, loadedRange.from]);
+  if(to > loadedRange.to) need.push([loadedRange.to, to]);
+  if(!need.length) return false;
+  for(const [f,t] of need){
+    const extra = await pullEventsForRange(f, t).catch(()=>[]);
+    const seen = new Set(state.events.map(e=>e.id));
+    state.events = state.events.concat(extra.filter(e=>!seen.has(e.id)));
+  }
+  loadedRange = {
+    from: from < loadedRange.from ? from : loadedRange.from,
+    to: to > loadedRange.to ? to : loadedRange.to
+  };
+  saveEventsCache();
+  return true;
 }
 
 /* ---------- Google Tasks: shown on the same timeline as events ---------- */
@@ -3182,6 +3331,14 @@ async function gtasks(path, params, opts){
   let body;
   if(opts && opts.body !== undefined){ headers["Content-Type"]="application/json"; body=JSON.stringify(opts.body); }
   const r = await fetch(url, {method, headers, body});
+  if(r.status === 401 && !(opts && opts._retried)){
+    const fresh = await silentReauthOnce();
+    if(fresh){
+      state.token = fresh.access_token;
+      saveOAuthSession(fresh.access_token, fresh.expires_in);
+      return gtasks(path, params, Object.assign({}, opts, {_retried:true}));
+    }
+  }
   if(!r.ok){ const err=new Error("Tasks API "+r.status); err.status=r.status; throw err; }
   return r.status===204 ? null : r.json();
 }
@@ -3464,8 +3621,13 @@ $("#dateJumpInput").addEventListener("change", e=>{
   const v = e.target.value;
   if(!v) return;
   const [y,m,d] = v.split("-").map(Number);
-  state.viewDate = new Date(y, m-1, d);
+  const picked = new Date(y, m-1, d);
+  state.viewDate = picked;
   renderHeader(); renderBrief(); renderTimeline();
+  const dayEnd = new Date(picked); dayEnd.setDate(dayEnd.getDate()+1);
+  ensureRangeLoaded(picked, dayEnd).then(extended=>{
+    if(extended && sameDay(state.viewDate, picked)){ renderBrief(); renderTimeline(); }
+  });
 });
 $("#btnPrevWeek").onclick = ()=>{ state.weekOffset--; renderWeek(); };
 $("#btnNextWeek").onclick = ()=>{ state.weekOffset++; renderWeek(); };
