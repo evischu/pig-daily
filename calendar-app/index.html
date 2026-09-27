@@ -390,6 +390,13 @@ input,textarea{font:inherit;color:inherit}
 .mo-dots i{width:5px;height:5px;border-radius:50%;flex:none}
 .mo-more{font-size:8.5px;color:var(--ink-3);font-family:var(--font-num)}
 .mo-chips,.mo-chip-more{display:none}   /* desktop only — see the ≥860px block */
+/* Multi-day all-day spans get their own lane, separate from .mo-dots/.mo-chips,
+   so a long stretch of leave never crowds out that day's actual timed events
+   (see renderMonth). Phone: short colored bars, no room for text. */
+.mo-allday{display:flex;gap:2px;justify-content:center;width:100%;padding:0 3px}
+.mo-allday-item{height:4px;flex:1;max-width:16px;border-radius:2px}
+.mo-allday-more{font-size:8px;color:var(--ink-3);font-family:var(--font-num)}
+.mo-allday-chips,.mo-allday-chip-more{display:none}   /* desktop only — see the ≥860px block */
 
 /* ---------- week view ---------- */
 .wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
@@ -639,6 +646,14 @@ input,textarea{font:inherit;color:inherit}
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; flex:none;
     font-family:var(--font-ui);
   }
+  .mo-allday,.mo-allday-more{ display:none }
+  .mo-allday-chips{ display:flex; flex-direction:column; gap:3px; width:100%; flex:none }
+  .mo-allday-chip{
+    font-size:11px; line-height:1.35; padding:2px 6px; border-radius:6px; text-align:left;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; flex:none;
+    font-family:var(--font-ui); color:#fff; font-weight:500;
+  }
+  .mo-allday-chip-more{ display:block; font-size:10.5px; color:var(--ink-3); padding:0 6px; text-align:left }
   .mo-chip-more{ display:block; font-size:10.5px; color:var(--ink-3); padding:0 6px; text-align:left }
 }
 
@@ -1493,30 +1508,64 @@ function renderMonth(){
     cell.appendChild(el("span","dd num", String(d.getDate())));
 
     const evs = eventsOn(d);
-    if(evs.length){
+    // A multi-day all-day span (e.g. several days' leave) shows up on every
+    // day it covers — it must NOT eat into the handful of dot/chip slots a
+    // cell has for that day's actual distinct events, or a week-long trip
+    // would silently push real meetings into "+N more" on every one of
+    // those days. It gets its own small lane instead, same idea as Google
+    // Calendar's continuous bar across the days it spans.
+    const allDayEvs = evs.filter(e=>e.allDay);
+    const otherEvs = evs.filter(e=>!e.allDay);
+
+    if(allDayEvs.length){
+      // Phone: a short colored bar per span (no text fits) — mirrors .mo-dots.
+      const bar = el("div","mo-allday");
+      allDayEvs.slice(0,2).forEach(e=>{
+        const item = el("i","mo-allday-item");
+        item.style.background = "var(--c-"+calOf(e.cal).color+")";
+        bar.appendChild(item);
+      });
+      cell.appendChild(bar);
+      if(allDayEvs.length>2) cell.appendChild(el("span","mo-allday-more","+"+(allDayEvs.length-2)));
+
+      // Desktop: a solid, titled bar — same slot CSS swaps in for .mo-allday-item
+      // on phone; mirrors how .mo-chips replaces .mo-dots at that breakpoint.
+      const chips = el("div","mo-allday-chips");
+      allDayEvs.slice(0,2).forEach(e=>{
+        const chip = el("button","mo-allday-chip");
+        chip.style.background = "var(--c-"+calOf(e.cal).color+")";
+        chip.textContent = titleOf(e);
+        chip.onclick = ev=>{ ev.stopPropagation(); openEvent(e); };
+        chips.appendChild(chip);
+      });
+      cell.appendChild(chips);
+      if(allDayEvs.length>2) cell.appendChild(el("span","mo-allday-chip-more","+"+(allDayEvs.length-2)+" 個全天"));
+    }
+
+    if(otherEvs.length){
       // Compact dot row — the phone-width cell (CSS keeps this, hides the chips below).
       const dots = el("div","mo-dots");
-      evs.slice(0,4).forEach(e=>{
+      otherEvs.slice(0,4).forEach(e=>{
         const dot = el("i",""); dot.style.background = "var(--c-"+calOf(e.cal).color+")"; dots.appendChild(dot);
       });
       cell.appendChild(dots);
-      if(evs.length>4) cell.appendChild(el("span","mo-more","+"+(evs.length-4)));
+      if(otherEvs.length>4) cell.appendChild(el("span","mo-more","+"+(otherEvs.length-4)));
 
       // Titled chips — the desktop-width cell has room for a line of text per
       // event, same idea as Google Calendar's own month view (CSS hides this
       // on phone, where a cell is only ~50px square).
       const chips = el("div","mo-chips");
-      evs.slice(0,3).forEach(e=>{
+      otherEvs.slice(0,3).forEach(e=>{
         const c = calOf(e.cal);
         const chip = el("button","mo-chip");
         chip.style.background = "var(--c-"+c.color+"-bg)";
         chip.style.color = "var(--c-"+c.color+")";
-        chip.textContent = (e.allDay ? "" : hm(e.start)+" ") + titleOf(e);
+        chip.textContent = hm(e.start)+" "+titleOf(e);
         chip.onclick = ev=>{ ev.stopPropagation(); openEvent(e); };
         chips.appendChild(chip);
       });
       cell.appendChild(chips);
-      if(evs.length>3) cell.appendChild(el("span","mo-chip-more","還有 "+(evs.length-3)+" 件"));
+      if(otherEvs.length>3) cell.appendChild(el("span","mo-chip-more","還有 "+(otherEvs.length-3)+" 件"));
     }
     cell.onclick = ()=>{ state.viewDate = new Date(d); switchView("viewToday"); };
     grid.appendChild(cell);
