@@ -24,3 +24,6 @@ app-shell/ios/App/Podfile.lock
 app-shell/ios/.build/
 app-shell/ios/App/build/
 app-shell/ios/App/DerivedData/
+
+# 聲音克隆：含個人聲紋樣本與授權紀錄，不進版控
+voices/

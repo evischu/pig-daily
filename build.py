@@ -552,6 +552,17 @@ def stamp(date, path):
     return data, now, max(len(data.get("updates", [])), 1)
 
 
+def voice_player(date):
+    """dist/audio/<日期>.mp3（tools/voice_clone.py 產生）存在就嵌入播放器；LITE 不嵌。"""
+    mp3 = os.path.join(ROOT, "dist", "audio", f"{date}.mp3")
+    if LITE or not os.path.exists(mp3):
+        return ""
+    b64 = base64.b64encode(open(mp3, "rb").read()).decode()
+    return (f'<div class="wrap" style="padding:10px 0"><audio controls preload="none" '
+            f'style="width:100%" src="data:audio/mpeg;base64,{b64}"></audio>'
+            f'<div style="font-size:12px;opacity:.7">🔊 今日焦點語音朗讀・AI 合成語音（聲音克隆，已取得授權）</div></div>')
+
+
 def build(date):
     path = os.path.join(ROOT, "data", f"{date}.json")
     data, now, nth = stamp(date, path)
@@ -582,6 +593,8 @@ def build(date):
         for k in ("bull", "bear", "neutral")
     )
 
+    audio_html = voice_player(date)
+
     total = len(data["top3"]) + len(data["global"]) + len(data["twcn"]) + len(data["market"])
 
     html = f"""<meta charset="utf-8">
@@ -608,7 +621,7 @@ def build(date):
     </div>
   </div>
 </header>
-
+{audio_html}
 <nav class="bar">
   <div class="wrap">
     <a href="#top3">今日焦點</a>

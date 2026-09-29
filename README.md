@@ -66,6 +66,24 @@ python3 build.py 2026-08-26
 會自動退回用 macOS 內建的 `sips`／`cwebp`；兩套後端輸出結果一致，
 只是雲端環境沒有 `sips`，一定要 `pip install -r requirements.txt`。
 
+## 聲音克隆朗讀（選用）
+
+`tools/voice_clone.py` 用開源的 [CosyVoice 2](https://github.com/FunAudioLLM/CosyVoice)
+把今日焦點唸成語音，`build.py` 偵測到 `dist/audio/<日期>.mp3` 會自動嵌入播放器。
+需要 GPU 與 ffmpeg，雲端排程跑不動，請在本機或 GPU 主機執行。
+
+```bash
+git clone --recursive https://github.com/FunAudioLLM/CosyVoice ~/CosyVoice   # 並照官方說明裝依賴、下載 CosyVoice2-0.5B
+export COSYVOICE_DIR=~/CosyVoice
+python3 tools/voice_clone.py enroll me --sample me.wav --transcript "樣本裡唸的那句話" --consent self
+python3 tools/voice_clone.py speak 2026-08-26 --voice me
+python3 build.py 2026-08-26
+```
+
+只能克隆本人或已書面授權的聲音（`--consent self` 或 `--consent licensed --license-doc 授權檔`），
+授權紀錄與樣本雜湊寫在 `voices/<名稱>/meta.json`；`voices/` 含聲紋，已列入 .gitignore。
+輸出音檔與頁面播放器都標示「AI 合成語音」。`--dry-run` 可只看切段、不載入模型。
+
 ## 資料格式
 
 `data/YYYY-MM-DD.json`：

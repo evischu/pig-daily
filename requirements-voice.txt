@@ -1,0 +1,6 @@
+# 聲音克隆（tools/voice_clone.py）專用，與日報組版的 requirements.txt 分開，
+# 因為需要 GPU 與大型依賴。CosyVoice 本身的依賴請照官方 requirements.txt 安裝：
+#   https://github.com/FunAudioLLM/CosyVoice
+# 另需系統安裝 ffmpeg（轉檔與輸出 mp3）。
+torch
+torchaudio
