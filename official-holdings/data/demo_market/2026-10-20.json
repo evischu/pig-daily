@@ -1,0 +1,354 @@
+{
+ "2330": {
+  "name": "台積電",
+  "market": "上市",
+  "industry": "半導體",
+  "close": 1363.6,
+  "prev_close": 1447.6,
+  "issued": 25930000000.0
+ },
+ "2317": {
+  "name": "鴻海",
+  "market": "上市",
+  "industry": "電子代工",
+  "close": 238.6,
+  "prev_close": 229.0,
+  "issued": 13860000000.0
+ },
+ "2454": {
+  "name": "聯發科",
+  "market": "上市",
+  "industry": "半導體",
+  "close": 1430.0,
+  "prev_close": 1393.3,
+  "issued": 1600000000.0
+ },
+ "2308": {
+  "name": "台達電",
+  "market": "上市",
+  "industry": "電子零組件",
+  "close": 868.8,
+  "prev_close": 839.0,
+  "issued": 2600000000.0
+ },
+ "2382": {
+  "name": "廣達",
+  "market": "上市",
+  "industry": "電腦週邊",
+  "close": 297.9,
+  "prev_close": 285.6,
+  "issued": 3860000000.0
+ },
+ "3711": {
+  "name": "日月光投控",
+  "market": "上市",
+  "industry": "半導體",
+  "close": 176.3,
+  "prev_close": 178.2,
+  "issued": 4400000000.0
+ },
+ "2412": {
+  "name": "中華電",
+  "market": "上市",
+  "industry": "電信",
+  "close": 133.7,
+  "prev_close": 132.8,
+  "issued": 7759999999.999999
+ },
+ "2881": {
+  "name": "富邦金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 94.2,
+  "prev_close": 90.0,
+  "issued": 13600000000.0
+ },
+ "2882": {
+  "name": "國泰金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 66.9,
+  "prev_close": 66.3,
+  "issued": 14669999999.999998
+ },
+ "2891": {
+  "name": "中信金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 46.9,
+  "prev_close": 46.4,
+  "issued": 19500000000.0
+ },
+ "2886": {
+  "name": "兆豐金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 42.0,
+  "prev_close": 41.4,
+  "issued": 14400000000.0
+ },
+ "2884": {
+  "name": "玉山金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 33.2,
+  "prev_close": 31.6,
+  "issued": 16000000000.0
+ },
+ "2892": {
+  "name": "第一金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 29.6,
+  "prev_close": 30.3,
+  "issued": 13900000000.0
+ },
+ "5880": {
+  "name": "合庫金",
+  "market": "上市",
+  "industry": "金融",
+  "close": 23.7,
+  "prev_close": 25.4,
+  "issued": 14900000000.0
+ },
+ "2603": {
+  "name": "長榮",
+  "market": "上市",
+  "industry": "航運",
+  "close": 192.3,
+  "prev_close": 190.1,
+  "issued": 2160000000.0
+ },
+ "2609": {
+  "name": "陽明",
+  "market": "上市",
+  "industry": "航運",
+  "close": 62.0,
+  "prev_close": 62.3,
+  "issued": 3490000000.0
+ },
+ "2615": {
+  "name": "萬海",
+  "market": "上市",
+  "industry": "航運",
+  "close": 87.9,
+  "prev_close": 91.5,
+  "issued": 2800000000.0
+ },
+ "2002": {
+  "name": "中鋼",
+  "market": "上市",
+  "industry": "鋼鐵",
+  "close": 23.5,
+  "prev_close": 23.2,
+  "issued": 15700000000.0
+ },
+ "1301": {
+  "name": "台塑",
+  "market": "上市",
+  "industry": "塑化",
+  "close": 43.6,
+  "prev_close": 43.5,
+  "issued": 6370000000.0
+ },
+ "1303": {
+  "name": "南亞",
+  "market": "上市",
+  "industry": "塑化",
+  "close": 38.6,
+  "prev_close": 38.1,
+  "issued": 7930000000.0
+ },
+ "1216": {
+  "name": "統一",
+  "market": "上市",
+  "industry": "食品",
+  "close": 74.5,
+  "prev_close": 77.9,
+  "issued": 5680000000.0
+ },
+ "2303": {
+  "name": "聯電",
+  "market": "上市",
+  "industry": "半導體",
+  "close": 45.1,
+  "prev_close": 45.0,
+  "issued": 12500000000.0
+ },
+ "2357": {
+  "name": "華碩",
+  "market": "上市",
+  "industry": "電腦週邊",
+  "close": 711.3,
+  "prev_close": 669.5,
+  "issued": 740000000.0
+ },
+ "2379": {
+  "name": "瑞昱",
+  "market": "上市",
+  "industry": "半導體",
+  "close": 542.1,
+  "prev_close": 570.8,
+  "issued": 509999999.99999994
+ },
+ "3008": {
+  "name": "大立光",
+  "market": "上市",
+  "industry": "光電",
+  "close": 2305.0,
+  "prev_close": 2377.7,
+  "issued": 130000000.0
+ },
+ "2345": {
+  "name": "智邦",
+  "market": "上市",
+  "industry": "通信網路",
+  "close": 1141.1,
+  "prev_close": 1218.0,
+  "issued": 560000000.0
+ },
+ "3231": {
+  "name": "緯創",
+  "market": "上市",
+  "industry": "電腦週邊",
+  "close": 111.2,
+  "prev_close": 119.4,
+  "issued": 2900000000.0
+ },
+ "6669": {
+  "name": "緯穎",
+  "market": "上市",
+  "industry": "電腦週邊",
+  "close": 3294.8,
+  "prev_close": 3066.3,
+  "issued": 180000000.0
+ },
+ "1519": {
+  "name": "華城",
+  "market": "上市",
+  "industry": "重電",
+  "close": 764.3,
+  "prev_close": 740.3,
+  "issued": 210000000.0
+ },
+ "1513": {
+  "name": "中興電",
+  "market": "上市",
+  "industry": "重電",
+  "close": 157.4,
+  "prev_close": 155.9,
+  "issued": 490000000.00000006
+ },
+ "1503": {
+  "name": "士電",
+  "market": "上市",
+  "industry": "重電",
+  "close": 200.4,
+  "prev_close": 206.1,
+  "issued": 520000000.0
+ },
+ "2207": {
+  "name": "和泰車",
+  "market": "上市",
+  "industry": "汽車",
+  "close": 457.8,
+  "prev_close": 457.5,
+  "issued": 550000000.0
+ },
+ "1101": {
+  "name": "台泥",
+  "market": "上市",
+  "industry": "水泥",
+  "close": 28.5,
+  "prev_close": 28.9,
+  "issued": 7500000000.0
+ },
+ "6505": {
+  "name": "台塑化",
+  "market": "上市",
+  "industry": "塑化",
+  "close": 30.0,
+  "prev_close": 29.1,
+  "issued": 9500000000.0
+ },
+ "2801": {
+  "name": "彰銀",
+  "market": "上市",
+  "industry": "金融",
+  "close": 20.6,
+  "prev_close": 20.2,
+  "issued": 11000000000.0
+ },
+ "4938": {
+  "name": "和碩",
+  "market": "上市",
+  "industry": "電子代工",
+  "close": 70.4,
+  "prev_close": 70.2,
+  "issued": 2650000000.0
+ },
+ "3443": {
+  "name": "創意",
+  "market": "上市",
+  "industry": "半導體",
+  "close": 1683.5,
+  "prev_close": 1725.6,
+  "issued": 134000000.00000001
+ },
+ "8299": {
+  "name": "群聯",
+  "market": "上櫃",
+  "industry": "半導體",
+  "close": 916.5,
+  "prev_close": 904.3,
+  "issued": 200000000.0
+ },
+ "6488": {
+  "name": "環球晶",
+  "market": "上櫃",
+  "industry": "半導體",
+  "close": 416.3,
+  "prev_close": 411.7,
+  "issued": 480000000.0
+ },
+ "3529": {
+  "name": "力旺",
+  "market": "上櫃",
+  "industry": "半導體",
+  "close": 1880.1,
+  "prev_close": 1802.8,
+  "issued": 75000000.0
+ },
+ "1795": {
+  "name": "美時",
+  "market": "上市",
+  "industry": "生技醫療",
+  "close": 280.6,
+  "prev_close": 295.8,
+  "issued": 260000000.0
+ },
+ "2634": {
+  "name": "漢翔",
+  "market": "上市",
+  "industry": "航太軍工",
+  "close": 52.9,
+  "prev_close": 49.8,
+  "issued": 940000000.0
+ },
+ "2501": {
+  "name": "國建",
+  "market": "上市",
+  "industry": "營建",
+  "close": 24.9,
+  "prev_close": 24.2,
+  "issued": 1200000000.0
+ },
+ "5522": {
+  "name": "遠雄",
+  "market": "上市",
+  "industry": "營建",
+  "close": 45.7,
+  "prev_close": 46.6,
+  "issued": 560000000.0
+ }
+}
