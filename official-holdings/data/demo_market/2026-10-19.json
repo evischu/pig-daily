@@ -3,7 +3,7 @@
   "name": "台積電",
   "market": "上市",
   "industry": "半導體",
-  "close": 1447.6,
+  "close": 1507.0,
   "prev_close": 1450,
   "issued": 25930000000.0
  },
@@ -11,7 +11,7 @@
   "name": "鴻海",
   "market": "上市",
   "industry": "電子代工",
-  "close": 229.0,
+  "close": 232.1,
   "prev_close": 230,
   "issued": 13860000000.0
  },
@@ -19,7 +19,7 @@
   "name": "聯發科",
   "market": "上市",
   "industry": "半導體",
-  "close": 1393.3,
+  "close": 1344.3,
   "prev_close": 1400,
   "issued": 1600000000.0
  },
@@ -27,7 +27,7 @@
   "name": "台達電",
   "market": "上市",
   "industry": "電子零組件",
-  "close": 839.0,
+  "close": 874.7,
   "prev_close": 900,
   "issued": 2600000000.0
  },
@@ -35,7 +35,7 @@
   "name": "廣達",
   "market": "上市",
   "industry": "電腦週邊",
-  "close": 285.6,
+  "close": 277.9,
   "prev_close": 290,
   "issued": 3860000000.0
  },
@@ -43,7 +43,7 @@
   "name": "日月光投控",
   "market": "上市",
   "industry": "半導體",
-  "close": 178.2,
+  "close": 171.6,
   "prev_close": 180,
   "issued": 4400000000.0
  },
@@ -51,7 +51,7 @@
   "name": "中華電",
   "market": "上市",
   "industry": "電信",
-  "close": 132.8,
+  "close": 128.0,
   "prev_close": 130,
   "issued": 7759999999.999999
  },
@@ -59,7 +59,7 @@
   "name": "富邦金",
   "market": "上市",
   "industry": "金融",
-  "close": 90.0,
+  "close": 94.7,
   "prev_close": 90,
   "issued": 13600000000.0
  },
@@ -67,7 +67,7 @@
   "name": "國泰金",
   "market": "上市",
   "industry": "金融",
-  "close": 66.3,
+  "close": 70.7,
   "prev_close": 70,
   "issued": 14669999999.999998
  },
@@ -75,7 +75,7 @@
   "name": "中信金",
   "market": "上市",
   "industry": "金融",
-  "close": 46.4,
+  "close": 45.6,
   "prev_close": 45,
   "issued": 19500000000.0
  },
@@ -83,7 +83,7 @@
   "name": "兆豐金",
   "market": "上市",
   "industry": "金融",
-  "close": 41.4,
+  "close": 40.1,
   "prev_close": 40,
   "issued": 14400000000.0
  },
@@ -91,7 +91,7 @@
   "name": "玉山金",
   "market": "上市",
   "industry": "金融",
-  "close": 31.6,
+  "close": 31.1,
   "prev_close": 30,
   "issued": 16000000000.0
  },
@@ -99,7 +99,7 @@
   "name": "第一金",
   "market": "上市",
   "industry": "金融",
-  "close": 30.3,
+  "close": 29.7,
   "prev_close": 30,
   "issued": 13900000000.0
  },
@@ -107,7 +107,7 @@
   "name": "合庫金",
   "market": "上市",
   "industry": "金融",
-  "close": 25.4,
+  "close": 25.3,
   "prev_close": 24,
   "issued": 14900000000.0
  },
@@ -115,7 +115,7 @@
   "name": "長榮",
   "market": "上市",
   "industry": "航運",
-  "close": 190.1,
+  "close": 192.6,
   "prev_close": 200,
   "issued": 2160000000.0
  },
@@ -123,7 +123,7 @@
   "name": "陽明",
   "market": "上市",
   "industry": "航運",
-  "close": 62.3,
+  "close": 63.3,
   "prev_close": 65,
   "issued": 3490000000.0
  },
@@ -131,7 +131,7 @@
   "name": "萬海",
   "market": "上市",
   "industry": "航運",
-  "close": 91.5,
+  "close": 91.2,
   "prev_close": 90,
   "issued": 2800000000.0
  },
@@ -139,7 +139,7 @@
   "name": "中鋼",
   "market": "上市",
   "industry": "鋼鐵",
-  "close": 23.2,
+  "close": 22.1,
   "prev_close": 22,
   "issued": 15700000000.0
  },
@@ -147,7 +147,7 @@
   "name": "台塑",
   "market": "上市",
   "industry": "塑化",
-  "close": 43.5,
+  "close": 44.9,
   "prev_close": 45,
   "issued": 6370000000.0
  },
@@ -155,7 +155,7 @@
   "name": "南亞",
   "market": "上市",
   "industry": "塑化",
-  "close": 38.1,
+  "close": 40.2,
   "prev_close": 40,
   "issued": 7930000000.0
  },
@@ -163,7 +163,7 @@
   "name": "統一",
   "market": "上市",
   "industry": "食品",
-  "close": 77.9,
+  "close": 75.3,
   "prev_close": 80,
   "issued": 5680000000.0
  },
@@ -171,7 +171,7 @@
   "name": "聯電",
   "market": "上市",
   "industry": "半導體",
-  "close": 45.0,
+  "close": 47.3,
   "prev_close": 45,
   "issued": 12500000000.0
  },
@@ -179,7 +179,7 @@
   "name": "華碩",
   "market": "上市",
   "industry": "電腦週邊",
-  "close": 669.5,
+  "close": 604.0,
   "prev_close": 650,
   "issued": 740000000.0
  },
@@ -187,7 +187,7 @@
   "name": "瑞昱",
   "market": "上市",
   "industry": "半導體",
-  "close": 570.8,
+  "close": 573.2,
   "prev_close": 550,
   "issued": 509999999.99999994
  },
@@ -195,7 +195,7 @@
   "name": "大立光",
   "market": "上市",
   "industry": "光電",
-  "close": 2377.7,
+  "close": 2427.2,
   "prev_close": 2400,
   "issued": 130000000.0
  },
@@ -203,7 +203,7 @@
   "name": "智邦",
   "market": "上市",
   "industry": "通信網路",
-  "close": 1218.0,
+  "close": 1210.8,
   "prev_close": 1200,
   "issued": 560000000.0
  },
@@ -211,7 +211,7 @@
   "name": "緯創",
   "market": "上市",
   "industry": "電腦週邊",
-  "close": 119.4,
+  "close": 129.1,
   "prev_close": 120,
   "issued": 2900000000.0
  },
@@ -219,7 +219,7 @@
   "name": "緯穎",
   "market": "上市",
   "industry": "電腦週邊",
-  "close": 3066.3,
+  "close": 2990.5,
   "prev_close": 3000,
   "issued": 180000000.0
  },
@@ -227,7 +227,7 @@
   "name": "華城",
   "market": "上市",
   "industry": "重電",
-  "close": 740.3,
+  "close": 736.4,
   "prev_close": 750,
   "issued": 210000000.0
  },
@@ -235,7 +235,7 @@
   "name": "中興電",
   "market": "上市",
   "industry": "重電",
-  "close": 155.9,
+  "close": 162.5,
   "prev_close": 160,
   "issued": 490000000.00000006
  },
@@ -243,7 +243,7 @@
   "name": "士電",
   "market": "上市",
   "industry": "重電",
-  "close": 206.1,
+  "close": 202.0,
   "prev_close": 200,
   "issued": 520000000.0
  },
@@ -251,7 +251,7 @@
   "name": "和泰車",
   "market": "上市",
   "industry": "汽車",
-  "close": 457.5,
+  "close": 461.5,
   "prev_close": 450,
   "issued": 550000000.0
  },
@@ -267,7 +267,7 @@
   "name": "台塑化",
   "market": "上市",
   "industry": "塑化",
-  "close": 29.1,
+  "close": 30.0,
   "prev_close": 30,
   "issued": 9500000000.0
  },
@@ -275,7 +275,7 @@
   "name": "彰銀",
   "market": "上市",
   "industry": "金融",
-  "close": 20.2,
+  "close": 21.1,
   "prev_close": 20,
   "issued": 11000000000.0
  },
@@ -283,7 +283,7 @@
   "name": "和碩",
   "market": "上市",
   "industry": "電子代工",
-  "close": 70.2,
+  "close": 72.2,
   "prev_close": 70,
   "issued": 2650000000.0
  },
@@ -291,7 +291,7 @@
   "name": "創意",
   "market": "上市",
   "industry": "半導體",
-  "close": 1725.6,
+  "close": 1846.3,
   "prev_close": 1700,
   "issued": 134000000.00000001
  },
@@ -299,7 +299,7 @@
   "name": "群聯",
   "market": "上櫃",
   "industry": "半導體",
-  "close": 904.3,
+  "close": 865.9,
   "prev_close": 900,
   "issued": 200000000.0
  },
@@ -307,7 +307,7 @@
   "name": "環球晶",
   "market": "上櫃",
   "industry": "半導體",
-  "close": 411.7,
+  "close": 385.1,
   "prev_close": 400,
   "issued": 480000000.0
  },
@@ -315,7 +315,7 @@
   "name": "力旺",
   "market": "上櫃",
   "industry": "半導體",
-  "close": 1802.8,
+  "close": 1936.2,
   "prev_close": 2000,
   "issued": 75000000.0
  },
@@ -323,7 +323,7 @@
   "name": "美時",
   "market": "上市",
   "industry": "生技醫療",
-  "close": 295.8,
+  "close": 305.5,
   "prev_close": 300,
   "issued": 260000000.0
  },
@@ -331,7 +331,7 @@
   "name": "漢翔",
   "market": "上市",
   "industry": "航太軍工",
-  "close": 49.8,
+  "close": 49.3,
   "prev_close": 50,
   "issued": 940000000.0
  },
@@ -339,7 +339,7 @@
   "name": "國建",
   "market": "上市",
   "industry": "營建",
-  "close": 24.2,
+  "close": 23.2,
   "prev_close": 25,
   "issued": 1200000000.0
  },
@@ -347,7 +347,7 @@
   "name": "遠雄",
   "market": "上市",
   "industry": "營建",
-  "close": 46.6,
+  "close": 48.2,
   "prev_close": 50,
   "issued": 560000000.0
  }

@@ -56,13 +56,16 @@ def holdings():
             base = random.lognormvariate(10.3, 1.4)          # 中位數約 3 萬股
             if random.random() < 0.04 or s == big:
                 base *= random.uniform(20, 120)             # 少數家族持股
-            shares = int(round(base / 1000) * 1000) or 1000
-            rows.append([issue, date, official, "立法委員", committee,
-                         random.choice(OWNERS), s[1], "", shares])
+            owners = [random.choice(OWNERS)]
+            if random.random() < 0.2:   # 同一檔股票，本人與配偶（或子女）各自持有，驗證分開列示
+                owners.append(random.choice([o for o in ("本人", "配偶", "子女") if o != owners[0]]))
+            for o in owners:
+                shares = int(round(base * random.uniform(0.4, 1.2) / 1000) * 1000) or 1000
+                rows.append([issue, date, official, "立法委員", committee, o, "", s[1], "", shares])
     with open(DEMO_HOLDINGS_CSV, "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
         w.writerow(["issue", "declare_date", "official", "title", "committee",
-                    "owner", "stock_name", "stock_code", "shares"])
+                    "owner", "owner_name", "stock_name", "stock_code", "shares"])
         w.writerows(rows)
     return len(rows)
 

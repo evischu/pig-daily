@@ -38,17 +38,18 @@ def concentration(rows):
         by_code[r["code"]].append(r)
     out = []
     for code, rs in by_code.items():
-        if len(rs) < CONCENTRATION_MIN:
+        n_off = len({r["official"] for r in rs})
+        if n_off < CONCENTRATION_MIN:   # 看的是官員人數，不是持股筆數
             continue
         rs.sort(key=lambda r: -r["value"])
         out.append({
             "code": code, "name": rs[0]["name"], "industry": rs[0]["industry"],
             "close": rs[0]["close"], "prev_close": rs[0]["prev_close"],
-            "holders": len(rs),
+            "holders": n_off,
             "lots": sum(r["lots"] for r in rs),
             "value": sum(r["value"] for r in rs),
             "related": sum(r["related"] for r in rs),
-            "officials": [{"official": r["official"], "committee": r["committee"],
+            "officials": [{"official": r["official"], "owner": r["owner"], "committee": r["committee"],
                            "lots": r["lots"], "related": r["related"]} for r in rs],
         })
     out.sort(key=lambda c: (-c["holders"], -c["value"]))
@@ -56,7 +57,7 @@ def concentration(rows):
 
 
 def key(r):
-    return f'{r["official"]}|{r["code"]}'
+    return f'{r["official"]}|{r["owner"]}|{r["code"]}'
 
 
 def load_prev_snapshot(date):
@@ -82,7 +83,8 @@ def build(rows, date):
         today_keys = {key(e) for e in entries}
         by_key = {key(r): r for r in rows}
         dropped = [{**by_key[k], "prev_rank": pr} if k in by_key else
-                   {"official": k.split("|")[0], "code": k.split("|")[1], "name": "", "prev_rank": pr}
+                   {"official": k.split("|")[0], "owner": k.split("|")[1], "code": k.split("|")[2],
+                    "name": "", "prev_rank": pr}
                    for k, pr in prev_rank.items() if k not in today_keys]
         dropped.sort(key=lambda d: d["prev_rank"])
         boards[bid] = {"label": label, "entries": entries, "dropped": dropped}

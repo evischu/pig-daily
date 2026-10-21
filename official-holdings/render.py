@@ -72,6 +72,9 @@ tr.isnew td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .dropped{padding:10px 12px;font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px}
 .conc table{min-width:760px}
 .who{display:flex;flex-wrap:wrap;gap:4px}
+.nm b{font-size:15px}
+.own{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 7px;white-space:nowrap}
+.own.o-配偶,.own.o-子女{border-style:dashed}
 .who span{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 6px;white-space:nowrap}
 .who span.rel{border-color:var(--accent);color:var(--accent)}
 .bar{height:6px;background:var(--flag);border-radius:3px;margin-top:4px}
@@ -154,8 +157,14 @@ def move(entry):
     return '<span class="flat">—</span>'
 
 
-def owners(o):
-    return "・".join(f"{k} {lots(v / 1000)} 張" for k, v in o.items())
+def owner_label(x):
+    name = x.get("owner_name")
+    return f'{x["owner"]}（{name}）' if name else x["owner"]
+
+
+def who(x):
+    """「官員姓名・持有人」，用在異動摘要與跌出名單。"""
+    return f'{x["official"]}（{owner_label(x)}）'
 
 
 def board_table(bid, board):
@@ -176,16 +185,17 @@ def board_table(bid, board):
             tags.append('<span class="pill p-rel">職掌相關</span>')
         rows.append(f"""<tr class="{'isnew' if x['is_new'] else ''}">
 <td class="rank">{x['rank']}</td><td>{move(x)}</td>
-<td><b>{e(x['official'])}</b><span class="sub">{e(x['committee'])}委員會・{e(owners(x['owners']))}</span></td>
+<td class="nm"><b>{e(x['official'])}</b><span class="sub">{e(x['title'])}・{e(x['committee'])}委員會</span></td>
+<td><span class="own o-{e(x['owner'])}">{e(owner_label(x))}</span></td>
 <td><b>{e(x['code'])} {e(x['name'])}</b><span class="sub">{e(x['market'])}・{e(x['industry'])}</span></td>
 {td('lots', lots(x['lots']))}{td('value', money(x['value']))}{td('stake', stake(x['stake']))}
 <td class="r"><span class="num">{x['close']:,.1f}</span><span class="sub">{pct_change(x['close'], x['prev_close'])}</span></td>
 <td><div class="tags">{''.join(tags)}</div></td></tr>""")
     dropped = "".join(
-        f'<span><span class="pill p-out">跌出</span> {e(d["official"])}・{e(d["code"])} {e(d.get("name", ""))}（原第 {d["prev_rank"]} 名）</span>'
+        f'<span><span class="pill p-out">跌出</span> {e(who(d))}・{e(d["code"])} {e(d.get("name", ""))}（原第 {d["prev_rank"]} 名）</span>'
         for d in board["dropped"])
     return f"""<div class="tablebox"><table>
-<thead><tr><th>名次</th><th>變動</th><th>官員</th><th>個股</th>
+<thead><tr><th>名次</th><th>變動</th><th>姓名</th><th>持有人</th><th>個股</th>
 {th('lots', '張數')}{th('value', '估計市值')}{th('stake', '佔公司股權')}<th class="r">收盤</th><th>標記</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table>
 {f'<div class="dropped">{dropped}</div>' if dropped else ''}</div>"""
@@ -198,8 +208,8 @@ def changes_card(board, has_prev):
     elif not news and not board["dropped"]:
         body = '<p class="none">名單與前一日相同。</p>'
     else:
-        items = [f'<li><span class="pill p-new">NEW</span> 第 <b class="num">{x["rank"]}</b> 名 {e(x["official"])}・{e(x["code"])} {e(x["name"])}</li>' for x in news]
-        items += [f'<li><span class="pill p-out">跌出</span> {e(d["official"])}・{e(d["code"])} {e(d.get("name", ""))}（原第 {d["prev_rank"]} 名）</li>' for d in board["dropped"]]
+        items = [f'<li><span class="pill p-new">NEW</span> 第 <b class="num">{x["rank"]}</b> 名 <b>{e(x["official"])}</b>（{e(owner_label(x))}）・{e(x["code"])} {e(x["name"])}</li>' for x in news]
+        items += [f'<li><span class="pill p-out">跌出</span> {e(who(d))}・{e(d["code"])} {e(d.get("name", ""))}（原第 {d["prev_rank"]} 名）</li>' for d in board["dropped"]]
         body = f"<ul>{''.join(items)}</ul>"
     return f"""<div class="chg"><h3><span>{board['label']}</span>
 <span class="num">新上榜 {len(news)}・跌出 {len(board['dropped'])}</span></h3>{body}</div>"""
@@ -211,7 +221,7 @@ def conc_table(conc):
     top = conc[0]["holders"]
     rows = []
     for c in conc:
-        who = "".join(f'<span class="{"rel" if o["related"] else ""}">{e(o["official"])} {lots(o["lots"])}張</span>'
+        who = "".join(f'<span class="{"rel" if o["related"] else ""}"><b>{e(o["official"])}</b> {e(o["owner"])} {lots(o["lots"])}張</span>'
                       for o in c["officials"])
         rel = f'<span class="pill p-rel">{c["related"]} 人職掌相關</span>' if c["related"] else ""
         rows.append(f"""<tr id="c-{e(c['code'])}">
@@ -221,7 +231,7 @@ def conc_table(conc):
 <td class="r"><span class="num">{c['close']:,.1f}</span><span class="sub">{pct_change(c['close'], c['prev_close'])}</span></td>
 <td><div class="who">{who}</div>{rel}</td></tr>""")
     return f"""<div class="tablebox conc" style="border-top:1px solid var(--line);border-radius:8px"><table>
-<thead><tr><th>個股</th><th class="r">持有官員數</th><th class="r">合計張數</th><th class="r">合計市值</th><th class="r">收盤</th><th>持有官員（框線為職掌相關）</th></tr></thead>
+<thead><tr><th>個股</th><th class="r">持有官員數</th><th class="r">合計張數</th><th class="r">合計市值</th><th class="r">收盤</th><th>持有官員與持有人（框線為職掌相關）</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div>"""
 
 
@@ -246,7 +256,7 @@ def inner(prev_date, boards, conc, rows, warnings):
 <div class="blk note">
 <p><b>估計市值</b>＝申報股數 × 當日收盤價。申報表沒有買進成本，這不是實際投入金額。</p>
 <p><b>佔公司股權</b>＝申報股數 ÷ 公司已發行普通股數。<b>職掌相關</b>：委員會職掌涵蓋該股所屬產業。</p>
-<p>持股張數一年申報一次，只在新一期廉政專刊公開時改變；每日名次變化主要來自股價漲跌。依法須強制信託的官員，申報持股為信託財產，任內不得自行交易。本人、配偶、子女持股合併計算。</p>
+<p>持股張數一年申報一次，只在新一期廉政專刊公開時改變；每日名次變化主要來自股價漲跌。依法須強制信託的官員，申報持股為信託財產，任內不得自行交易。本人、配偶、子女的持股各自一列，不合併；「持有官員數」以官員人數計。</p>
 {warn}
 </div>"""
 

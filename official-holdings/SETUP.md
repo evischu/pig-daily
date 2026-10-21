@@ -49,14 +49,15 @@ curl -s "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL" | head -c 
 用 OCR 或手動整理成下面格式，存成 `official-holdings/data/holdings.csv`（UTF-8）：
 
 ```csv
-issue,declare_date,official,title,committee,owner,stock_name,stock_code,shares
-第 291 期,2026-03-31,王小明,立法委員,財政,本人,台積電,2330,45000
-第 291 期,2026-03-31,王小明,立法委員,財政,配偶,國泰金,,120000
+issue,declare_date,official,title,committee,owner,owner_name,stock_name,stock_code,shares
+第 291 期,2026-03-31,王小明,立法委員,財政,本人,,台積電,2330,45000
+第 291 期,2026-03-31,王小明,立法委員,財政,配偶,王太太,國泰金,,120000
 ```
 
 - `stock_code` 可留空，程式用證交所公司簡稱自動比對；比對不到的名稱會列在頁尾。
 - `committee` 必須是這幾個之一：經濟、財政、交通、內政、社福衛環、外交國防、教育文化、司法法制。
-- 同一人、同一檔股票的本人／配偶／子女會自動合併。
+- 本人、配偶、子女的持股**各自一列，不合併**；`owner_name` 選填，填了會顯示在「持有人」欄。
+- 只有同一持有人、同一檔股票在申報表分成多筆時，才會加總成一列。
 - 申報表上的單位若是「股」就直接填；若是「張」，請乘以 1000。
 
 ### B-3 實驗跑一次
