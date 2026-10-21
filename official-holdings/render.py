@@ -1,9 +1,11 @@
 """產出自給自足的單一 HTML 看板。"""
 from html import escape as e
 
+import re
+
 from config import CONCENTRATION_MIN, TOP_N
 
-CSS = """
+TOKENS = """
 /* 版面：上方今日異動摘要 → 三榜分頁表格 → 集中持股 → 方法說明 */
 :root{
   --bg:#f4f5f7; --surface:#ffffff; --ink:#18202e; --muted:#5d6676; --line:#dfe2e8;
@@ -22,12 +24,15 @@ CSS = """
   --accent:#8fa8e6; --accent-soft:#1f2a40; --up:#ff6b5f; --down:#4fc58a;
   --flag:#e3a548; --flag-soft:#33281a; --warn-soft:#3a201e; color-scheme:dark}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.55}
-.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;
+"""
+
+COMPONENTS = """.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:grid;gap:28px}
 header{display:grid;gap:6px}
 h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,36px);margin:0;letter-spacing:.02em;text-wrap:balance}
 h2{font-size:18px;margin:0;text-wrap:balance}
+.bh{font-size:17px;margin:0}
 .meta{color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:4px 16px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .demo{background:var(--warn-soft);border:1px solid var(--up);color:var(--ink);padding:10px 14px;border-radius:6px;font-size:13px}
@@ -37,7 +42,7 @@ h2{font-size:18px;margin:0;text-wrap:balance}
 .kpi span{color:var(--muted);font-size:12px;letter-spacing:.04em}
 .changes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
 .chg{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:8px;min-width:0;align-content:start}
-.wrap>*,section>*{min-width:0}
+.wrap>*,.blk>*{min-width:0}
 .chg h3{margin:0;font-size:14px;display:flex;justify-content:space-between;gap:8px}
 .chg ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:13px}
 .chg li{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
@@ -70,19 +75,45 @@ tr.isnew td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .who span{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 6px;white-space:nowrap}
 .who span.rel{border-color:var(--accent);color:var(--accent)}
 .bar{height:6px;background:var(--flag);border-radius:3px;margin-top:4px}
-section{display:grid;gap:12px;min-width:0}
+.blk{display:grid;gap:12px;min-width:0}
 .note{color:var(--muted);font-size:12.5px;display:grid;gap:4px;max-width:75ch}
 .note p{margin:0}
 :target{scroll-margin-top:16px}
 tr:target td{background:var(--flag-soft)}
 """
 
+
+def scope(css, prefix=".oh"):
+    """把元件樣式的每個選擇器加上前綴，避免嵌進豬豬日報時污染原本的樣式。"""
+    def one(m):
+        sels = ",".join(f"{prefix} {x.strip()}" for x in m.group(1).split(","))
+        return f"{sels}{{{m.group(2)}}}"
+    return re.sub(r"([^{}]+)\{([^{}]*)\}", one, css)
+
+
+# 嵌入豬豬日報時，沿用日報的色票與字型
+EMBED_TOKENS = """
+.oh{min-width:0; max-width:100%; --surface:var(--card); --bg:var(--paper); --line:var(--rule); --muted:var(--ink2);
+  --up:#C8322B; --down:#1D7F4A; --flag:#A8670F; --flag-soft:#F8EEDC; --warn-soft:#FBE9E7;
+  --f-display:"Noto Serif TC",serif; --f-body:"Noto Sans TC",sans-serif; --f-num:"IBM Plex Mono",monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .oh{
+  --up:#FF6B5F; --down:#4FC58A; --flag:#E3A548; --flag-soft:#33281A; --warn-soft:#3A201E}}
+:root[data-theme="dark"] .oh{--up:#FF6B5F; --down:#4FC58A; --flag:#E3A548; --flag-soft:#33281A; --warn-soft:#3A201E}
+"""
+
+COMPONENTS_EMBED = "\n".join(
+    l for l in COMPONENTS.splitlines()
+    if not l.startswith((".wrap{", "header{", "h1{", ".wrap>*", "h2{")) and not l.startswith("  padding-left:max")
+    and not l.startswith("  display:grid;gap:28px"))
+COMPONENTS_EMBED += """
+.bh{font-size:1.02rem;margin:0}
+.blk>*{min-width:0}
+"""
+
 JS = """
-const tabs=[...document.querySelectorAll('.tabs button')];
-function show(id){tabs.forEach(b=>{const on=b.dataset.board===id;b.setAttribute('aria-selected',on);
-  document.getElementById('board-'+b.dataset.board).hidden=!on});}
-tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.board)));
-const h=location.hash.slice(1); if(['value','lots','stake'].includes(h)) show(h);
+(()=>{const tabs=[...document.querySelectorAll('.oh .tabs button')];
+tabs.forEach(b=>b.addEventListener('click',()=>tabs.forEach(t=>{const on=t===b;t.setAttribute('aria-selected',on);
+  document.getElementById('board-'+t.dataset.board).hidden=!on})));})();
 """
 
 
@@ -194,10 +225,8 @@ def conc_table(conc):
 <tbody>{''.join(rows)}</tbody></table></div>"""
 
 
-def page(date, prev_date, boards, conc, rows, quote_source, demo, warnings):
-    issues = sorted({r["issue"] for r in rows})
-    officials = len({r["official"] for r in rows})
-    total_new = sum(x["is_new"] for b in boards.values() for x in b["entries"])
+def inner(prev_date, boards, conc, rows, warnings):
+    """榜單本體（異動摘要、前 N 名分頁、集中持股、說明），獨立頁與嵌入日報共用。"""
     tabs = "".join(
         f'<button type="button" id="tab-{bid}" data-board="{bid}" aria-selected="{str(bid == "value").lower()}">'
         f'{b["label"]}<small>{sum(x["is_new"] for x in b["entries"]) or ""}</small></button>'
@@ -208,14 +237,46 @@ def page(date, prev_date, boards, conc, rows, quote_source, demo, warnings):
     warn = ""
     if warnings["unmatched"] or warnings["missing"]:
         warn = f'<p>無法對應代號的股票名稱：{e("、".join(warnings["unmatched"]) or "無")}；查無報價的代號：{e("、".join(warnings["missing"]) or "無")}。</p>'
+    return f"""<div class="blk"><h3 class="bh">今日名次異動</h3><div class="changes">{''.join(changes_card(b, prev_date is not None) for b in boards.values())}</div></div>
+<div class="blk"><h3 class="bh">前 {TOP_N} 名持股</h3>
+<div><div class="tabs" role="tablist">{tabs}</div>{panels}</div></div>
+<div class="blk"><h3 class="bh">多人集中持有的個股</h3>
+<p class="note">{CONCENTRATION_MIN} 位以上官員共同持有，依持有人數排序。排行榜上的「N 人共持」標籤可直接跳到這裡。</p>
+{conc_table(conc)}</div>
+<div class="blk note">
+<p><b>估計市值</b>＝申報股數 × 當日收盤價。申報表沒有買進成本，這不是實際投入金額。</p>
+<p><b>佔公司股權</b>＝申報股數 ÷ 公司已發行普通股數。<b>職掌相關</b>：委員會職掌涵蓋該股所屬產業。</p>
+<p>持股張數一年申報一次，只在新一期廉政專刊公開時改變；每日名次變化主要來自股價漲跌。依法須強制信託的官員，申報持股為信託財產，任內不得自行交易。本人、配偶、子女持股合併計算。</p>
+{warn}
+</div>"""
+
+
+def fragment(date, prev_date, boards, conc, rows, quote_source, warnings):
+    """嵌進豬豬日報最下方的區塊（沿用日報的 section / shead 版型與色票）。"""
+    issues = "、".join(sorted({r["issue"] for r in rows}))
+    return f"""<section id="holdings" class="oh">
+<style>{EMBED_TOKENS}{scope(COMPONENTS_EMBED)}</style>
+<div class="shead">
+  <div><span class="eyebrow">Officials' Holdings · 官員持股</span><h2>官員持股動態榜</h2></div>
+  <p>監察院廉政專刊 {e(issues)} 申報持股，乘上 {e(date)} 收盤價（{e(quote_source)}）。</p>
+</div>
+{inner(prev_date, boards, conc, rows, warnings)}
+<script>{JS}</script>
+</section>"""
+
+
+def page(date, prev_date, boards, conc, rows, quote_source, demo, warnings):
+    issues = sorted({r["issue"] for r in rows})
+    officials = len({r["official"] for r in rows})
+    total_new = sum(x["is_new"] for b in boards.values() for x in b["entries"])
     demo_banner = ('<div class="demo"><b>示範資料。</b>官員為匿名代號，持股與報價皆為隨機產生，'
                    '不代表任何真實人物或行情。換上 data/holdings.csv 後即為真實版本。</div>') if demo else ""
     return f"""<title>官員持股動態榜</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@900&display=swap">
-<style>{CSS}</style>
-<div class="wrap">
+<style>{TOKENS}{scope(COMPONENTS)}</style>
+<div class="oh"><div class="wrap">
 <header>
   <h1>官員持股動態榜</h1>
   <div class="meta"><span>資料日 <b class="num">{date}</b></span><span>比較基準 <span class="num">{prev_date or '—'}</span></span>
@@ -228,17 +289,6 @@ def page(date, prev_date, boards, conc, rows, quote_source, demo, warnings):
   <div class="kpi"><b>{len(conc)}</b><span>{CONCENTRATION_MIN} 人以上共持個股</span></div>
   <div class="kpi"><b>{total_new}</b><span>今日三榜新上榜合計</span></div>
 </div>
-<section><h2>今日名次異動</h2><div class="changes">{''.join(changes_card(b, prev_date is not None) for b in boards.values())}</div></section>
-<section><h2>前 {TOP_N} 名持股</h2>
-<div><div class="tabs" role="tablist">{tabs}</div>{panels}</div></section>
-<section><h2>多人集中持有的個股</h2>
-<p class="note">{CONCENTRATION_MIN} 位以上官員共同持有，依持有人數排序。排行榜上的「N 人共持」標籤可直接跳到這裡。</p>
-{conc_table(conc)}</section>
-<section class="note">
-<p><b>估計市值</b>＝申報股數 × 當日收盤價。申報表沒有買進成本，這不是實際投入金額。</p>
-<p><b>佔公司股權</b>＝申報股數 ÷ 公司已發行普通股數。<b>職掌相關</b>：委員會職掌涵蓋該股所屬產業。</p>
-<p>持股張數一年申報一次，只在新一期廉政專刊公開時改變；每日名次變化主要來自股價漲跌。依法須強制信託的官員，申報持股為信託財產，任內不得自行交易。本人、配偶、子女持股合併計算。</p>
-{warn}
-</section>
-</div>
+{inner(prev_date, boards, conc, rows, warnings)}
+</div></div>
 <script>{JS}</script>"""

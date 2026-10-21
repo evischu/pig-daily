@@ -582,6 +582,10 @@ def build(date):
         for k in ("bull", "bear", "neutral")
     )
 
+    # 官員持股榜（official-holdings/run.py 產出；沒有這個檔案就不顯示這一區）
+    hp = os.path.join(ROOT, "data", "official-holdings-section.html")
+    holdings_html = open(hp, encoding="utf-8").read() if os.path.exists(hp) else ""
+
     total = len(data["top3"]) + len(data["global"]) + len(data["twcn"]) + len(data["market"])
 
     html = f"""<meta charset="utf-8">
@@ -657,6 +661,7 @@ def build(date):
       {"".join(market_card(m, imgs) for m in data["market"])}
     </div>
   </section>
+{holdings_html}
 </main>
 
 <footer>

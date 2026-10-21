@@ -9,7 +9,7 @@ import datetime as dt
 
 import rank
 import render
-from config import DEMO_HOLDINGS_CSV, HOLDINGS_CSV, OUTPUT
+from config import DAILY_SECTION, DEMO_HOLDINGS_CSV, HOLDINGS_CSV, OUTPUT
 from sources import holdings as holdings_src
 from sources import market as market_src
 
@@ -37,6 +37,10 @@ def main():
                        quote_source=quote_source, demo=args.demo,
                        warnings={"unmatched": unmatched, "missing": missing})
     (OUTPUT / "index.html").write_text(html, encoding="utf-8")
+    if not args.demo:   # 示範資料不進豬豬日報
+        DAILY_SECTION.write_text(render.fragment(args.date, prev_date, boards, conc, rows, quote_source,
+                                                 {"unmatched": unmatched, "missing": missing}), encoding="utf-8")
+        print(f"  已更新豬豬日報區塊：{DAILY_SECTION}")
     new = {b["label"]: sum(e["is_new"] for e in b["entries"]) for b in boards.values()}
     print(f"[{args.date}] {len(rows)} 筆持股，集中持股 {len(conc)} 檔，新上榜 {new}")
     if unmatched:

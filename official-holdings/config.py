@@ -5,6 +5,8 @@ ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 SNAPSHOTS = DATA / "snapshots"
 OUTPUT = ROOT / "output"
+# 豬豬日報最下方的榜單區塊；build.py 組版時若這個檔案存在就會嵌進去
+DAILY_SECTION = ROOT.parent / "data" / "official-holdings-section.html"
 
 # 申報持股表（OCR 廉政專刊後整理成的 CSV，欄位見 README）
 HOLDINGS_CSV = DATA / "holdings.csv"
